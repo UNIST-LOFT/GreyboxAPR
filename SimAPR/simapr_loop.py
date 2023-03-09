@@ -1,4 +1,5 @@
 import os
+import shutil
 import sys
 import subprocess
 import json
@@ -9,6 +10,8 @@ from types import CodeType
 from dataclasses import dataclass
 import logging
 from enum import Enum
+
+import psutil
 
 from core import *
 import select_patch
@@ -47,10 +50,15 @@ class TBarLoop():
     return self.state.is_alive
   def save_result(self) -> None:
     result_handler.save_result(self.state)
-  def run_test(self, patch: TbarPatchInfo, test: int) -> Tuple[int, bool,float]:
+  def run_test(self, patch: TbarPatchInfo, test: int,run_greybox:bool=False) -> Tuple[int, bool,float]:
+    new_env=EnvGenerator.get_new_env_tbar(self.state, patch, test,run_greybox)
     start_time=time.time()
-    compilable, run_result, is_timeout = run_test.run_fail_test_d4j(self.state, EnvGenerator.get_new_env_tbar(self.state, patch, test))
+    compilable, run_result, is_timeout = run_test.run_fail_test_d4j(self.state, new_env)
     run_time=time.time()-start_time
+
+    if run_greybox and compilable:
+      shutil.copyfile(new_env['GREYBOX_RESULT'],os.path.join(self.state.out_dir,'branch',f'{patch.tbar_case_info.location.replace("/","|")}_{test}.txt'))
+      os.remove(new_env['GREYBOX_RESULT'])
     return compilable, run_result, run_time
   def run_test_positive(self, patch: TbarPatchInfo) -> Tuple[bool,float]:
     start_time=time.time()
@@ -108,7 +116,7 @@ class TBarLoop():
       is_compilable = True
       pass_time=0
       for neg in self.state.d4j_negative_test:
-        compilable, run_result,fail_time = self.run_test(patch, neg)
+        compilable, run_result,fail_time = self.run_test(patch, neg,self.state.instrumenter_classpath!='')
         if not compilable:
           is_compilable = False
         if run_result:
@@ -149,7 +157,7 @@ class TBarLoop():
         if not self.is_initialized:
           self.initialize()
         for neg in self.state.d4j_negative_test:
-          compilable, run_result,fail_time = self.run_test(patch, neg)
+          compilable, run_result,fail_time = self.run_test(patch, neg,self.state.instrumenter_classpath!='')
           self.state.test_time+=fail_time
           if not compilable:
             is_compilable = False
@@ -203,10 +211,15 @@ class RecoderLoop(TBarLoop):
     elif self._is_method_over():
       self.state.is_alive=False
     return self.state.is_alive
-  def run_test(self, patch: RecoderPatchInfo, test: int) -> Tuple[int, bool, float]:
+  def run_test(self, patch: RecoderPatchInfo, test: int,run_greybox:bool=False) -> Tuple[int, bool, float]:
+    new_env=EnvGenerator.get_new_env_recoder(self.state, patch, test,run_greybox)
     start_time=time.time()
-    compilable, run_result, is_timeout = run_test.run_fail_test_d4j(self.state, EnvGenerator.get_new_env_recoder(self.state, patch, test))
+    compilable, run_result, is_timeout = run_test.run_fail_test_d4j(self.state, new_env)
     run_time=time.time() - start_time
+
+    if run_greybox and compilable:
+      shutil.copyfile(new_env['GREYBOX_RESULT'],os.path.join(self.state.out_dir,'branch',f'{patch.line_info.line_id}-{patch.recoder_case_info.case_id}_{test}.txt'))
+      os.remove(new_env['GREYBOX_RESULT'])
     return compilable, run_result,run_time
   def run_test_positive(self, patch: RecoderPatchInfo) -> Tuple[bool,float]:
     start_time=time.time()
@@ -258,7 +271,7 @@ class RecoderLoop(TBarLoop):
       is_compilable = True
       pass_time=0
       for neg in self.state.d4j_negative_test:
-        compilable, run_result,fail_time = self.run_test(patch, neg)
+        compilable, run_result,fail_time = self.run_test(patch, neg,self.state.instrumenter_classpath!='')
         self.state.test_time+=fail_time
         if not compilable:
           is_compilable = False
@@ -297,7 +310,7 @@ class RecoderLoop(TBarLoop):
         if not self.is_initialized:
           self.initialize()
         for neg in self.state.d4j_negative_test:
-          compilable, run_result,fail_time = self.run_test(patch, neg)
+          compilable, run_result,fail_time = self.run_test(patch, neg,self.state.instrumenter_classpath!='')
           self.state.test_time+=fail_time
           if not compilable:
             is_compilable = False

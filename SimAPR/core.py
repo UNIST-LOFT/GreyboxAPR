@@ -301,7 +301,7 @@ class EnvGenerator:
   def __init__(self) -> None:
     pass
   @staticmethod
-  def get_new_env_tbar(state: 'GlobalState', patch: 'TbarPatchInfo', test: str) -> Dict[str, str]:
+  def get_new_env_tbar(state: 'GlobalState', patch: 'TbarPatchInfo', test: str,run_greybox:bool=False) -> Dict[str, str]:
     new_env = os.environ.copy()
     new_env["SIMAPR_UUID"] = str(state.uuid)
     new_env["SIMAPR_TEST"] = str(test)
@@ -313,9 +313,16 @@ class EnvGenerator:
     new_env["SIMAPR_TIMEOUT"] = str(state.timeout)
     if patch.file_info.class_name != "":
       new_env["SIMAPR_CLASS_NAME"] = patch.file_info.class_name
+
+    if run_greybox and state.instrumenter_classpath!='':
+      new_env['GREYBOX_BRANCH']='1'
+      new_env['GREYBOX_RESULT']=f'/tmp/{state.d4j_buggy_project}-{test.replace("::","#")}'
+      new_env['GREYBOX_CLASSPATH']=state.instrumenter_classpath
+    else:
+      new_env['GREYBOX_BRANCH']='0'
     return new_env
   @staticmethod
-  def get_new_env_recoder(state: 'GlobalState', patch: 'RecoderPatchInfo', test: str) -> Dict[str, str]:
+  def get_new_env_recoder(state: 'GlobalState', patch: 'RecoderPatchInfo', test: str,run_greybox:bool=False) -> Dict[str, str]:
     new_env = os.environ.copy()
     new_env["SIMAPR_UUID"] = str(state.uuid)
     new_env["SIMAPR_TEST"] = str(test)
@@ -326,10 +333,18 @@ class EnvGenerator:
     new_env["SIMAPR_OUTPUT_DISTANCE_FILE"] = f"/tmp/{uuid.uuid4()}.out"
     new_env["SIMAPR_TIMEOUT"] = str(state.timeout)
     new_env["SIMAPR_RECODER"] = "-"
+
+    if run_greybox and state.instrumenter_classpath!='':
+      new_env['GREYBOX_BRANCH']='1'
+      new_env['GREYBOX_RESULT']=f'/tmp/{state.d4j_buggy_project}-{test.replace("::","#")}'
+      new_env['GREYBOX_CLASSPATH']=state.instrumenter_classpath
+    else:
+      new_env['GREYBOX_BRANCH']='0'
     return new_env
   @staticmethod
   def get_new_env_d4j_positive_tests(state: 'GlobalState', tests: List[str], new_env: Dict[str, str]) -> Dict[str, str]:
     new_env["SIMAPR_TEST"] = "ALL"
+    new_env['GREYBOX_BRANCH']='0'
     return new_env
 
 class TbarPatchInfo:
@@ -607,6 +622,9 @@ class GlobalState:
     self.total_methods=0  # Total methods
 
     self.correct_patch_list:List[str]=[]  # List of correct patch ids
+
+    # Added in greybox-APR
+    self.instrumenter_classpath=''
 
 def remove_file_or_pass(file:str):
   try:

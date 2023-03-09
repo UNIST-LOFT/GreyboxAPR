@@ -164,6 +164,18 @@ def deleteDirectory(dir):
   if os.path.exists(dir):
     shutil.rmtree(dir)
 
+def instrument_patched_project(work_dir:str,buggy_project:str,buggy_path:str):
+  buggy_file=work_dir+'/'+buggy_path
+  orig_file=work_dir+'b/'+buggy_path
+  classpath=os.environ['GREYBOX_CLASSPATH']
+
+  instrumentation_result=subprocess.run(['java','-jar',classpath,orig_file,buggy_file,work_dir+'b'+get_src_paths(buggy_project),
+                                        work_dir+get_src_paths(buggy_project),classpath],stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+  if instrumentation_result.returncode!=0:
+    print(instrumentation_result.stdout.decode('utf-8'),file=sys.stderr)
+    return False
+  return True
+  
 def compile_project_updated(work_dir, buggy_project):
   compile_proc = subprocess.Popen(["defects4j", "compile", "-w", work_dir], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   result = True
@@ -257,6 +269,19 @@ def test_patched_project(patch_location: str, buggy_location: str, work_dir: str
       print("FAIL")
       print("---COMPILATION_FAILED")
       raise ValueError("Patch is not compiled")
+    
+    if os.environ['GREYBOX_BRANCH']=='1':
+      instr_result=instrument_patched_project(work_dir, buggy_project, buggy_location)
+      if not instr_result:
+        print("FAIL")
+        print("---INSTRUMENTATION_FAILED")
+        raise ValueError("Patch is not instrumented")
+      
+      if not compile_project_updated(work_dir, buggy_project):
+        print("FAIL")
+        print("---COMPILATION_FAILED")
+        raise ValueError("Patch is not compiled after instrumentation")
+      
     error_num, failed_test = run_single_test(work_dir, buggy_project, test)
     if error_num != 0:
       print("FAIL")
@@ -314,6 +339,7 @@ def main(argv: List[str]) -> None:
     if len(pid)>=4:
       pid=pid[:-3]
     subprocess.run(f"defects4j checkout -p {proj} -v {pid}b -w {buggy_dir}", stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    subprocess.run(f"defects4j checkout -p {proj} -v {pid}b -w {buggy_dir}b", stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
   workdir = buggy_dir
   test = os.environ["SIMAPR_TEST"]
   if test == "ALL":
