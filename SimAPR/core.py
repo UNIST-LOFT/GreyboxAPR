@@ -318,8 +318,10 @@ class EnvGenerator:
       new_env['GREYBOX_BRANCH']='1'
       new_env['GREYBOX_RESULT']=f'/tmp/{state.d4j_buggy_project}-{test.replace("::","#")}'
       new_env['GREYBOX_CLASSPATH']=state.instrumenter_classpath
+      new_env['CLASSPATH']=state.instrumenter_classpath
     else:
       new_env['GREYBOX_BRANCH']='0'
+      new_env['CLASSPATH']=state.instrumenter_classpath
     return new_env
   @staticmethod
   def get_new_env_recoder(state: 'GlobalState', patch: 'RecoderPatchInfo', test: str,run_greybox:bool=False) -> Dict[str, str]:
@@ -338,12 +340,15 @@ class EnvGenerator:
       new_env['GREYBOX_BRANCH']='1'
       new_env['GREYBOX_RESULT']=f'/tmp/{state.d4j_buggy_project}-{test.replace("::","#")}'
       new_env['GREYBOX_CLASSPATH']=state.instrumenter_classpath
+      new_env['CLASSPATH']=state.instrumenter_classpath
     else:
       new_env['GREYBOX_BRANCH']='0'
+      new_env['CLASSPATH']=state.instrumenter_classpath
     return new_env
   @staticmethod
   def get_new_env_d4j_positive_tests(state: 'GlobalState', tests: List[str], new_env: Dict[str, str]) -> Dict[str, str]:
     new_env["SIMAPR_TEST"] = "ALL"
+    new_env['CLASSPATH']=state.instrumenter_classpath
     new_env['GREYBOX_BRANCH']='0'
     return new_env
 
