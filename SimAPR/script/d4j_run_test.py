@@ -165,13 +165,30 @@ def deleteDirectory(dir):
     shutil.rmtree(dir)
 
 def instrument_patched_project(work_dir:str,buggy_project:str,buggy_path:str):
-  classpath=os.environ['GREYBOX_CLASSPATH']
+  instrumenter_root=os.environ['GREYBOX_INSTR_ROOT']
+  classpath=f'{instrumenter_root}/build/libs/JPatchInst.jar'
 
-  instrumentation_result=subprocess.run(['java','-Xmx100G','-jar',classpath,buggy_path.replace(buggy_project,f'{buggy_project}b'),buggy_path,work_dir+'b'+get_src_paths(buggy_project)[0],
-                                        work_dir+get_src_paths(buggy_project)[0],classpath],stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+  src_path=work_dir+get_src_paths(buggy_project)[0]
+  orig_src_path=work_dir+'b'+get_src_paths(buggy_project)[0]
+
+  instrumentation_result=subprocess.run(['java','-Xmx100G','-jar',classpath,buggy_path.replace(buggy_project,f'{buggy_project}b'),buggy_path,orig_src_path,
+                                        src_path,classpath],stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
   if instrumentation_result.returncode!=0:
     print(instrumentation_result.stdout.decode('utf-8'),file=sys.stderr)
     return False
+  
+  # Copy GlobalStates to source directory
+  if not os.path.exists(src_path+'/kr'):
+    os.makedirs(src_path+'/kr')
+  if not os.path.exists(src_path+'/kr/ac'):
+    os.makedirs(src_path+'/kr/ac')
+  if not os.path.exists(src_path+'/kr/ac/unist'):
+    os.makedirs(src_path+'/kr/ac/unist')
+  if not os.path.exists(src_path+'/kr/ac/unist/apr'):
+    os.makedirs(src_path+'/kr/ac/unist/apr')
+  if not os.path.exists(src_path+'/kr/ac/unist/apr/GlobalStates.java'):
+    copyfile(f'{instrumenter_root}/src/main/java/kr/ac/unist/apr/GlobalStates.java',src_path+'/kr/ac/unist/apr/GlobalStates.java')
+    
   return True
   
 def compile_project_updated(work_dir, buggy_project):

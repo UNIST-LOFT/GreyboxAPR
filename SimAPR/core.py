@@ -316,8 +316,8 @@ class EnvGenerator:
 
     if run_greybox and state.instrumenter_classpath!='':
       new_env['GREYBOX_BRANCH']='1'
-      new_env['GREYBOX_RESULT']=f'/tmp/{state.d4j_buggy_project}-{test.replace("::","#")}'
-      new_env['GREYBOX_CLASSPATH']=state.instrumenter_classpath
+      new_env['GREYBOX_RESULT']=f'/tmp/{state.d4j_buggy_project}-{test.replace("::","#")}.txt'
+      new_env['GREYBOX_INSTR_ROOT']=state.instrumenter_classpath
       new_env['CLASSPATH']=state.instrumenter_classpath
     else:
       new_env['GREYBOX_BRANCH']='0'
@@ -338,8 +338,8 @@ class EnvGenerator:
 
     if run_greybox and state.instrumenter_classpath!='':
       new_env['GREYBOX_BRANCH']='1'
-      new_env['GREYBOX_RESULT']=f'/tmp/{state.d4j_buggy_project}-{test.replace("::","#")}'
-      new_env['GREYBOX_CLASSPATH']=state.instrumenter_classpath
+      new_env['GREYBOX_RESULT']=f'/tmp/{state.d4j_buggy_project}-{test.replace("::","#")}.txt'
+      new_env['GREYBOX_INSTR_ROOT']=state.instrumenter_classpath
       new_env['CLASSPATH']=state.instrumenter_classpath
     else:
       new_env['GREYBOX_BRANCH']='0'
