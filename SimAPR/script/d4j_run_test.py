@@ -25,7 +25,7 @@ def run_d4j_export(d4j_dir: str) -> tuple:
   test_dir = open(test_dir_file).read().strip()
   return class_dir, test_dir
 
-def get_src_paths(project, buggy_dir):
+def get_src_paths(project):
   sep = "_"
   if "SIMAPR_RECODER" in os.environ:
     sep = os.environ["SIMAPR_RECODER"]
@@ -165,12 +165,10 @@ def deleteDirectory(dir):
     shutil.rmtree(dir)
 
 def instrument_patched_project(work_dir:str,buggy_project:str,buggy_path:str):
-  buggy_file=work_dir+'/'+buggy_path
-  orig_file=work_dir+'b/'+buggy_path
   classpath=os.environ['GREYBOX_CLASSPATH']
 
-  instrumentation_result=subprocess.run(['java','-jar',classpath,orig_file,buggy_file,work_dir+'b'+get_src_paths(buggy_project),
-                                        work_dir+get_src_paths(buggy_project),classpath],stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+  instrumentation_result=subprocess.run(['java','-Xmx100G','-jar',classpath,buggy_path.replace(buggy_project,f'{buggy_project}b'),buggy_path,work_dir+'b'+get_src_paths(buggy_project)[0],
+                                        work_dir+get_src_paths(buggy_project)[0],classpath],stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
   if instrumentation_result.returncode!=0:
     print(instrumentation_result.stdout.decode('utf-8'),file=sys.stderr)
     return False
