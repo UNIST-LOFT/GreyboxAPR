@@ -57,8 +57,12 @@ class TBarLoop():
     run_time=time.time()-start_time
 
     if run_greybox and compilable:
-      shutil.copyfile(new_env['GREYBOX_RESULT'],os.path.join(self.state.out_dir,'branch',f'{patch.tbar_case_info.location.replace("/","|")}_{test}.txt'))
-      os.remove(new_env['GREYBOX_RESULT'])
+      try:
+        shutil.copyfile(new_env['GREYBOX_RESULT'],os.path.join(self.state.out_dir,'branch',f'{patch.tbar_case_info.location.replace("/","|")}_{test}.txt'))
+        os.remove(new_env['GREYBOX_RESULT'])
+      except FileNotFoundError:
+        self.state.logger.warning(f"Greybox result not found for {patch.tbar_case_info.location} {test}")
+        
     return compilable, run_result, run_time
   def run_test_positive(self, patch: TbarPatchInfo) -> Tuple[bool,float]:
     start_time=time.time()
