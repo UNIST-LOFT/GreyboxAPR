@@ -173,11 +173,9 @@ def instrument_patched_project(work_dir:str,buggy_project:str,buggy_path:str):
 
   instrumentation_result=subprocess.run(['java','-Xmx100G','-jar',classpath,buggy_path.replace(buggy_project,f'{buggy_project}b'),buggy_path,orig_src_path,
                                         src_path,classpath],stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
-  if instrumentation_result.returncode!=0:
-    print(instrumentation_result.stdout.decode('utf-8'),file=sys.stderr)
-    return False
   
   # Copy GlobalStates to source directory
+  # We copy the GlobalStates before the instrumentation is success for the later patches
   if not os.path.exists(src_path+'/kr'):
     os.makedirs(src_path+'/kr')
   if not os.path.exists(src_path+'/kr/ac'):
@@ -188,6 +186,11 @@ def instrument_patched_project(work_dir:str,buggy_project:str,buggy_path:str):
     os.makedirs(src_path+'/kr/ac/unist/apr')
   if not os.path.exists(src_path+'/kr/ac/unist/apr/GlobalStates.java'):
     copyfile(f'{instrumenter_root}/src/main/java/kr/ac/unist/apr/GlobalStates.java',src_path+'/kr/ac/unist/apr/GlobalStates.java')
+
+  if instrumentation_result.returncode!=0:
+    print(instrumentation_result.stdout.decode('utf-8'),file=sys.stderr)
+    return False
+  
     
   return True
   
