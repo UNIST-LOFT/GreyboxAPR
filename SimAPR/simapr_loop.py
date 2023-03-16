@@ -1,22 +1,9 @@
-import os
-import shutil
-import sys
-import subprocess
-import json
 import time
-import hashlib
-import getopt
-from types import CodeType
-from dataclasses import dataclass
-import logging
-from enum import Enum
-
-import psutil
-
 from core import *
 import select_patch
 import result_handler as result_handler
 import run_test
+import shutil
 
 class TBarLoop():
   def __init__(self, state: GlobalState) -> None:
