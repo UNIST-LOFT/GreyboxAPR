@@ -627,6 +627,7 @@ class GlobalState:
 
     # Added in greybox-APR
     self.instrumenter_classpath=''
+    self.branch_output=''
 
 def remove_file_or_pass(file:str):
   try:

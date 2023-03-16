@@ -45,7 +45,7 @@ class TBarLoop():
 
     if run_greybox and compilable:
       try:
-        shutil.copyfile(new_env['GREYBOX_RESULT'],os.path.join(self.state.out_dir,'branch',f'{patch.tbar_case_info.location.replace("/","|")}_{test}.txt'))
+        shutil.copyfile(new_env['GREYBOX_RESULT'],os.path.join(self.state.branch_output,f'{patch.tbar_case_info.location.replace("/","#")}_{test}.txt'))
         os.remove(new_env['GREYBOX_RESULT'])
       except FileNotFoundError:
         self.state.logger.warning(f"Greybox result not found for {patch.tbar_case_info.location} {test}")
@@ -209,7 +209,7 @@ class RecoderLoop(TBarLoop):
     run_time=time.time() - start_time
 
     if run_greybox and compilable:
-      shutil.copyfile(new_env['GREYBOX_RESULT'],os.path.join(self.state.out_dir,'branch',f'{patch.line_info.line_id}-{patch.recoder_case_info.case_id}_{test}.txt'))
+      shutil.copyfile(new_env['GREYBOX_RESULT'],os.path.join(self.state.branch_output,f'{patch.line_info.line_id}-{patch.recoder_case_info.case_id}_{test}.txt'))
       os.remove(new_env['GREYBOX_RESULT'])
     return compilable, run_result,run_time
   def run_test_positive(self, patch: RecoderPatchInfo) -> Tuple[bool,float]:

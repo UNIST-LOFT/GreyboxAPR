@@ -18,7 +18,7 @@ def parse_args(argv: list) -> GlobalState:
               "use-pattern", "use-simulation-mode=",
               'seapr-mode=','top-fl=','ignore-compile-error',
               'finish-correct-patch','count-compile-fail','not-use-guide','not-use-epsilon',
-              'finish-top-method', 'prapr-mode','instr-cp=']
+              'finish-top-method', 'prapr-mode','instr-cp=','branch-output=']
   opts, args = getopt.getopt(argv[1:], "ho:w:t:m:c:T:E:", longopts)
   state = GlobalState()
   state.original_args = argv
@@ -112,6 +112,8 @@ def parse_args(argv: list) -> GlobalState:
 
     elif o in ['--instr-cp']:
       state.instrumenter_classpath=a
+    elif o in ['--branch-output']:
+      state.branch_output=a
 
   if not os.path.exists(state.out_dir):
     os.makedirs(state.out_dir)
@@ -121,6 +123,11 @@ def parse_args(argv: list) -> GlobalState:
   if os.path.exists(state.tmp_dir):
     shutil.rmtree(state.tmp_dir)
   os.makedirs(state.tmp_dir)
+  if state.branch_output!='':
+    if not os.path.exists(state.branch_output):
+      os.makedirs(state.branch_output)
+  elif state.instrumenter_classpath!='':
+    state.branch_output=os.path.join(state.out_dir,'branch')
 
   return state
 
