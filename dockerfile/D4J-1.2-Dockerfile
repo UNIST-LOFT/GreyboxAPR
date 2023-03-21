@@ -20,7 +20,7 @@ RUN \
 				unzip \
 				cpanminus \
 				make \
-				nano python3-pip python3 screen htop maven
+				nano python3-pip python3 screen htop maven psmisc
 
 # Java version
 ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64
@@ -43,7 +43,7 @@ RUN git clone https://github.com/rjust/defects4j.git defects4j
 
 # ----------- Step 2. Initialize Defects4J ---------------------
 WORKDIR /defects4j
-RUN git checkout v2.0.0
+RUN git checkout v1.2.0
 RUN cpanm --installdeps .
 RUN ./init.sh
 
@@ -51,10 +51,11 @@ RUN ./init.sh
 ENV PATH="/defects4j/framework/bin:${PATH}"  
 #--------------
 
+# Activate openssh server
 RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/g' /etc/ssh/sshd_config
 RUN sed -i 's/#force_color_prompt=yes/force_color_prompt=yes/g' /root/.bashrc
-RUN sed '92 aexport PATH=/defects4j/framework/bin:$PATH' /root/.bashrc
 
+# Clone and setup SimAPR
 WORKDIR /root
 RUN git clone https://FreddyYJ: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@github.com/FreddyYJ/SimAPR.git
 WORKDIR /root/SimAPR/Avatar
@@ -68,6 +69,36 @@ RUN ./compile.sh
 WORKDIR /root/SimAPR/SimAPR
 RUN python3 -m pip install -r requirements.txt
 
+WORKDIR /root/SimAPR/experiments/alpharepair
+RUN mkdir result
+WORKDIR /root/SimAPR/experiments/avatar
+RUN mkdir result
+WORKDIR /root/SimAPR/experiments/fixminer
+RUN mkdir result
+WORKDIR /root/SimAPR/experiments/kpar
+RUN mkdir result
+WORKDIR /root/SimAPR/experiments/recoder
+RUN mkdir result
+WORKDIR /root/SimAPR/experiments/tbar
+RUN mkdir result
+
 WORKDIR /root
+RUN update-alternatives --set java /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java
+
+# Install learning-based tools
+RUN wget https://repo.anaconda.com/archive/Anaconda3-2022.10-Linux-x86_64.sh
+RUN chmod 751 Anaconda3-2022.10-Linux-x86_64.sh
+RUN ./Anaconda3-2022.10-Linux-x86_64.sh -b
+ENV PATH="/root/anaconda3/bin:${PATH}"
+RUN echo 'export PATH=/defects4j/framework/bin:/root/anaconda3/bin:$PATH' > /root/.bash_aliases
+RUN conda init bash
+
+WORKDIR /root/SimAPR/AlphaRepair
+RUN conda env create -f data/env.yaml
+WORKDIR /root/SimAPR/Recoder
+RUN conda env create -f data/env.yaml
+RUN wget https://www.dropbox.com/s/hu3lwdybaeoygzk/best_model.ckpt
+RUN mkdir checkpointSearch
+RUN mv best_model.ckpt checkpointSearch
 
 CMD ["/usr/sbin/sshd","-D"]
