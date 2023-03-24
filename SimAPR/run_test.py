@@ -52,6 +52,8 @@ def run_fail_test_d4j(state: GlobalState, new_env: Dict[str, str]) -> Tuple[bool
       ft = line.replace("---", "").strip()
       if ft == "COMPILATION_FAILED" or ft=='INSTRUMENTATION_FAILED':
         compilable = False
+        if ft=='INSTRUMENTATION_FAILED':
+          state.logger.info("Instrumentation failed!")
         break
       failed_tests.add(ft)
       continue
