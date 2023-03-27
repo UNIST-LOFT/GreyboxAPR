@@ -93,10 +93,14 @@ def compute_norms(output_file:str,branch_dir:str) -> Tuple[Dict[str,Dict[float,i
     return valid_l1_norms,valid_l2_norms,invalid_l1_norms,invalid_l2_norms
 
 def plot(output_dir:str,valid_l1_norms:Dict[str,Dict[float,int]],valid_l2_norms:Dict[str,Dict[float,int]],invalid_l1_norms:Dict[str,Dict[float,int]],invalid_l2_norms:Dict[str,Dict[float,int]]):
-    for test_name in valid_l1_norms.keys():
+    for test_name in invalid_l1_norms.keys():
         plt.clf()
-        valid_l1=valid_l1_norms[test_name]
-        valid_l2=valid_l2_norms[test_name]
+        if test_name in valid_l1_norms.keys():
+            valid_l1=valid_l1_norms[test_name]
+            valid_l2=valid_l2_norms[test_name]
+        else:
+            valid_l1=dict()
+            valid_l2=dict()
         invalid_l1=invalid_l1_norms[test_name]
         invalid_l2=invalid_l2_norms[test_name]
 
