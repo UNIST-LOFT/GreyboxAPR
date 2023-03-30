@@ -65,7 +65,7 @@ class TBarLoop():
       if neg in self.state.failed_positive_test:
         self.state.d4j_negative_test.remove(neg)
       else:
-        compilable, run_result,_ = self.run_test(op, neg)
+        compilable, run_result,_ = self.run_test(op, neg,self.state.instrumenter_classpath!='')
         if not compilable:
           self.state.logger.warning("Project is not compilable")
           self.state.is_alive = False
@@ -224,7 +224,7 @@ class RecoderLoop(TBarLoop):
     original = self.state.patch_location_map["original"]
     op = RecoderPatchInfo(original)
     for neg in self.state.d4j_negative_test.copy():
-      compilable, run_result,_ = self.run_test(op, neg)
+      compilable, run_result,_ = self.run_test(op, neg,self.state.instrumenter_classpath!='')
       if not compilable:
         self.state.logger.warning("Project is not compilable")
         self.state.is_alive = False
