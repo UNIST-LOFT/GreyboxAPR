@@ -15,7 +15,7 @@ def run(project):
         new_cur_dir+=dir+'/'
 
     print(f"Run {project}-seapr")
-    result=subprocess.run(['python3',f'{new_cur_dir}/SimAPR/simapr.py','-o',f'result/{project}-seapr','-m','seapr','--ignore-compile-error','--use-pattern','--fixminer-mode',
+    result=subprocess.run(['python3',f'{new_cur_dir}/SimAPR/simapr.py','-o',f'result/{project}-seapr','-m','seapr','--ignore-compile-error','--use-pattern',
                 '--tbar-mode','-w',f'{new_cur_dir}/Fixminer/d4j/{project}','-t','180000','--use-simulation-mode',f'result/cache/{project}-cache.json',
                 '--instr-cp','../../../JPatchInst','--branch-output',f'result/branch/{project}','-T','18000',
                 '--','python3',
