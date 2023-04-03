@@ -37,7 +37,7 @@ class TBarLoop():
     return self.state.is_alive
   def save_result(self) -> None:
     result_handler.save_result(self.state)
-  def run_test(self, patch: TbarPatchInfo, test: int,run_greybox:bool=False) -> Tuple[int, bool,float]:
+  def run_test(self, patch: TbarPatchInfo, test: str,run_greybox:bool=False) -> Tuple[bool, bool,float]:
     new_env=EnvGenerator.get_new_env_tbar(self.state, patch, test,run_greybox)
     start_time=time.time()
     compilable, run_result, is_timeout = run_test.run_fail_test_d4j(self.state, new_env)
@@ -47,8 +47,12 @@ class TBarLoop():
       try:
         shutil.copyfile(new_env['GREYBOX_RESULT'],os.path.join(self.state.branch_output,f'{patch.tbar_case_info.location.replace("/","#")}_{test}.txt'))
         os.remove(new_env['GREYBOX_RESULT'])
-      except FileNotFoundError:
-        self.state.logger.warning(f"Greybox result not found for {patch.tbar_case_info.location} {test}")
+      except OSError as e:
+        if 'too long' in e.strerror:
+          shutil.copyfile(new_env['GREYBOX_RESULT'],os.path.join(self.state.branch_output,f'{patch.tbar_case_info.location.replace("/","#")}_{".".join(test.split("."))[-2],test.split(".")[-1]}.txt'))
+          os.remove(new_env['GREYBOX_RESULT'])
+        else:
+          self.state.logger.warning(f"Greybox result not found for {patch.tbar_case_info.location} {test}")
         
     return compilable, run_result, run_time
   def run_test_positive(self, patch: TbarPatchInfo) -> Tuple[bool,float]:
@@ -203,15 +207,23 @@ class RecoderLoop(TBarLoop):
     elif self._is_method_over():
       self.state.is_alive=False
     return self.state.is_alive
-  def run_test(self, patch: RecoderPatchInfo, test: int,run_greybox:bool=False) -> Tuple[int, bool, float]:
+  def run_test(self, patch: RecoderPatchInfo, test: str,run_greybox:bool=False) -> Tuple[bool, bool, float]:
     new_env=EnvGenerator.get_new_env_recoder(self.state, patch, test,run_greybox)
     start_time=time.time()
     compilable, run_result, is_timeout = run_test.run_fail_test_d4j(self.state, new_env)
     run_time=time.time() - start_time
 
     if run_greybox and compilable:
-      shutil.copyfile(new_env['GREYBOX_RESULT'],os.path.join(self.state.branch_output,f'{patch.line_info.line_id}-{patch.recoder_case_info.case_id}_{test}.txt'))
-      os.remove(new_env['GREYBOX_RESULT'])
+      try:
+        shutil.copyfile(new_env['GREYBOX_RESULT'],os.path.join(self.state.branch_output,f'{patch.line_info.line_id}-{patch.recoder_case_info.case_id}_{test}.txt'))
+        os.remove(new_env['GREYBOX_RESULT'])
+      except OSError as e:
+        if 'too long' in e.strerror:
+          shutil.copyfile(new_env['GREYBOX_RESULT'],os.path.join(self.state.branch_output,f'{patch.tbar_case_info.location.replace("/","#")}_{".".join(test.split("."))[-2],test.split(".")[-1]}.txt'))
+          os.remove(new_env['GREYBOX_RESULT'])
+        else:
+          self.state.logger.warning(f"Greybox result not found for {patch.tbar_case_info.location} {test}")
+
     return compilable, run_result,run_time
   def run_test_positive(self, patch: RecoderPatchInfo) -> Tuple[bool,float]:
     start_time=time.time()
