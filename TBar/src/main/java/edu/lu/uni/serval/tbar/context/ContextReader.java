@@ -119,7 +119,7 @@ public class ContextReader {
 	private static void addSuperFieldsToVars(String classNameAndPath, Map<String, List<String>> allVarNamesMap,
 			Map<String, String> varTypesMap, List<String> allVarNamesList, Dictionary dic) {
 		String superClassNameAndPath = dic.findSuperClassName(classNameAndPath);
-		if (superClassNameAndPath == null || superFieldsToVarsCounter>50) return;
+		if (superClassNameAndPath == null || superFieldsToVarsCounter>20) return;
 		
 		List<Field> fields = dic.findFieldsByClassPath(superClassNameAndPath);
 		addFieldsToVars(fields, allVarNamesMap, varTypesMap, allVarNamesList, superClassNameAndPath, false);
