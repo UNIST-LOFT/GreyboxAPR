@@ -166,8 +166,11 @@ def instrument_patched_project(work_dir:str,buggy_project:str,buggy_path:str):
   src_path=work_dir+get_src_paths(buggy_project)[0]
   orig_src_path=work_dir+'b'+get_src_paths(buggy_project)[0]
 
-  instrumentation_result=subprocess.run(['java','-Xmx100G','-jar',classpath,buggy_path.replace(buggy_project,f'{buggy_project}b'),buggy_path,orig_src_path,
-                                        src_path,classpath],stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+  cmd=['java','-Xmx100G','-jar',classpath,orig_src_path,src_path,classpath]
+  if buggy_path is not None:
+    cmd.append(buggy_path.replace(buggy_project,f'{buggy_project}b'))
+    cmd.append(buggy_path)
+  instrumentation_result=subprocess.run(cmd,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
   
   # Copy GlobalStates to source directory
   # We copy the GlobalStates before the instrumentation is success for the later patches
@@ -315,6 +318,15 @@ def test_original_project(work_dir: str, test: Union[str, List[str]], buggy_proj
   try:
     if not compile_project_updated(work_dir, buggy_project):
       raise ValueError("Original is not compilable")
+    
+    if os.environ['GREYBOX_BRANCH']=='1':
+      instr_result=instrument_patched_project(work_dir, buggy_project, None)
+      if not instr_result:
+        raise ValueError("Original is not instrumented")
+      
+      if not compile_project_updated(work_dir, buggy_project):
+        raise ValueError("Original is not compilable after instrumentation")
+
     error_num, failed_test = run_single_test(work_dir, buggy_project, test)
     if error_num != 0:
       print("FAIL")
