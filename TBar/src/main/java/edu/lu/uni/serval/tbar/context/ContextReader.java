@@ -121,7 +121,12 @@ public class ContextReader {
 		
 		List<Field> fields = dic.findFieldsByClassPath(superClassNameAndPath);
 		addFieldsToVars(fields, allVarNamesMap, varTypesMap, allVarNamesList, superClassNameAndPath, false);
-		addSuperFieldsToVars(superClassNameAndPath, allVarNamesMap, varTypesMap, allVarNamesList, dic);
+		try {
+			addSuperFieldsToVars(superClassNameAndPath, allVarNamesMap, varTypesMap, allVarNamesList, dic);
+		}
+		catch (StackOverflowError e) {
+			
+		}
 	}
 
 	private static void addStaticFieldsFromDependencies(Map<String, List<String>> allVarNamesMap,
