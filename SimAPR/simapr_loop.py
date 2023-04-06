@@ -219,10 +219,10 @@ class RecoderLoop(TBarLoop):
         os.remove(new_env['GREYBOX_RESULT'])
       except OSError as e:
         if 'too long' in e.strerror:
-          shutil.copyfile(new_env['GREYBOX_RESULT'],os.path.join(self.state.branch_output,f'{patch.tbar_case_info.location.replace("/","#")}_{".".join(test.split("."))[-2],test.split(".")[-1]}.txt'))
+          shutil.copyfile(new_env['GREYBOX_RESULT'],os.path.join(self.state.branch_output,f'{patch.line_info.line_id}-{patch.recoder_case_info.case_id}_{".".join(test.split("."))[-2],test.split(".")[-1]}.txt'))
           os.remove(new_env['GREYBOX_RESULT'])
         else:
-          self.state.logger.warning(f"Greybox result not found for {patch.tbar_case_info.location} {test}")
+          self.state.logger.warning(f"Greybox result not found for {patch.line_info.line_id}-{patch.recoder_case_info.case_id} {test}")
 
     return compilable, run_result,run_time
   def run_test_positive(self, patch: RecoderPatchInfo) -> Tuple[bool,float]:
