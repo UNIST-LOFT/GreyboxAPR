@@ -111,6 +111,10 @@ if __name__ == "__main__":
     branch_dir=sys.argv[2]
 
     valid_patches,invalid_patches=parse_simapr_result(output_dir)
+    if len(valid_patches)<=4:
+        print('Too few valid patches')
+        exit(0)
+        
     all_cov,original_cov=get_all_cov_info(branch_dir)
 
     all_cov_test=dict()
