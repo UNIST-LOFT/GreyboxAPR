@@ -131,7 +131,8 @@ if __name__ == "__main__":
             patch_id+='.java'
             patch_id=patch_id.replace('#','/')
         else:
-            patch_id,test=patch.split('_')
+            patch_id=patch.split('_')[0]
+            test=patch.removeprefix(f'{patch_id}_')
         if test not in all_cov_test.keys():
             all_cov_test[test]=dict()
         all_cov_test[test][patch_id]=vector
