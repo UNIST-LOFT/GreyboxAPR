@@ -119,9 +119,12 @@ if __name__ == "__main__":
 
     all_cov_test=dict()
     for patch, vector in all_cov.items():
-        patch_id,test=patch.split('.java_')
-        patch_id+='.java'
-        patch_id=patch_id.replace('#','/')
+        if '.java_' in patch:
+            patch_id,test=patch.split('.java_')
+            patch_id+='.java'
+            patch_id=patch_id.replace('#','/')
+        else:
+            patch_id,test=patch.split('_')
         if test not in all_cov_test.keys():
             all_cov_test[test]=dict()
         all_cov_test[test][patch_id]=vector
