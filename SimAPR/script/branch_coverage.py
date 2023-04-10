@@ -92,7 +92,10 @@ def tsne(cov:Dict[str,Dict[str,Dict[int,int]]],valid:List[str],invalid:List[str]
                 cur_x.append(vector[branch])
             x.append(cur_x)
 
-        tsne_plot=sklearn.manifold.TSNE()
+        perplexity=30.
+        if len(x)<=perplexity:
+            perplexity=len(x)/2
+        tsne_plot=sklearn.manifold.TSNE(perplexity=perplexity)
         x_array=np.array(x)
         print(x_array.shape)
         x_2d=tsne_plot.fit_transform(x_array)
@@ -122,6 +125,7 @@ if __name__ == "__main__":
 
     all_cov_test=dict()
     for patch, vector in all_cov.items():
+        print(patch)
         if '.java_' in patch:
             patch_id,test=patch.split('.java_')
             patch_id+='.java'
