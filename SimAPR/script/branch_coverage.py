@@ -35,7 +35,10 @@ def parse_simapr_result(output_file:str):
         root=json.load(f)
 
     for patch in root:
-        patch_id=patch['config'][0]['location']
+        if 'case_id' in patch['config'][0].keys():
+            patch_id=f'{patch["config"][0]["id"]}-{patch["config"][0]["case_id"]}'
+        else:
+            patch_id=patch['config'][0]['location']
         if patch['pass_result']:
             valid_patches.append(patch_id)
         elif patch['compilable']:
@@ -48,7 +51,7 @@ def get_all_cov_info(branch_dir:str):
     original_cov:Dict[int,int]=dict()
 
     for file in os.listdir(branch_dir):
-        if file.startswith('original'):
+        if file.startswith('original') or file.startswith('-1-0'):
             original_cov=parse_cov(f'{branch_dir}/{file}')[1]
         else:
             all_cov[file.removesuffix('.txt')]=parse_cov(f'{branch_dir}/{file}')[1]
