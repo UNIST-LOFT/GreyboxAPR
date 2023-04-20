@@ -45,14 +45,16 @@ class TBarLoop():
 
     if run_greybox and compilable:
       try:
-        shutil.copyfile(new_env['GREYBOX_RESULT'],os.path.join(self.state.branch_output,f'{patch.tbar_case_info.location.replace("/","#")}_{test}.txt'))
+        shutil.copyfile(new_env['GREYBOX_RESULT'],os.path.join(self.state.branch_output,f'{patch.tbar_case_info.location.replace("/","#")}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt'))
         os.remove(new_env['GREYBOX_RESULT'])
-      except OSError as e:
-        if 'too long' in e.strerror:
-          shutil.copyfile(new_env['GREYBOX_RESULT'],os.path.join(self.state.branch_output,f'{patch.tbar_case_info.location.replace("/","#")}_{".".join(test.split("."))[-2],test.split(".")[-1]}.txt'))
-          os.remove(new_env['GREYBOX_RESULT'])
+
+        cur_cov=branch_coverage.parse_cov(os.path.join(self.state.branch_output,f'{patch.tbar_case_info.location.replace("/","#")}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt'))
+        if patch.tbar_case_info.location=='original':
+          self.state.original_branch_cov[test]=cur_cov
         else:
-          self.state.logger.warning(f"Greybox result not found for {patch.tbar_case_info.location} {test}")
+          self.state.patch_branch_covs[(f'{patch.tbar_case_info.location}',test)]=cur_cov
+      except OSError as e:
+        self.state.logger.warning(f"Greybox result not found for {patch.tbar_case_info.location} {test}")
         
     return compilable, run_result, run_time
   def run_test_positive(self, patch: TbarPatchInfo) -> Tuple[bool,float]:
@@ -109,6 +111,7 @@ class TBarLoop():
       pass_exists = False
       result = True
       pass_result = False
+      each_result=dict()
       is_compilable = True
       pass_time=0
       for neg in self.state.d4j_negative_test:
@@ -119,8 +122,12 @@ class TBarLoop():
           pass_exists = True
         if not run_result:
           result = False
-          if self.state.use_partial_validation and self.state.mode==Mode.seapr:
+          each_result[neg]=False
+          if self.state.use_partial_validation and self.state.mode==Mode.seapr and \
+              self.state.instrumenter_classpath=='': 
             break
+        else:
+          each_result[neg]=True
         self.state.test_time+=fail_time
       if is_compilable or self.state.ignore_compile_error:
         result_handler.update_result_tbar(self.state, patch, pass_exists)
@@ -131,7 +138,7 @@ class TBarLoop():
 
       if is_compilable or self.state.count_compile_fail:
         self.state.iteration += 1
-      result_handler.append_result(self.state, [patch], pass_exists, pass_result, result, is_compilable,fail_time,pass_time)
+      result_handler.append_result(self.state, [patch], each_result, pass_result, is_compilable,fail_time,pass_time)
       result_handler.remove_patch_tbar(self.state, patch)
   
   def run_sim(self) -> None:
@@ -152,6 +159,8 @@ class TBarLoop():
       if key not in self.state.simulation_data:
         if not self.is_initialized:
           self.initialize()
+
+        each_result=dict()
         for neg in self.state.d4j_negative_test:
           compilable, run_result,fail_time = self.run_test(patch, neg,self.state.instrumenter_classpath!='')
           self.state.test_time+=fail_time
@@ -161,8 +170,12 @@ class TBarLoop():
             pass_exists = True
           if not run_result:
             result = False
-            if self.state.use_partial_validation:
+            each_result[neg]=False
+            if self.state.use_partial_validation and self.state.mode==Mode.seapr and \
+                self.state.instrumenter_classpath!='':
               break
+          else:
+            each_result[neg]=True
         if is_compilable or self.state.ignore_compile_error:
           result_handler.update_result_tbar(self.state, patch, pass_exists)
           if result and self.state.use_pass_test:
@@ -174,7 +187,8 @@ class TBarLoop():
 
       else:
         simapr_result = self.state.simulation_data[key]
-        pass_exists = simapr_result['basic']
+        each_result=simapr_result['basic']
+        pass_exists = True in each_result.values()
         result = simapr_result['pass_all_fail']
         pass_result = simapr_result['plausible']
         fail_time=simapr_result['fail_time']
@@ -182,13 +196,20 @@ class TBarLoop():
         self.state.test_time+=pass_time
         pass_time=simapr_result['pass_time']
         is_compilable=simapr_result['compilable']
+
+        for test in each_result.keys():
+          cov_file=os.path.join(self.state.branch_output,f'{patch.tbar_case_info.location.replace("/","#")}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt')
+          if os.path.exists(cov_file):
+            cur_cov=branch_coverage.parse_cov(cov_file)
+            self.state.patch_branch_covs[(f'{patch.tbar_case_info.location}',test)]=cur_cov
+
         if is_compilable or self.state.ignore_compile_error:
           result_handler.update_result_tbar(self.state, patch, pass_exists)
           if result:
             result_handler.update_positive_result_tbar(self.state, patch, pass_result)
         if is_compilable or self.state.count_compile_fail:
           self.state.iteration += 1
-      result_handler.append_result(self.state, [patch], pass_exists, pass_result, result, is_compilable,fail_time,pass_time)
+      result_handler.append_result(self.state, [patch], each_result, pass_result, is_compilable,fail_time,pass_time)
       result_handler.remove_patch_tbar(self.state, patch)
 
 
@@ -215,14 +236,13 @@ class RecoderLoop(TBarLoop):
 
     if run_greybox and compilable:
       try:
-        shutil.copyfile(new_env['GREYBOX_RESULT'],os.path.join(self.state.branch_output,f'{patch.line_info.line_id}-{patch.recoder_case_info.case_id}_{test}.txt'))
+        shutil.copyfile(new_env['GREYBOX_RESULT'],os.path.join(self.state.branch_output,f'{patch.line_info.line_id}-{patch.recoder_case_info.case_id}_{".".join(test.split("."))[-2],test.split(".")[-1]}.txt'))
         os.remove(new_env['GREYBOX_RESULT'])
+
+        cur_cov=branch_coverage.parse_cov(os.path.join(self.state.branch_output,f'{patch.line_info.line_id}-{patch.recoder_case_info.case_id}_{test}.txt'))
+        self.state.patch_branch_covs[(f'{patch.line_info.line_id}-{patch.recoder_case_info.case_id}',test)]=cur_cov
       except OSError as e:
-        if 'too long' in e.strerror:
-          shutil.copyfile(new_env['GREYBOX_RESULT'],os.path.join(self.state.branch_output,f'{patch.line_info.line_id}-{patch.recoder_case_info.case_id}_{".".join(test.split("."))[-2],test.split(".")[-1]}.txt'))
-          os.remove(new_env['GREYBOX_RESULT'])
-        else:
-          self.state.logger.warning(f"Greybox result not found for {patch.line_info.line_id}-{patch.recoder_case_info.case_id} {test}")
+        self.state.logger.warning(f"Greybox result not found for {patch.line_info.line_id}-{patch.recoder_case_info.case_id} {test}")
 
     return compilable, run_result,run_time
   def run_test_positive(self, patch: RecoderPatchInfo) -> Tuple[bool,float]:

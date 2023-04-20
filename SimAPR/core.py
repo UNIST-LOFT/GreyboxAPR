@@ -10,6 +10,9 @@ from typing import List, Dict, Tuple, Set, Union
 import uuid
 import math
 
+import branch_coverage
+
+
 class Mode(Enum):
   guided = 1
   original = 2
@@ -628,6 +631,8 @@ class GlobalState:
     # Added in greybox-APR
     self.instrumenter_classpath=''
     self.branch_output=''
+    self.original_branch_cov:Dict[str,branch_coverage.BranchCoverage]=dict()  # [test, coverage]
+    self.patch_branch_covs:Dict[Tuple[str,str],branch_coverage.BranchCoverage]=dict()  # [(patch, test), coverage]
 
 def remove_file_or_pass(file:str):
   try:
@@ -636,7 +641,7 @@ def remove_file_or_pass(file:str):
   except:
     pass
 
-def append_java_cache_result(state:GlobalState,case:TbarCaseInfo,fail_result:bool,pass_result:bool,pass_all_fail:bool,compilable:bool,
+def append_java_cache_result(state:GlobalState,case:TbarCaseInfo,fail_result:Dict[str,bool],pass_result:bool,compilable:bool,
       fail_time:float, pass_time:float):
   """
     Append result to cache file, if not exist. Otherwise, do nothing.
@@ -653,7 +658,7 @@ def append_java_cache_result(state:GlobalState,case:TbarCaseInfo,fail_result:boo
     current=dict()
     current['basic']=fail_result
     current['plausible']=pass_result
-    current['pass_all_fail']=pass_all_fail
+    current['pass_all_fail']=False not in fail_result.values()
     current['compilable']=compilable
     current['fail_time']=fail_time
     current['pass_time']=pass_time
