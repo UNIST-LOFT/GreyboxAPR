@@ -29,6 +29,6 @@ def main(argv):
         exit(result2.returncode)
     print(f"Recoder finished bug {bugid} with return code {result.returncode}")
     exit(result.returncode)
-
+    
 if __name__ == "__main__":
     main(sys.argv)

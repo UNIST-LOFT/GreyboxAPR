@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import os
 from statistics import mean
+import subprocess
 import sys
 import json
 import getopt
@@ -13,13 +14,13 @@ from simapr_loop import TBarLoop, RecoderLoop, PraPRLoop
 
 def parse_args(argv: list) -> GlobalState:
   longopts = ["help", "outdir=", "workdir=", "timeout=", "time-limit=", "cycle-limit=",
-              "mode=", 'skip-valid', 'params=', 'tbar-mode', 'recoder-mode', "no-exp-alpha",
-              "no-pass-test", "use-full-validation",'seed=',
+              "mode=", 'skip-valid', 'params=', "no-exp-alpha",'tool-type=',
+              "no-pass-test", "use-full-validation",'seed=','--correct-patch',
               "use-pattern", "use-simulation-mode=",
               'seapr-mode=','top-fl=','ignore-compile-error',
-              'finish-correct-patch','count-compile-fail','not-use-guide','not-use-epsilon',
+              'finish-correct-patch','not-count-compile-fail','not-use-guide','not-use-epsilon',
               'finish-top-method', 'prapr-mode','instr-cp=','branch-output=']
-  opts, args = getopt.getopt(argv[1:], "ho:w:t:m:c:T:E:", longopts)
+  opts, args = getopt.getopt(argv[1:], "ho:w:t:m:c:T:E:k:", longopts)
   state = GlobalState()
   state.original_args = argv
   state.args = args  # After --
@@ -70,26 +71,36 @@ def parse_args(argv: list) -> GlobalState:
     elif o in ['--use-full-validation']:
       state.use_partial_validation = False
     elif o in ['--params']:
-      parsed = a.split(";")
+      parsed = a.split(",")
       for param in parsed[0].split(","):
         key, value = param.split('=')
-        k = PT[key.strip()]
-        v = float(value.strip())
-        state.params[k] = v
-        if k in state.c_map:
-          state.c_map[k] = v
-      if len(parsed) > 1:
-        for param in parsed[1].split(","):
-          key, value = param.split('=')
-          k = PT[key.strip()]
-          v = float(value.strip())
-          state.params_decay[k] = v
-    elif o in ['--tbar-mode']:
-      state.tbar_mode = True
-    elif o in ['--recoder-mode']:
-      state.recoder_mode = True
-    elif o in ['--prapr-mode']:
-      state.prapr_mode=True
+        if key.upper()=='ALPHA_INCREASE':
+          PT.ALPHA_INCREASE=int(value)
+        elif key.upper()=='BETA_INCREASE':
+          PT.BETA_INCREASE=int(value)
+        elif key.upper()=='ALPHA_INIT':
+          PT.ALPHA_INIT=int(value)
+        elif key.upper()=='BETA_INIT':
+          PT.BETA_INIT=int(value)
+        elif key.upper()=='EPSILON_THRESHOLD':
+          PT.EPSILON_THRESHOLD=float(value)
+        elif key.upper()=='EPSILON_A':
+          PT.EPSILON_A=int(value)
+        elif key.upper()=='EPSILON_B':
+          PT.EPSILON_B=int(value)
+        elif key.upper()=='FL_WEIGHT':
+          PT.FL_WEIGHT=float(value)
+        else:
+          state.logger.warning(f'Invalid parameter: {key}, just ignore it!')
+    elif o in ['-k','--tool-type']:
+      if a.lower()=='template':
+        state.tool_type = ToolType.TEMPLATE
+      elif a.lower()=='learning':
+        state.tool_type = ToolType.LEARNING
+      elif a.lower()=='prapr':
+        state.tool_type = ToolType.PRAPR
+      else:
+        raise ValueError(f'Invalid tool type: {a}')
     elif o in ['--seed']:
       random.seed(int(a))
       np.random.seed(int(a))
@@ -107,7 +118,7 @@ def parse_args(argv: list) -> GlobalState:
         print('Can not use both --not-use-guide and --not-use-epsilon-search!',file=sys.stderr)
         exit(1)
       state.not_use_epsilon_search=True
-    elif o in ['--count-compile-fail']:
+    elif o in ['--not-count-compile-fail']:
       state.count_compile_fail = False
 
     elif o in ['--instr-cp']:
@@ -725,39 +736,38 @@ def copy_previous_results(state: GlobalState) -> None:
       prefix += 1
     shutil.copy(result_log, os.path.join(state.out_dir, f"bak{prefix}-simapr-search.log"))
     os.remove(result_log)
-  result_files = ["simapr-result.json", "simapr-result.csv", "critical-info.csv", "simapr-sim-data.json", "simapr-original-sim-data.json"]
-  for result_file in result_files:
-    if os.path.exists(os.path.join(state.out_dir, result_file)):
-      shutil.copy(os.path.join(state.out_dir, result_file), os.path.join(state.out_dir, f"bak{prefix}-{result_file}"))
-      os.remove(os.path.join(state.out_dir, result_file))
-  if os.path.exists(os.path.join(state.out_dir, "simapr-finished")):
-    os.remove(os.path.join(state.out_dir, "simapr-finished"))
-  if state.use_simulation_mode:
-    if os.path.exists(state.prev_data):
-      shutil.copy(state.prev_data, os.path.join(state.out_dir, "simapr-original-sim-data.json"))
+  
+  if os.path.exists(result_json):
+    while os.path.exists(os.path.join(state.out_dir, f"bak{prefix}-simapr-result.json")):
+      prefix += 1
+    shutil.copy(result_json, os.path.join(state.out_dir, f"bak{prefix}-simapr-result.json"))
+    os.remove(result_json)
+
+  if os.path.exists(os.path.join(state.out_dir, "simapr-finished.txt")):
+    os.remove(os.path.join(state.out_dir, "simapr-finished.txt"))
 
 def main(argv: list):
   sys.setrecursionlimit(2002) # Reset recursion limit, for preventing RecursionError
   state = parse_args(argv)
   copy_previous_results(state)
   state.logger = set_logger(state)
-  if state.tbar_mode:
+  if state.tool_type==ToolType.TEMPLATE:
     read_info_tbar(state)
     state.logger.info(f'Total methods: {state.total_methods}')
-    state.logger.info('TBar mode: Initialized!')
+    state.logger.info('Template mode: Initialized!')
     simapr = TBarLoop(state)
-  elif state.recoder_mode:
+  elif state.tool_type==ToolType.LEARNING:
     read_info_recoder(state)
-    state.logger.info('Recoder mode: Initialized!')
+    state.logger.info('Learning mode: Initialized!')
     simapr = RecoderLoop(state)
-  elif state.prapr_mode:
+  elif state.tool_type==ToolType.PRAPR:
     read_info_prapr(state)
     state.logger.info('PraPR mode: Initialized!')
     simapr = PraPRLoop(state)
   state.logger.info('SimAPR is started')
   try:
     simapr.run()
-    with open(os.path.join(state.out_dir, "simapr-finished"), "w") as f:
+    with open(os.path.join(state.out_dir, "simapr-finished.txt"), "w") as f:
       f.write(' '.join(state.original_args))
       f.write("\n")
       f.write(state.simapr_version + "\n")
@@ -765,17 +775,21 @@ def main(argv: list):
       f.write(f'Running time: {state.select_time+state.test_time}\n')
       f.write(f'Select time: {state.select_time}\n')
       f.write(f'Test time: {state.test_time}\n')
-  except:
-    state.logger.error('SimAPR is crashed!!!!!!!!!!!!!!!!')
-    state.logger.exception("Got exception in simapr.run()")
-    raise
+  except KeyboardInterrupt:
+    state.logger.warning('SimAPR is interrupted by user')
+  except Exception as e:
+    if 'process PID not found' in str(e):
+      state.logger.warning('SimAPR is interrupted by user')
+    else:
+      state.logger.error(f'SimAPR throws exception: {e}')
+      simapr.save_result()
+      raise e
   state.logger.info('SimAPR is finished')
   # state.select_time/=1000000
   state.logger.info(f'Running time: {state.select_time+state.test_time}')
   state.logger.info(f'Select time: {state.select_time}')
   state.logger.info(f'Test time: {state.test_time}')
   simapr.save_result()
-
 
 if __name__ == "__main__":
   main(sys.argv)

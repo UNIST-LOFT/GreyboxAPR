@@ -15,9 +15,9 @@ def run(project):
         new_cur_dir+=dir+'/'
 
     print(f"Run {project}-original")
-    result=subprocess.run(['python3',f'{new_cur_dir}/SimAPR/simapr.py','-o',f'result/{project}-orig','-m','tbar',
-                '--tbar-mode','-w',f'{new_cur_dir}/Fixminer/d4j/{project}','-t','180000','--use-simulation-mode',f'result/cache/{project}-cache.json',
-                '--instr-cp','../../../JPatchInst','--branch-output',f'result/branch/{project}',
+    result=subprocess.run(['python3',f'{new_cur_dir}/SimAPR/simapr.py','-o',f'result/{project}-orig','-m','orig',
+                '-k','template','-w',f'{new_cur_dir}/Fixminer/d4j/{project}','-t','180000','--use-simulation-mode',f'result/cache/{project}-cache.json',
+                '--instr-cp','../../../JPatchInst','--branch-output',f'result/branch/{project}','-T','18000',
                 '-T','18000', '--','python3',
                 f'{new_cur_dir}/SimAPR/script/d4j_run_test.py',f'{new_cur_dir}/Fixminer/buggy'])
     
@@ -30,8 +30,4 @@ if __name__ == '__main__':
         print('Usage: python3 search-fixminer-orig.py <project>')
         sys.exit(1)
     
-    if not os.path.exists('result/branch'):
-        os.mkdir('result/branch')
-    if not os.path.exists('result/cache'):
-        os.mkdir('result/cache')
     run(args[1])

@@ -40,18 +40,16 @@ def append_result(state: GlobalState, selected_patch: List[TbarPatchInfo], test_
   state.simapr_result.append(obj)
   state.used_patch.append(result)
 
-  if state.use_simulation_mode and not state.prapr_mode:
+  if state.use_simulation_mode and state.tool_type!=ToolType.PRAPR:
     # Cache test result if option used
     for patch in selected_patch:
       # For Java, case_info is tbar_case_info
-      if state.tbar_mode:
+      if state.tool_type==ToolType.TEMPLATE:
         case_info = patch.tbar_case_info
       else:
         case_info = patch.recoder_case_info
       append_java_cache_result(state,case_info,test_result,pass_test_result,compilable,fail_time,pass_time)
   
-  with open(os.path.join(state.out_dir, "simapr-result.csv"), 'a') as f:
-    f.write(json.dumps(obj) + "\n")
   if (tm - state.last_save_time) > save_interval:
     save_result(state)
 
