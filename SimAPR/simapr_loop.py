@@ -236,11 +236,14 @@ class RecoderLoop(TBarLoop):
 
     if run_greybox and compilable:
       try:
-        shutil.copyfile(new_env['GREYBOX_RESULT'],os.path.join(self.state.branch_output,f'{patch.line_info.line_id}-{patch.recoder_case_info.case_id}_{".".join(test.split("."))[-2],test.split(".")[-1]}.txt'))
+        shutil.copyfile(new_env['GREYBOX_RESULT'],os.path.join(self.state.branch_output,f'{patch.line_info.line_id}-{patch.recoder_case_info.case_id}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt'))
         os.remove(new_env['GREYBOX_RESULT'])
 
-        cur_cov=branch_coverage.parse_cov(os.path.join(self.state.branch_output,f'{patch.line_info.line_id}-{patch.recoder_case_info.case_id}_{test}.txt'))
-        self.state.patch_branch_covs[(f'{patch.line_info.line_id}-{patch.recoder_case_info.case_id}',test)]=cur_cov
+        cur_cov=branch_coverage.parse_cov(os.path.join(self.state.branch_output,f'{patch.line_info.line_id}-{patch.recoder_case_info.case_id}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt'))
+        if patch.recoder_case_info.location=='original':
+          self.state.original_branch_cov[test]=cur_cov
+        else:
+          self.state.patch_branch_covs[(f'{patch.line_info.line_id}-{patch.recoder_case_info.case_id}',test)]=cur_cov
       except OSError as e:
         self.state.logger.warning(f"Greybox result not found for {patch.line_info.line_id}-{patch.recoder_case_info.case_id} {test}")
 
@@ -295,6 +298,7 @@ class RecoderLoop(TBarLoop):
       pass_result = False
       is_compilable = True
       pass_time=0
+      each_result=dict()
       for neg in self.state.d4j_negative_test:
         compilable, run_result,fail_time = self.run_test(patch, neg,self.state.instrumenter_classpath!='')
         self.state.test_time+=fail_time
@@ -303,9 +307,13 @@ class RecoderLoop(TBarLoop):
         if run_result:
           pass_exists = True
         if not run_result:
+          each_result[neg]=False
           result = False
-          if self.state.use_partial_validation:
+          if self.state.use_partial_validation and self.state.instrumenter_classpath=='' and \
+              self.state.mode==Mode.seapr:
             break
+        else:
+          each_result[neg]=True
       if is_compilable or self.state.count_compile_fail:
         self.state.iteration += 1
       if is_compilable or self.state.ignore_compile_error:
@@ -314,7 +322,7 @@ class RecoderLoop(TBarLoop):
           pass_result,pass_time = self.run_test_positive(patch)
           self.state.test_time+=pass_time
           result_handler.update_positive_result_recoder(self.state, patch, pass_result)
-      result_handler.append_result(self.state, [patch], pass_exists, pass_result, result, is_compilable,fail_time,pass_time)
+      result_handler.append_result(self.state, [patch], each_result, pass_result, is_compilable,fail_time,pass_time)
       result_handler.remove_patch_recoder(self.state, patch)
   def run_sim(self) -> None:
     self.state.start_time = time.time()
@@ -334,6 +342,8 @@ class RecoderLoop(TBarLoop):
       if key not in self.state.simulation_data:
         if not self.is_initialized:
           self.initialize()
+        
+        each_result=dict()
         for neg in self.state.d4j_negative_test:
           compilable, run_result,fail_time = self.run_test(patch, neg,self.state.instrumenter_classpath!='')
           self.state.test_time+=fail_time
@@ -343,8 +353,12 @@ class RecoderLoop(TBarLoop):
             pass_exists = True
           if not run_result:
             result = False
-            if self.state.use_partial_validation:
+            each_result[neg]=False
+            if self.state.use_partial_validation and self.state.instrumenter_classpath!='' and \
+               self.state.mode==Mode.seapr:
               break
+          else:
+            each_result[neg]=True
         if is_compilable or self.state.ignore_compile_error:
           result_handler.update_result_recoder(self.state, patch, pass_exists)
           if result and self.state.use_pass_test:
@@ -361,13 +375,20 @@ class RecoderLoop(TBarLoop):
         self.state.test_time+=fail_time
         self.state.test_time+=pass_time
         is_compilable=simapr_result['compilable']
+
+        for test in each_result.keys():
+          cov_file=os.path.join(self.state.branch_output,f'{patch.line_info.line_id}-{patch.recoder_case_info.case_id}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt')
+          if os.path.exists(cov_file):
+            cur_cov=branch_coverage.parse_cov(cov_file)
+            self.state.patch_branch_covs[(f'{patch.line_info.line_id}-{patch.recoder_case_info.case_id}',test)]=cur_cov
+
         if is_compilable or self.state.ignore_compile_error:
           result_handler.update_result_recoder(self.state, patch, pass_exists)
           if run_result:
             result_handler.update_positive_result_recoder(self.state, patch, pass_result)
       if is_compilable or self.state.count_compile_fail:
         self.state.iteration += 1
-      result_handler.append_result(self.state, [patch], pass_exists, pass_result, result, is_compilable,fail_time,pass_time)
+      result_handler.append_result(self.state, [patch], each_result, pass_result, is_compilable,fail_time,pass_time)
       result_handler.remove_patch_recoder(self.state, patch)
 
 class PraPRLoop(TBarLoop):
