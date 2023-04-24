@@ -135,19 +135,14 @@ class PassFail:
     else:
       return max(np.log(a - x) / np.log(a), 0.)
 
-
-class FileInfo:
-  def __init__(self, file_name: str) -> None:
-    self.file_name = file_name
-    self.func_info_map: Dict[str, FuncInfo] = dict() # f"{func_name}:{func_line_begin}-{func_line_end}"
+class PatchTreeNode:
+  def __init__(self):
+    self.parent=None
     self.pf = PassFail()
     self.positive_pf = PassFail()
-    self.fl_score=-1
-    self.fl_score_list: List[float] = list()
     self.total_case_info: int = 0
     self.case_update_count: int = 0
-    self.score_list: List[float] = list()
-    self.class_name: str = ""
+    self.update_count: int = 0
     self.children_basic_patches:int=0
     self.children_plausible_patches:int=0
     self.consecutive_fail_count:int=0
@@ -158,113 +153,77 @@ class FileInfo:
 
     # greybox things
     self.coverage_info=PassFail()
+
+class LocationNode(PatchTreeNode):
+  def __init__(self):
+    super().__init__()
+    self.fl_score=-1
+    self.fl_score_list: List[float] = list()
+    self.score_list: List[float] = list()
+
+class FileInfo(LocationNode):
+  def __init__(self, file_name: str) -> None:
+    super().__init__()
+    self.file_name = file_name
+    self.func_info_map: Dict[str, FuncInfo] = dict() # f"{func_name}:{func_line_begin}-{func_line_end}"
+    self.class_name: str = ""
   def __hash__(self) -> int:
     return hash(self.file_name)
   def __eq__(self, other) -> bool:
     return self.file_name == other.file_name
 
-class FuncInfo:
+class FuncInfo(LocationNode):
   def __init__(self, parent: FileInfo, func_name: str, begin: int, end: int) -> None:
+    super().__init__()
     self.parent = parent
     self.func_name = func_name
     self.begin = begin
     self.end = end
     self.id = f"{self.func_name}:{self.begin}-{self.end}"
     self.line_info_map: Dict[uuid.UUID, LineInfo] = dict()
-    self.pf = PassFail()
-    self.positive_pf = PassFail()
-    self.fl_score: float = -1.0
-    self.fl_score_list: List[float] = list()
-    self.update_count: int = 0
-    self.total_case_info: int = 0
-    self.case_update_count: int = 0
-    self.score_list: List[float] = list()
     self.func_rank: int = -1
-    self.children_basic_patches:int=0
-    self.children_plausible_patches:int=0
-    self.consecutive_fail_count:int=0
-    self.consecutive_fail_plausible_count:int=0
-    self.patches_by_score:Dict[float,List[TbarCaseInfo]]=dict()
-    self.remain_patches_by_score:Dict[float,List[TbarCaseInfo]]=dict()
-    self.remain_lines_by_score:Dict[float,List[LineInfo]]=dict()
 
     self.total_patches_by_score:Dict[float,int]=dict() # Total patches grouped by score
     self.searched_patches_by_score:Dict[float,int]=dict() # Total searched patches grouped by score
     self.same_seapr_pf = PassFail(1, 1)
     self.diff_seapr_pf = PassFail(1, 1)
     self.case_rank_list: List[str] = list()
-
-    # greybox things
-    self.coverage_info=PassFail()
   def __hash__(self) -> int:
     return hash(self.id)
   def __eq__(self, other) -> bool:
     return self.id == other.id and self.parent.file_name == other.parent.file_name
 
-class LineInfo:
+class LineInfo(LocationNode):
   def __init__(self, parent: FuncInfo, line_number: int) -> None:
+    super().__init__()
     self.uuid = uuid.uuid4()
     self.line_number = line_number
     self.parent = parent
-    self.pf = PassFail()
-    self.positive_pf = PassFail()
-    self.fl_score=0.
-    self.update_count: int = 0
-    self.total_case_info: int = 0
-    self.case_update_count: int = 0
     self.tbar_type_info_map: Dict[str, TbarTypeInfo] = dict()
     self.line_id = -1
     self.recoder_case_info_map: Dict[int, RecoderCaseInfo] = dict()
-    self.score_list: List[float] = list()
-    self.children_basic_patches:int=0
-    self.children_plausible_patches:int=0
-    self.consecutive_fail_count:int=0
-    self.consecutive_fail_plausible_count:int=0
-    self.patches_by_score:Dict[float,List[TbarCaseInfo]]=dict()
-    self.remain_patches_by_score:Dict[float,List[TbarCaseInfo]]=dict()
-
-    # greybox things
-    self.coverage_info=PassFail()
   def __hash__(self) -> int:
     return hash(self.uuid)
   def __eq__(self, other) -> bool:
     return self.uuid == other.uuid
 
-class TbarTypeInfo:
+class TbarTypeInfo(PatchTreeNode):
   def __init__(self, parent: LineInfo, mutation: str) -> None:
+    super().__init__()
     self.parent = parent
     self.mutation = mutation
-    self.pf = PassFail()
-    self.positive_pf = PassFail()
-    self.update_count: int = 0
-    self.total_case_info: int = 0
-    self.case_update_count: int = 0
     self.tbar_case_info_map: Dict[str, TbarCaseInfo] = dict()
-    self.children_basic_patches:int=0
-    self.children_plausible_patches:int=0
-    self.consecutive_fail_count:int=0
-    self.consecutive_fail_plausible_count:int=0
-    self.patches_by_score:Dict[float,List[TbarCaseInfo]]=dict()
-    self.remain_patches_by_score:Dict[float,List[TbarCaseInfo]]=dict()
-
-    # greybox things
-    self.coverage_info=PassFail()
   def __hash__(self) -> int:
     return hash(self.mutation)
   def __eq__(self, other) -> bool:
     return self.mutation == other.mutation and self.parent==other.parent
 
-class TbarCaseInfo:
+class TbarCaseInfo(PatchTreeNode):
   def __init__(self, parent: TbarTypeInfo, location: str, start: int, end: int) -> None:
     self.parent = parent
     self.location = location
     self.start = start
     self.end = end
-    self.pf = PassFail()
-    self.positive_pf = PassFail()
-    self.update_count: int = 0
-    self.total_case_info: int = 0
-    self.case_update_count: int = 0
     self.same_seapr_pf = PassFail(1, 1)
     self.diff_seapr_pf = PassFail(1, 1)
     self.patch_rank: int = -1
@@ -273,16 +232,11 @@ class TbarCaseInfo:
   def __eq__(self, other) -> bool:
     return self.location == other.location
 
-class RecoderCaseInfo:
+class RecoderCaseInfo(PatchTreeNode):
   def __init__(self, parent: LineInfo, location: str, case_id: int) -> None:
     self.parent = parent
     self.location = location
     self.case_id = case_id
-    self.pf = PassFail()
-    self.positive_pf = PassFail()
-    self.update_count: int = 0
-    self.total_case_info: int = 0
-    self.case_update_count: int = 0
     self.prob: float = 0
     self.same_seapr_pf = PassFail(1, 1)
     self.diff_seapr_pf = PassFail(1, 1)

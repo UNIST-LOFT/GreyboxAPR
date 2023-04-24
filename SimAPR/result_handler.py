@@ -222,3 +222,24 @@ def update_positive_result_recoder(state: GlobalState, selected_patch: RecoderPa
 
 def remove_patch_recoder(state: GlobalState, selected_patch: RecoderPatchInfo) -> None:
   selected_patch.remove_patch(state)
+
+def update_result_branch_coverage_tbar(state: GlobalState, selected_patch:TbarPatchInfo, coverage_diff:Set[Tuple[int,int]]):
+  total_same=0
+  for cov in coverage_diff:
+    if cov in state.hq_patch_diff_coverage_set:
+      total_same+=1
+
+  selected_patch.file_info.coverage_info.update(True, total_same,0)
+  selected_patch.func_info.coverage_info.update(True, total_same,0)
+  selected_patch.line_info.coverage_info.update(True, total_same,0)
+  selected_patch.tbar_type_info.coverage_info.update(True, total_same,0)
+
+def update_result_branch_coverage_recoder(state: GlobalState, selected_patch:RecoderPatchInfo, coverage_diff:Set[Tuple[int,int]]):
+  total_same=0
+  for cov in coverage_diff:
+    if cov in state.hq_patch_diff_coverage_set:
+      total_same+=1
+
+  selected_patch.file_info.coverage_info.update(True, total_same,0)
+  selected_patch.func_info.coverage_info.update(True, total_same,0)
+  selected_patch.line_info.coverage_info.update(True, total_same,0)
