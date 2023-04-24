@@ -123,7 +123,7 @@ def epsilon_search(state:GlobalState):
       state.select_time+=time.time()-start_time
       return next_top_fl_patches[0]
 
-def epsilon_select(state:GlobalState,source=None):
+def epsilon_select(state:GlobalState,source:PatchTreeNode=None):
   """
     Do epsilon search if there's no basic patch.
     source: File/Function/Line/TbarType info, or None if file selection
@@ -239,12 +239,12 @@ def epsilon_select(state:GlobalState,source=None):
     else:
       raise ValueError(f'Parameter "source" should be FileInfo|FuncInfo|LineInfo|TbarTypeInfo|None, given: {type(source)}')
 
-def select_patch_guide_algorithm(state: GlobalState,elements:dict,parent=None):
+def select_patch_guide_algorithm(state: GlobalState,elements:dict,parent:PatchTreeNode=None):
   start_time=time.time()
 
   for element in elements:
     element_type=type(elements[element])
-  selected=[]
+  selected:List[PatchTreeNode]=[]
   p_p=[]
   p_b=[]
   if element_type==FileInfo:
@@ -260,7 +260,7 @@ def select_patch_guide_algorithm(state: GlobalState,elements:dict,parent=None):
     if total_plausible_patch>0:
       # Select with plausible patch
       for element_name in elements:
-        info = elements[element_name]
+        info:PatchTreeNode = elements[element_name]
         selected.append(info)
         state.logger.debug(f'Plausible: a: {info.positive_pf.pass_count}, b: {info.positive_pf.fail_count}')
         if info.children_plausible_patches>0:
@@ -295,7 +295,7 @@ def select_patch_guide_algorithm(state: GlobalState,elements:dict,parent=None):
       # Select with basic patch
       selected.clear()
       for element_name in elements:
-        info = elements[element_name]
+        info:PatchTreeNode = elements[element_name]
         selected.append(info)
         if info.children_basic_patches>0:
           p_b.append(info.positive_pf.select_value(PT.ALPHA_INIT,PT.BETA_INIT))
@@ -497,7 +497,7 @@ def select_patch_tbar_seapr(state: GlobalState) -> TbarPatchInfo:
     return case_info
 
   state.func_list.sort(key=lambda x: max(x.fl_score_list), reverse=True)
-  seapr_ranks=dict()
+  seapr_ranks:Dict[float,List[FuncInfo]]=dict()
   for func in state.func_list:
     if func.func_rank > 30:
       continue
