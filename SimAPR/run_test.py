@@ -69,7 +69,7 @@ def run_fail_test_d4j(state: GlobalState, new_env: Dict[str, str]) -> Tuple[bool
     state.logger.info(f"Result: FAIL - compilable - {failed_tests}")
     return True, False, is_timeout
   state.logger.info(f"Result: FAIL - not compilable")
-  state.logger.debug(f"STDERR: {error_str}")
+  # state.logger.debug(f"STDERR: {error_str}")
   return False, False, is_timeout
 
 def run_pass_test_d4j_exec(state: GlobalState, new_env: Dict[str, str], tests: List[str]) -> Tuple[bool, Set[str]]:
