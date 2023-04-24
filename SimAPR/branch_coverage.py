@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Set, Tuple
 
 
 class BranchCoverage:
@@ -11,17 +11,18 @@ class BranchCoverage:
         else:
             self.branch_coverage[line]=1
     
-    def diff(self,other:'BranchCoverage')->Dict[int,int]:
-        diff:Dict[int,int]=dict()
+    def diff(self,other:'BranchCoverage')->Set[Tuple[int,int]]:
+        diff:Set[Tuple[int,int]]=set()
         for line in self.branch_coverage:
             if line in other.branch_coverage:
-                diff[line]=self.branch_coverage[line]-other.branch_coverage[line]
+                if self.branch_coverage[line]!=other.branch_coverage[line]:
+                    diff.add((line,self.branch_coverage[line]-other.branch_coverage[line]))
             else:
-                diff[line]=self.branch_coverage[line]
+                diff.add((line,self.branch_coverage[line]))
         
         for line in other.branch_coverage:
             if line not in self.branch_coverage:
-                diff[line]=-other.branch_coverage[line]
+                diff.add((line,other.branch_coverage[line]))
         return diff
     
 def parse_cov(cov_file: str):
@@ -36,3 +37,9 @@ def parse_cov(cov_file: str):
             cov.increment(branch)
 
     return cov
+
+def is_good_patch(cov_patch_diff:Set[Tuple[int,int]],cov_orig_diff:Set[Tuple[int,int]])->bool:
+    for cov_element in cov_patch_diff:
+        if cov_element in cov_orig_diff:
+            return True
+    return False

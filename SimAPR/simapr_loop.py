@@ -37,12 +37,13 @@ class TBarLoop():
     return self.state.is_alive
   def save_result(self) -> None:
     result_handler.save_result(self.state)
-  def run_test(self, patch: TbarPatchInfo, test: str,run_greybox:bool=False) -> Tuple[bool, bool,float]:
+  def run_test(self, patch: TbarPatchInfo, test: str,run_greybox:bool=False) -> Tuple[bool, bool,float,branch_coverage.BranchCoverage]:
     new_env=EnvGenerator.get_new_env_tbar(self.state, patch, test,run_greybox)
     start_time=time.time()
     compilable, run_result, is_timeout = run_test.run_fail_test_d4j(self.state, new_env)
     run_time=time.time()-start_time
 
+    cur_cov=None
     if run_greybox and compilable:
       try:
         shutil.copyfile(new_env['GREYBOX_RESULT'],os.path.join(self.state.branch_output,f'{patch.tbar_case_info.location.replace("/","#")}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt'))
@@ -51,12 +52,10 @@ class TBarLoop():
         cur_cov=branch_coverage.parse_cov(os.path.join(self.state.branch_output,f'{patch.tbar_case_info.location.replace("/","#")}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt'))
         if patch.tbar_case_info.location=='original':
           self.state.original_branch_cov[test]=cur_cov
-        else:
-          self.state.patch_branch_covs[(f'{patch.tbar_case_info.location}',test)]=cur_cov
       except OSError as e:
         self.state.logger.warning(f"Greybox result not found for {patch.tbar_case_info.location} {test}")
         
-    return compilable, run_result, run_time
+    return compilable, run_result, run_time, cur_cov
   def run_test_positive(self, patch: TbarPatchInfo) -> Tuple[bool,float]:
     start_time=time.time()
     run_result = run_test.run_pass_test_d4j(self.state, EnvGenerator.get_new_env_tbar(self.state, patch, ""))
@@ -71,7 +70,7 @@ class TBarLoop():
       if neg in self.state.failed_positive_test:
         self.state.d4j_negative_test.remove(neg)
       else:
-        compilable, run_result,_ = self.run_test(op, neg,self.state.instrumenter_classpath!='')
+        compilable, run_result,_,_ = self.run_test(op, neg,self.state.instrumenter_classpath!='')
         if not compilable:
           self.state.logger.warning("Project is not compilable")
           self.state.is_alive = False
@@ -115,7 +114,7 @@ class TBarLoop():
       is_compilable = True
       pass_time=0
       for neg in self.state.d4j_negative_test:
-        compilable, run_result,fail_time = self.run_test(patch, neg,self.state.instrumenter_classpath!='')
+        compilable, run_result,fail_time,cur_cov = self.run_test(patch, neg,self.state.instrumenter_classpath!='')
         if not compilable:
           is_compilable = False
         if run_result:
@@ -128,6 +127,10 @@ class TBarLoop():
             break
         else:
           each_result[neg]=True
+          if neg in self.state.original_branch_cov:
+            cov_diff=cur_cov.diff(self.state.original_branch_cov[neg])
+            for cov in cov_diff:
+              self.state.hq_patch_diff_coverage_set.add(cov)
         self.state.test_time+=fail_time
       if is_compilable or self.state.ignore_compile_error:
         result_handler.update_result_tbar(self.state, patch, pass_exists)
@@ -162,7 +165,7 @@ class TBarLoop():
 
         each_result=dict()
         for neg in self.state.d4j_negative_test:
-          compilable, run_result,fail_time = self.run_test(patch, neg,self.state.instrumenter_classpath!='')
+          compilable, run_result,fail_time,cur_cov = self.run_test(patch, neg,self.state.instrumenter_classpath!='')
           self.state.test_time+=fail_time
           if not compilable:
             is_compilable = False
@@ -176,6 +179,10 @@ class TBarLoop():
               break
           else:
             each_result[neg]=True
+            if neg in self.state.original_branch_cov:
+              cov_diff=cur_cov.diff(self.state.original_branch_cov[neg])
+              for cov in cov_diff:
+                self.state.hq_patch_diff_coverage_set.add(cov)
         if is_compilable or self.state.ignore_compile_error:
           result_handler.update_result_tbar(self.state, patch, pass_exists)
           if result and self.state.use_pass_test:
@@ -201,7 +208,11 @@ class TBarLoop():
           cov_file=os.path.join(self.state.branch_output,f'{patch.tbar_case_info.location.replace("/","#")}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt')
           if os.path.exists(cov_file):
             cur_cov=branch_coverage.parse_cov(cov_file)
-            self.state.patch_branch_covs[(f'{patch.tbar_case_info.location}',test)]=cur_cov
+            if test in self.state.original_branch_cov:
+              if each_result[test]:  # if HQ patch
+                cov_diff=cur_cov.diff(self.state.original_branch_cov[test])
+                for cov in cov_diff:
+                  self.state.hq_patch_diff_coverage_set.add(cov)
 
         if is_compilable or self.state.ignore_compile_error:
           result_handler.update_result_tbar(self.state, patch, pass_exists)
@@ -228,12 +239,13 @@ class RecoderLoop(TBarLoop):
     elif self._is_method_over():
       self.state.is_alive=False
     return self.state.is_alive
-  def run_test(self, patch: RecoderPatchInfo, test: str,run_greybox:bool=False) -> Tuple[bool, bool, float]:
+  def run_test(self, patch: RecoderPatchInfo, test: str,run_greybox:bool=False) -> Tuple[bool, bool, float, branch_coverage.BranchCoverage]:
     new_env=EnvGenerator.get_new_env_recoder(self.state, patch, test,run_greybox)
     start_time=time.time()
     compilable, run_result, is_timeout = run_test.run_fail_test_d4j(self.state, new_env)
     run_time=time.time() - start_time
 
+    cur_cov=None
     if run_greybox and compilable:
       try:
         shutil.copyfile(new_env['GREYBOX_RESULT'],os.path.join(self.state.branch_output,f'{patch.line_info.line_id}-{patch.recoder_case_info.case_id}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt'))
@@ -242,12 +254,10 @@ class RecoderLoop(TBarLoop):
         cur_cov=branch_coverage.parse_cov(os.path.join(self.state.branch_output,f'{patch.line_info.line_id}-{patch.recoder_case_info.case_id}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt'))
         if patch.recoder_case_info.location=='original':
           self.state.original_branch_cov[test]=cur_cov
-        else:
-          self.state.patch_branch_covs[(f'{patch.line_info.line_id}-{patch.recoder_case_info.case_id}',test)]=cur_cov
       except OSError as e:
         self.state.logger.warning(f"Greybox result not found for {patch.line_info.line_id}-{patch.recoder_case_info.case_id} {test}")
 
-    return compilable, run_result,run_time
+    return compilable, run_result,run_time,cur_cov
   def run_test_positive(self, patch: RecoderPatchInfo) -> Tuple[bool,float]:
     start_time=time.time()
     run_result = run_test.run_pass_test_d4j(self.state, EnvGenerator.get_new_env_recoder(self.state, patch, ""))
@@ -259,7 +269,7 @@ class RecoderLoop(TBarLoop):
     original = self.state.patch_location_map["original"]
     op = RecoderPatchInfo(original)
     for neg in self.state.d4j_negative_test.copy():
-      compilable, run_result,_ = self.run_test(op, neg,self.state.instrumenter_classpath!='')
+      compilable, run_result,_,_ = self.run_test(op, neg,self.state.instrumenter_classpath!='')
       if not compilable:
         self.state.logger.warning("Project is not compilable")
         self.state.is_alive = False
@@ -300,7 +310,7 @@ class RecoderLoop(TBarLoop):
       pass_time=0
       each_result=dict()
       for neg in self.state.d4j_negative_test:
-        compilable, run_result,fail_time = self.run_test(patch, neg,self.state.instrumenter_classpath!='')
+        compilable, run_result,fail_time,cur_cov = self.run_test(patch, neg,self.state.instrumenter_classpath!='')
         self.state.test_time+=fail_time
         if not compilable:
           is_compilable = False
@@ -314,6 +324,10 @@ class RecoderLoop(TBarLoop):
             break
         else:
           each_result[neg]=True
+          if neg in self.state.original_branch_cov:
+            cov_diff=cur_cov.diff(self.state.original_branch_cov[neg])
+            for cov in cov_diff:
+              self.state.hq_patch_diff_coverage_set.add(cov)
       if is_compilable or self.state.count_compile_fail:
         self.state.iteration += 1
       if is_compilable or self.state.ignore_compile_error:
@@ -345,7 +359,7 @@ class RecoderLoop(TBarLoop):
         
         each_result=dict()
         for neg in self.state.d4j_negative_test:
-          compilable, run_result,fail_time = self.run_test(patch, neg,self.state.instrumenter_classpath!='')
+          compilable, run_result,fail_time,cur_cov = self.run_test(patch, neg,self.state.instrumenter_classpath!='')
           self.state.test_time+=fail_time
           if not compilable:
             is_compilable = False
@@ -359,6 +373,10 @@ class RecoderLoop(TBarLoop):
               break
           else:
             each_result[neg]=True
+            if neg in self.state.original_branch_cov:
+              cov_diff=cur_cov.diff(self.state.original_branch_cov[neg])
+              for cov in cov_diff:
+                self.state.hq_patch_diff_coverage_set.add(cov)
         if is_compilable or self.state.ignore_compile_error:
           result_handler.update_result_recoder(self.state, patch, pass_exists)
           if result and self.state.use_pass_test:
@@ -380,7 +398,11 @@ class RecoderLoop(TBarLoop):
           cov_file=os.path.join(self.state.branch_output,f'{patch.line_info.line_id}-{patch.recoder_case_info.case_id}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt')
           if os.path.exists(cov_file):
             cur_cov=branch_coverage.parse_cov(cov_file)
-            self.state.patch_branch_covs[(f'{patch.line_info.line_id}-{patch.recoder_case_info.case_id}',test)]=cur_cov
+            if test in self.state.original_branch_cov:
+              if each_result[test]:  # if HQ patch
+                cov_diff=cur_cov.diff(self.state.original_branch_cov[test])
+                for cov in cov_diff:
+                  self.state.hq_patch_diff_coverage_set.add(cov)
 
         if is_compilable or self.state.ignore_compile_error:
           result_handler.update_result_recoder(self.state, patch, pass_exists)

@@ -155,6 +155,9 @@ class FileInfo:
     self.patches_by_score:Dict[float,List[TbarCaseInfo]]=dict()
     self.remain_patches_by_score:Dict[float,List[TbarCaseInfo]]=dict()
     self.remain_lines_by_score:Dict[float,List[LineInfo]]=dict()
+
+    # greybox things
+    self.coverage_info=PassFail()
   def __hash__(self) -> int:
     return hash(self.file_name)
   def __eq__(self, other) -> bool:
@@ -190,6 +193,9 @@ class FuncInfo:
     self.same_seapr_pf = PassFail(1, 1)
     self.diff_seapr_pf = PassFail(1, 1)
     self.case_rank_list: List[str] = list()
+
+    # greybox things
+    self.coverage_info=PassFail()
   def __hash__(self) -> int:
     return hash(self.id)
   def __eq__(self, other) -> bool:
@@ -216,6 +222,9 @@ class LineInfo:
     self.consecutive_fail_plausible_count:int=0
     self.patches_by_score:Dict[float,List[TbarCaseInfo]]=dict()
     self.remain_patches_by_score:Dict[float,List[TbarCaseInfo]]=dict()
+
+    # greybox things
+    self.coverage_info=PassFail()
   def __hash__(self) -> int:
     return hash(self.uuid)
   def __eq__(self, other) -> bool:
@@ -237,6 +246,9 @@ class TbarTypeInfo:
     self.consecutive_fail_plausible_count:int=0
     self.patches_by_score:Dict[float,List[TbarCaseInfo]]=dict()
     self.remain_patches_by_score:Dict[float,List[TbarCaseInfo]]=dict()
+
+    # greybox things
+    self.coverage_info=PassFail()
   def __hash__(self) -> int:
     return hash(self.mutation)
   def __eq__(self, other) -> bool:
@@ -633,7 +645,7 @@ class GlobalState:
     self.instrumenter_classpath=''
     self.branch_output=''
     self.original_branch_cov:Dict[str,branch_coverage.BranchCoverage]=dict()  # [test, coverage]
-    self.patch_branch_covs:Dict[Tuple[str,str],branch_coverage.BranchCoverage]=dict()  # [(patch, test), coverage]
+    self.hq_patch_diff_coverage_set:Set[branch_coverage.BranchCoverage]=set()  # Every (cov_patch - cov_original) coverage of HQ patches
 
 def remove_file_or_pass(file:str):
   try:
