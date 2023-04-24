@@ -220,6 +220,7 @@ class TbarTypeInfo(PatchTreeNode):
 
 class TbarCaseInfo(PatchTreeNode):
   def __init__(self, parent: TbarTypeInfo, location: str, start: int, end: int) -> None:
+    super().__init__()
     self.parent = parent
     self.location = location
     self.start = start
@@ -234,6 +235,7 @@ class TbarCaseInfo(PatchTreeNode):
 
 class RecoderCaseInfo(PatchTreeNode):
   def __init__(self, parent: LineInfo, location: str, case_id: int) -> None:
+    super().__init__()
     self.parent = parent
     self.location = location
     self.case_id = case_id
