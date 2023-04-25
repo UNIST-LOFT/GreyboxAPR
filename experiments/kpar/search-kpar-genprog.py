@@ -17,6 +17,7 @@ def run(project,seed):
     print(f"Run {project}-genprog")
     result=subprocess.run(['python3',f'{new_cur_dir}/SimAPR/simapr.py','-o',f'result/{project}-genprog','-m','genprog','--seed',f'{seed}',
                 '-k','template','-w',f'{new_cur_dir}/kPar/d4j/{project}','-t','180000','--use-simulation-mode',f'result/cache/{project}-cache.json',
+                '--instr-cp','../../../JPatchInst','--branch-output',f'result/branch/{project}',
                 '-T','18000', '--','python3',
                 f'{new_cur_dir}/SimAPR/script/d4j_run_test.py',f'{new_cur_dir}/kPar/buggy'])
     
