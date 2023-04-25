@@ -20,7 +20,6 @@ def run(project,mode,seed):
         print(f"Run {project}-w/o-vertical")
         result=subprocess.run(['python3',f'{new_cur_dir}/SimAPR/simapr.py','-o',f'result/{project}-wo-vertical','-m','casino','--seed',f'{seed}',
                     '-k','learning','-w',f'{new_cur_dir}/AlphaRepair/d4j/{project}','-t','180000','--use-simulation-mode',f'result/cache/{project}-cache.json',
-                    '--instr-cp','../../../JPatchInst','--branch-output',f'result/branch/{project}',
                     '-T','18000','--not-use-guide', '--','python3',
                     f'{new_cur_dir}/SimAPR/script/d4j_run_test.py',f'{new_cur_dir}/AlphaRepair/buggy'],stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
     elif mode=='horizontal':
