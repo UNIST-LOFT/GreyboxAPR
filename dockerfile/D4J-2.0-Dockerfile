@@ -88,6 +88,25 @@ WORKDIR /root/SimAPR/experiments/tbar
 RUN mkdir result
 RUN mkdir result/cache
 
+WORKDIR /root/SimAPR/experiments-orig/alpharepair
+RUN mkdir result
+RUN mkdir result/cache
+WORKDIR /root/SimAPR/experiments-orig/avatar
+RUN mkdir result
+RUN mkdir result/cache
+WORKDIR /root/SimAPR/experiments-orig/fixminer
+RUN mkdir result
+RUN mkdir result/cache
+WORKDIR /root/SimAPR/experiments-orig/kpar
+RUN mkdir result
+RUN mkdir result/cache
+WORKDIR /root/SimAPR/experiments-orig/recoder
+RUN mkdir result
+RUN mkdir result/cache
+WORKDIR /root/SimAPR/experiments-orig/tbar
+RUN mkdir result
+RUN mkdir result/cache
+
 WORKDIR /root
 RUN update-alternatives --set java /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java
 

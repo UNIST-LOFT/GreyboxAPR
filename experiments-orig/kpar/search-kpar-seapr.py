@@ -5,8 +5,8 @@ import subprocess
 
 def run(project):
     cur_dir=os.getcwd()
-    if not cur_dir.endswith('experiments/kpar'):
-        print('Please run this script in experiments/kpar',file=sys.stderr)
+    if not cur_dir.endswith('experiments-orig/kpar'):
+        print('Please run this script in experiments-orig/kpar',file=sys.stderr)
         sys.exit(1)
 
     cur_dirs=cur_dir.split('/')

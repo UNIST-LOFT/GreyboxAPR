@@ -7,8 +7,8 @@ def run(project):
     if "_" in project:
         project = project.replace("_", "-")
     cur_dir=os.getcwd()
-    if not cur_dir.endswith('experiments/recoder'):
-        print('Please run this script in experiments/recoder',file=sys.stderr)
+    if not cur_dir.endswith('experiments-orig/recoder'):
+        print('Please run this script in experiments-orig/recoder',file=sys.stderr)
         sys.exit(1)
 
     cur_dirs=cur_dir.split('/')

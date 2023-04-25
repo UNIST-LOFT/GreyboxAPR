@@ -5,8 +5,8 @@ import subprocess
 
 def run(project,seed):
     cur_dir=os.getcwd()
-    if not cur_dir.endswith('experiments/fixminer'):
-        print('Please run this script in experiments/fixminer',file=sys.stderr)
+    if not cur_dir.endswith('experiments-orig/fixminer'):
+        print('Please run this script in experiments-orig/fixminer',file=sys.stderr)
         sys.exit(1)
 
     cur_dirs=cur_dir.split('/')

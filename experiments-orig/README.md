@@ -82,7 +82,7 @@ $ python3 search-avatar-casino.py Chart_4 12345678
 
 
 ### 50 Seeds we used
-We used 50 seeds in our experiments:
+We used 50 seeds in our experiments-orig:
 
 ```
 1812569871, 173066011, 3746108763, 3615336259, 2832411886,
