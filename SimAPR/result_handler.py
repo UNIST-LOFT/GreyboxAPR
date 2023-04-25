@@ -229,6 +229,7 @@ def update_result_branch_coverage_tbar(state: GlobalState, selected_patch:TbarPa
     if cov in state.hq_patch_diff_coverage_set:
       total_same+=1
 
+  # TODO: Do we need exp_alpha?
   selected_patch.file_info.coverage_info.update(True, total_same,0)
   selected_patch.func_info.coverage_info.update(True, total_same,0)
   selected_patch.line_info.coverage_info.update(True, total_same,0)

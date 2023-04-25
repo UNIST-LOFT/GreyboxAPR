@@ -263,8 +263,10 @@ def select_patch_guide_algorithm(state: GlobalState,elements:dict,parent:PatchTr
         info:PatchTreeNode = elements[element_name]
         selected.append(info)
         state.logger.debug(f'Plausible: a: {info.positive_pf.pass_count}, b: {info.positive_pf.fail_count}')
+        state.logger.debug(f'Branch Coverage: a: {info.coverage_info.pass_count}, b: {info.coverage_info.fail_count}')
         if info.children_plausible_patches>0:
-          p_p.append(info.positive_pf.select_value(PT.ALPHA_INIT,PT.BETA_INIT))
+          # TODO: Tune combining two value
+          p_p.append(weighted_mean(info.positive_pf.select_value(PT.ALPHA_INIT,PT.BETA_INIT),info.coverage_info.select_value(PT.ALPHA_INIT,PT.BETA_INIT)))
         else:
           p_p.append(0.)
 
@@ -298,10 +300,11 @@ def select_patch_guide_algorithm(state: GlobalState,elements:dict,parent:PatchTr
         info:PatchTreeNode = elements[element_name]
         selected.append(info)
         if info.children_basic_patches>0:
-          p_b.append(info.positive_pf.select_value(PT.ALPHA_INIT,PT.BETA_INIT))
+          p_b.append(weighted_mean(info.pf.select_value(PT.ALPHA_INIT,PT.BETA_INIT),info.coverage_info.select_value(PT.ALPHA_INIT,PT.BETA_INIT)))
         else:
           p_b.append(0.)
         state.logger.debug(f'Basic: a: {info.pf.pass_count}, b: {info.pf.fail_count}')
+        state.logger.debug(f'Branch Coverage: a: {info.coverage_info.pass_count}, b: {info.coverage_info.fail_count}')
 
       max_score=0.
       max_index=-1
