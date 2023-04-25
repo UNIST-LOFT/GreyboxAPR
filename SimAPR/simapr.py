@@ -102,7 +102,6 @@ def parse_args(argv: list) -> GlobalState:
       else:
         raise ValueError(f'Invalid tool type: {a}')
     elif o in ['--seed']:
-      random.seed(int(a))
       np.random.seed(int(a))
     elif o in ['--ignore-compile-error']:
       state.ignore_compile_error = False

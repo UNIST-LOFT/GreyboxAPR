@@ -3,7 +3,6 @@ import os
 import time
 from dataclasses import dataclass
 import logging
-import random
 import numpy as np
 from enum import Enum
 from typing import List, Dict, Tuple, Set, Union
@@ -107,7 +106,7 @@ class PassFail:
     for p in probability:
       if p > 0:
         total += p
-    rand = random.random() * total
+    rand=np.random.random()*total
     for i in range(len(probability)):
       if probability[i] < 0:
         continue

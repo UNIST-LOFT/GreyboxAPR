@@ -75,16 +75,17 @@ def epsilon_search(state:GlobalState):
     if is_epsilon_greedy:
       # Perform random search in epsilon probability
       state.logger.debug(f'Use epsilon greedy method, epsilon: {epsilon}')
-      lines = set()
+      lines = []
       for case_info in top_fl_patches:
-        if case_info.parent not in lines:
-          if state.tool_type==ToolType.LEARNING:
-            lines.add(case_info.parent)
-          else:
-            lines.add(case_info.parent.parent)
-      line_list = list(lines)
-      index = random.randint(0, len(line_list)-1)
-      line_info: LineInfo = line_list[index]
+        if state.tool_type==ToolType.LEARNING:
+          if case_info.parent not in lines:
+            lines.append(case_info.parent)
+        else:
+          if case_info.parent.parent not in lines:
+            lines.append(case_info.parent.parent)
+      # line_list = list(lines)
+      index = np.random.randint(0, len(lines))
+      line_info: LineInfo = lines[index]
       case_info_list=[]
       if state.tool_type==ToolType.LEARNING:
         case_info_list = list(line_info.recoder_case_info_map.values())
@@ -93,7 +94,7 @@ def epsilon_search(state:GlobalState):
           if case_info.parent.parent==line_info:
             case_info_list.append(case_info)
 
-      index = random.randint(0, len(case_info_list)-1)
+      index = np.random.randint(0, len(case_info_list))
       selected_case_info = case_info_list[index]
       state.select_time+=time.time()-start_time
       return selected_case_info
@@ -115,7 +116,7 @@ def epsilon_search(state:GlobalState):
     if is_epsilon_greedy:
       # Perform random search in epsilon probability
       state.logger.debug(f'Use epsilon greedy method, epsilon: {epsilon}')
-      index=random.randint(0,len(next_top_fl_patches)-1)
+      index=np.random.randint(0,len(next_top_fl_patches))
       state.select_time+=time.time()-start_time
       return next_top_fl_patches[index]
     else:
@@ -163,49 +164,49 @@ def epsilon_select(state:GlobalState,source:PatchTreeNode=None):
     # Perform random search in epsilon probability
     state.logger.debug(f'Use epsilon greedy method, epsilon: {epsilon}')
     # First, find all available candidates
-    result=set()
+    result=[]
     # Get all top scored data in source
     cur_fl_patches=top_fl_patches
     for case_info in cur_fl_patches:
       if state.tool_type in [ToolType.TEMPLATE,ToolType.PRAPR]:
         # For java
         if source is None:
-          if case_info.parent.parent.parent.parent in state.file_info_map.values():
-            result.add(case_info.parent.parent.parent.parent)
+          if case_info.parent.parent.parent.parent in state.file_info_map.values() and case_info.parent.parent.parent.parent not in result:
+            result.append(case_info.parent.parent.parent.parent)
         elif type(source) == FileInfo:
-          if case_info.parent.parent.parent in source.func_info_map.values():
-            result.add(case_info.parent.parent.parent)
+          if case_info.parent.parent.parent in source.func_info_map.values() and case_info.parent.parent.parent not in result:
+            result.append(case_info.parent.parent.parent)
         elif type(source) == FuncInfo:
-          if case_info.parent.parent in source.line_info_map.values():
-            result.add(case_info.parent.parent)
+          if case_info.parent.parent in source.line_info_map.values() and case_info.parent.parent not in result:
+            result.append(case_info.parent.parent)
         elif type(source) == LineInfo:
-          if case_info.parent in source.tbar_type_info_map.values():
-            result.add(case_info.parent)
+          if case_info.parent in source.tbar_type_info_map.values() and case_info.parent not in result:
+            result.append(case_info.parent)
         elif type(source) == TbarTypeInfo:
-          if case_info in source.tbar_case_info_map.values():
-            result.add(case_info)
+          if case_info in source.tbar_case_info_map.values() and case_info not in result:
+            result.append(case_info)
         else:
           raise ValueError(f'Parameter "source" should be FileInfo|FuncInfo|LineInfo|TbarTypeInfo|None, given: {type(source)}')
       elif state.tool_type==ToolType.LEARNING:
         if source is None:
-          if case_info.parent.parent.parent in state.file_info_map.values():
-            result.add(case_info.parent.parent.parent)
+          if case_info.parent.parent.parent in state.file_info_map.values() and case_info.parent.parent.parent not in result:
+            result.append(case_info.parent.parent.parent)
         elif type(source) == FileInfo:
-          if case_info.parent.parent in source.func_info_map.values():
-            result.add(case_info.parent.parent)
+          if case_info.parent.parent in source.func_info_map.values() and case_info.parent.parent not in result:
+            result.append(case_info.parent.parent)
         elif type(source) == FuncInfo:
-          if case_info.parent in source.line_info_map.values():
-            result.add(case_info.parent)
+          if case_info.parent in source.line_info_map.values() and case_info.parent not in result:
+            result.append(case_info.parent)
         elif type(source) == LineInfo:
-          if case_info in source.recoder_case_info_map.values():
-            result.add(case_info)
+          if case_info in source.recoder_case_info_map.values() and case_info not in result:
+            result.append(case_info)
         
       else:
         raise ValueError(f'Parameter "source" should be FileInfo|FuncInfo|LineInfo|TbarTypeInfo|None, given: {type(source)}')
 
     # Choose random element in candidates
-    result=list(result)
-    index=random.randint(0,len(result)-1)
+    # result=list(result)
+    index=np.random.randint(0,len(result))
     state.select_time+=time.time()-start_time
     return result[index]
   else:
@@ -287,7 +288,7 @@ def select_patch_guide_algorithm(state: GlobalState,elements:dict,parent:PatchTr
         cur_score=get_static_score(selected[max_index])
         prev_score=state.previous_score
         score_rate=min(cur_score/prev_score,1.) if prev_score!=0. else 0.
-        if random.random()< (weighted_mean(PassFail.concave_up(freq),PassFail.log_func(bp_freq))*(score_rate*PT.FL_WEIGHT if score_rate!=1.0 else 1.0)):
+        if np.random.random()< (weighted_mean(PassFail.concave_up(freq),PassFail.log_func(bp_freq))*(score_rate*PT.FL_WEIGHT if score_rate!=1.0 else 1.0)):
           state.logger.debug(f'Use guidance with plausible patch: {PassFail.concave_up(freq)}, {PassFail.log_func(bp_freq)}, {cur_score}/{prev_score}')
 
           state.select_time+=time.time()-start_time
@@ -323,7 +324,7 @@ def select_patch_guide_algorithm(state: GlobalState,elements:dict,parent:PatchTr
         cur_score=get_static_score(selected[max_index])
         prev_score=state.previous_score
         score_rate=min(cur_score/prev_score,1.) if prev_score!=0. else 0.
-        if random.random()< (weighted_mean(PassFail.concave_up(freq),PassFail.log_func(bp_freq))*(score_rate*PT.FL_WEIGHT if score_rate!=1.0 else 1.0)):
+        if np.random()< (weighted_mean(PassFail.concave_up(freq),PassFail.log_func(bp_freq))*(score_rate*PT.FL_WEIGHT if score_rate!=1.0 else 1.0)):
           state.logger.debug(f'Use guidance with basic patch: {PassFail.concave_up(freq)}, {PassFail.log_func(bp_freq)}, {cur_score}/{prev_score}')
 
           state.select_time+=time.time()-start_time
@@ -646,12 +647,12 @@ def select_patch_tbar_genprog(state: GlobalState) -> TbarPatchInfo:
 
   # Select template
   template_list=list(selected_line.tbar_type_info_map.values())
-  selected_template_index=random.randint(0,len(template_list)-1)
+  selected_template_index=np.random.randint(0,len(template_list))
   selected_template:TbarTypeInfo=template_list[selected_template_index]
 
   # Select patch
   patch_list=list(selected_template.tbar_case_info_map.values())
-  selected_patch_index=random.randint(0,len(patch_list)-1)
+  selected_patch_index=np.random.randint(0,len(patch_list))
   selected_patch=patch_list[selected_patch_index]
 
   state.select_time+=time.time()-start_time
@@ -884,7 +885,7 @@ def select_patch_recoder_genprog(state: GlobalState) -> TbarPatchInfo:
 
   # Select patch
   patch_list=list(selected_line.recoder_case_info_map.values())
-  selected_patch_index=random.randint(0,len(patch_list)-1)
+  selected_patch_index=np.random.randint(0,len(patch_list)-1)
   selected_patch=patch_list[selected_patch_index]
 
   state.select_time+=time.time()-start_time
