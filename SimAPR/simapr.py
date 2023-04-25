@@ -128,7 +128,7 @@ def parse_args(argv: list) -> GlobalState:
 
   if not os.path.exists(state.out_dir):
     os.makedirs(state.out_dir)
-  if not os.path.exists(os.path.join(state.out_dir,'branch')):
+  if state.use_simulation_mode and state.branch_output=='' and not os.path.exists(os.path.join(state.out_dir,'branch')):
     os.makedirs(os.path.join(state.out_dir,'branch'))
   state.tmp_dir = os.path.join(state.out_dir, 'tmp')
   if os.path.exists(state.tmp_dir):

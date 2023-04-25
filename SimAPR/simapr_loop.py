@@ -46,10 +46,11 @@ class TBarLoop():
     cur_cov=None
     if run_greybox and compilable:
       try:
-        shutil.copyfile(new_env['GREYBOX_RESULT'],os.path.join(self.state.branch_output,f'{patch.tbar_case_info.location.replace("/","#")}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt'))
+        cur_cov=branch_coverage.parse_cov(new_env['GREYBOX_RESULT'])
+        if self.state.use_simulation_mode:
+          shutil.copyfile(new_env['GREYBOX_RESULT'],os.path.join(self.state.branch_output,f'{patch.tbar_case_info.location.replace("/","#")}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt'))
         os.remove(new_env['GREYBOX_RESULT'])
-
-        cur_cov=branch_coverage.parse_cov(os.path.join(self.state.branch_output,f'{patch.tbar_case_info.location.replace("/","#")}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt'))
+        
         if patch.tbar_case_info.location=='original':
           self.state.original_branch_cov[test]=cur_cov
       except OSError as e:
@@ -251,10 +252,11 @@ class RecoderLoop(TBarLoop):
     cur_cov=None
     if run_greybox and compilable:
       try:
-        shutil.copyfile(new_env['GREYBOX_RESULT'],os.path.join(self.state.branch_output,f'{patch.line_info.line_id}-{patch.recoder_case_info.case_id}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt'))
+        cur_cov=branch_coverage.parse_cov(new_env['GREYBOX_RESULT'])
+        if self.state.use_simulation_mode:
+          shutil.copyfile(new_env['GREYBOX_RESULT'],os.path.join(self.state.branch_output,f'{patch.line_info.line_id}-{patch.recoder_case_info.case_id}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt'))
         os.remove(new_env['GREYBOX_RESULT'])
 
-        cur_cov=branch_coverage.parse_cov(os.path.join(self.state.branch_output,f'{patch.line_info.line_id}-{patch.recoder_case_info.case_id}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt'))
         if patch.recoder_case_info.location=='original':
           self.state.original_branch_cov[test]=cur_cov
       except OSError as e:
