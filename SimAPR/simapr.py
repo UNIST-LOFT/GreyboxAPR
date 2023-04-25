@@ -441,13 +441,7 @@ def read_info_tbar(state: GlobalState) -> None:
           tbar_type_info = line_info.tbar_type_info_map[mut]
           tbar_case_info = TbarCaseInfo(tbar_type_info, location, start, end)
           tbar_type_info.tbar_case_info_map[location] = tbar_case_info
-
           fl_score=tbar_case_info.parent.parent.fl_score
-          if fl_score not in state.java_patch_ranking:
-            state.java_patch_ranking[fl_score] = []
-            state.java_remain_patch_ranking[fl_score] = []
-          state.java_patch_ranking[fl_score].append(tbar_case_info)
-          state.java_remain_patch_ranking[fl_score].append(tbar_case_info)
           
           if fl_score not in tbar_case_info.parent.patches_by_score:
             tbar_case_info.parent.patches_by_score[fl_score] = []
@@ -524,6 +518,16 @@ def read_info_tbar(state: GlobalState) -> None:
     if func_info.func_rank == -1:
       func_info.func_rank = func_rank
       func_rank += 1
+
+  # Sort patches
+  for patch in state.patch_ranking:
+    tbar_case_info = state.switch_case_map[patch]
+    fl_score=tbar_case_info.parent.parent.fl_score
+    if fl_score not in state.java_patch_ranking:
+      state.java_patch_ranking[fl_score] = []
+      state.java_remain_patch_ranking[fl_score] = []
+    state.java_patch_ranking[fl_score].append(tbar_case_info)
+    state.java_remain_patch_ranking[fl_score].append(tbar_case_info)
 
   patch_ranking_list=[]
   for fl_score in state.java_patch_ranking:
