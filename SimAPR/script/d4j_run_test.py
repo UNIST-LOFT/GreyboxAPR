@@ -361,6 +361,8 @@ def main(argv: List[str]) -> None:
   if not os.path.exists(buggy_location): # when original
     os.system(f"rm -rf {buggy_dir}")
     os.makedirs(buggy_dir, exist_ok=True)
+    os.system(f"rm -rf {buggy_dir}b")
+    os.makedirs(f'{buggy_dir}b', exist_ok=True)
     if len(pid)>=4:
       pid=pid[:-3]
     subprocess.run(f"defects4j checkout -p {proj} -v {pid}b -w {buggy_dir}", stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
