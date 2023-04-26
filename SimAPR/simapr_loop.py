@@ -183,7 +183,7 @@ class TBarLoop():
               break
           else:
             each_result[neg]=True
-            if neg in self.state.original_branch_cov:
+            if neg in self.state.original_branch_cov and cur_cov is not None:
               cov_diff=cur_cov.diff(self.state.original_branch_cov[neg])
               for cov in cov_diff:
                 self.state.hq_patch_diff_coverage_set.add(cov)
@@ -212,7 +212,7 @@ class TBarLoop():
           cov_file=os.path.join(self.state.branch_output,f'{patch.tbar_case_info.location.replace("/","#")}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt')
           if os.path.exists(cov_file):
             cur_cov=branch_coverage.parse_cov(cov_file)
-            if test in self.state.original_branch_cov:
+            if test in self.state.original_branch_cov and cur_cov is not None:
               if each_result[test]:  # if HQ patch
                 cov_diff=cur_cov.diff(self.state.original_branch_cov[test])
                 for cov in cov_diff:
@@ -381,7 +381,7 @@ class RecoderLoop(TBarLoop):
               break
           else:
             each_result[neg]=True
-            if neg in self.state.original_branch_cov:
+            if neg in self.state.original_branch_cov and cur_cov is not None:
               cov_diff=cur_cov.diff(self.state.original_branch_cov[neg])
               for cov in cov_diff:
                 self.state.hq_patch_diff_coverage_set.add(cov)
@@ -407,7 +407,7 @@ class RecoderLoop(TBarLoop):
           cov_file=os.path.join(self.state.branch_output,f'{patch.line_info.line_id}-{patch.recoder_case_info.case_id}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt')
           if os.path.exists(cov_file):
             cur_cov=branch_coverage.parse_cov(cov_file)
-            if test in self.state.original_branch_cov:
+            if test in self.state.original_branch_cov and cur_cov is not None:
               if each_result[test]:  # if HQ patch
                 cov_diff=cur_cov.diff(self.state.original_branch_cov[test])
                 for cov in cov_diff:
