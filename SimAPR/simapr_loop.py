@@ -393,7 +393,8 @@ class RecoderLoop(TBarLoop):
             result_handler.update_positive_result_recoder(self.state, patch, pass_result)
       else:
         simapr_result = self.state.simulation_data[key]
-        pass_exists = simapr_result['basic']
+        each_result=simapr_result['basic']
+        pass_exists = True in each_result.values()
         run_result = simapr_result['pass_all_fail']
         pass_result = simapr_result['plausible']
         fail_time=simapr_result['fail_time']

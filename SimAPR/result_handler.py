@@ -20,7 +20,7 @@ def save_result(state: GlobalState) -> None:
       json.dump(state.simulation_data, f, indent=2)
 
 # Append result list, save result to file periodically
-def append_result(state: GlobalState, selected_patch: List[TbarPatchInfo], test_result: Dict[str,bool],pass_test_result:bool=False,compilable: bool = True,fail_time:float=0.0,pass_time:float=0.0) -> None:
+def append_result(state: GlobalState, selected_patch: List[Union[TbarPatchInfo,RecoderPatchInfo]], test_result: Dict[str,bool],pass_test_result:bool=False,compilable: bool = True,fail_time:float=0.0,pass_time:float=0.0) -> None:
   """
     fail_time: second
     pass_time: second

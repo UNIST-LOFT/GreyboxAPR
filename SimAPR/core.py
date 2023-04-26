@@ -609,7 +609,7 @@ def remove_file_or_pass(file:str):
   except:
     pass
 
-def append_java_cache_result(state:GlobalState,case:TbarCaseInfo,fail_result:Dict[str,bool],pass_result:bool,compilable:bool,
+def append_java_cache_result(state:GlobalState,case:Union[TbarCaseInfo,RecoderCaseInfo],fail_result:Dict[str,bool],pass_result:bool,compilable:bool,
       fail_time:float, pass_time:float):
   """
     Append result to cache file, if not exist. Otherwise, do nothing.

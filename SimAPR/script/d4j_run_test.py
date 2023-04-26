@@ -365,7 +365,7 @@ def main(argv: List[str]) -> None:
     os.makedirs(f'{buggy_dir}b', exist_ok=True)
     if len(pid)>=4:
       pid=pid[:-3]
-    subprocess.run(f"defects4j checkout -p {proj} -v {pid}b -w {buggy_dir}", stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    _temp=subprocess.run(f"defects4j checkout -p {proj} -v {pid}b -w {buggy_dir}", stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     subprocess.run(f"defects4j checkout -p {proj} -v {pid}b -w {buggy_dir}b", stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
   workdir = buggy_dir
   test = os.environ["SIMAPR_TEST"]
