@@ -258,7 +258,7 @@ def select_patch_guide_algorithm(state: GlobalState,elements:dict,parent:PatchTr
   if total_basic_patch>0:
     is_decided=False
     # Follow guided search if basic patch exist
-    if total_plausible_patch>0:
+    if total_plausible_patch>0 and False:
       # Select with plausible patch
       for element_name in elements:
         info:PatchTreeNode = elements[element_name]
@@ -267,7 +267,7 @@ def select_patch_guide_algorithm(state: GlobalState,elements:dict,parent:PatchTr
         state.logger.debug(f'Branch Coverage: a: {info.coverage_info.pass_count}, b: {info.coverage_info.fail_count}')
         if info.children_plausible_patches>0:
           # TODO: Tune combining two value
-          p_p.append(weighted_mean(info.positive_pf.select_value(PT.ALPHA_INIT,PT.BETA_INIT),info.coverage_info.select_value(PT.ALPHA_INIT,PT.BETA_INIT)))
+          p_p.append(info.coverage_info.select_value(PT.ALPHA_INIT,PT.BETA_INIT))
         else:
           p_p.append(0.)
 
@@ -301,10 +301,10 @@ def select_patch_guide_algorithm(state: GlobalState,elements:dict,parent:PatchTr
         info:PatchTreeNode = elements[element_name]
         selected.append(info)
         if info.children_basic_patches>0:
-          p_b.append(weighted_mean(info.pf.select_value(PT.ALPHA_INIT,PT.BETA_INIT),info.coverage_info.select_value(PT.ALPHA_INIT,PT.BETA_INIT)))
+          p_b.append(info.coverage_info.select_value(PT.ALPHA_INIT,PT.BETA_INIT))
         else:
           p_b.append(0.)
-        state.logger.debug(f'Basic: a: {info.pf.pass_count}, b: {info.pf.fail_count}')
+        # state.logger.debug(f'Basic: a: {info.pf.pass_count}, b: {info.pf.fail_count}')
         state.logger.debug(f'Branch Coverage: a: {info.coverage_info.pass_count}, b: {info.coverage_info.fail_count}')
 
       max_score=0.
@@ -318,7 +318,7 @@ def select_patch_guide_algorithm(state: GlobalState,elements:dict,parent:PatchTr
       scores.append(state.previous_score)
 
       if max_index>=0:
-        state.logger.debug(f'Try basic patch with a: {selected[max_index].pf.pass_count}, b: {selected[max_index].pf.fail_count}')
+        state.logger.debug(f'Try basic patch with a: {selected[max_index].coverage_info.pass_count}, b: {selected[max_index].coverage_info.fail_count}')
         freq=selected[max_index].children_basic_patches/state.total_basic_patch if state.total_basic_patch > 0 else 0.
         bp_freq=selected[max_index].consecutive_fail_count
         cur_score=get_static_score(selected[max_index])
