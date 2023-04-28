@@ -226,10 +226,9 @@ class TBarLoop():
                 cov_diff=cur_cov.diff(self.state.original_branch_cov[test])
                 for cov in cov_diff:
                   self.state.hq_patch_diff_coverage_set.add(cov)
-          if is_compilable or self.state.ignore_compile_error:
-            if test in self.state.original_branch_cov and cur_cov is not None:
-              cov_diff=cur_cov.diff(self.state.original_branch_cov[test])
-              result_handler.update_result_branch_coverage_tbar(self.state, patch, cov_diff)
+              if is_compilable or self.state.ignore_compile_error:
+                cov_diff=cur_cov.diff(self.state.original_branch_cov[test])
+                result_handler.update_result_branch_coverage_tbar(self.state, patch, cov_diff)
 
         if is_compilable or self.state.ignore_compile_error:
           result_handler.update_result_tbar(self.state, patch, pass_exists)
@@ -433,10 +432,9 @@ class RecoderLoop(TBarLoop):
                 cov_diff=cur_cov.diff(self.state.original_branch_cov[test])
                 for cov in cov_diff:
                   self.state.hq_patch_diff_coverage_set.add(cov)
-          if is_compilable or self.state.ignore_compile_error:
-            if test in self.state.original_branch_cov and cur_cov is not None:
-              cov_diff=cur_cov.diff(self.state.original_branch_cov[test])
-              result_handler.update_result_branch_coverage_recoder(self.state, patch, cov_diff)
+              if is_compilable or self.state.ignore_compile_error:
+                cov_diff=cur_cov.diff(self.state.original_branch_cov[test])
+                result_handler.update_result_branch_coverage_recoder(self.state, patch, cov_diff)
 
         if is_compilable or self.state.ignore_compile_error:
           result_handler.update_result_recoder(self.state, patch, pass_exists)
