@@ -17,7 +17,6 @@ def run(project):
     print(f"Run {project}-seapr")
     result=subprocess.run(['python3',f'{new_cur_dir}/SimAPR/simapr.py','-o',f'result/{project}-seapr','-m','seapr','--ignore-compile-error','--use-pattern',
                 '-k','template','-w',f'{new_cur_dir}/kPar/d4j/{project}','-t','180000','--use-simulation-mode',f'result/cache/{project}-cache.json','-T','18000',
-                '--instr-cp','../../../JPatchInst','--branch-output',f'result/branch/{project}',
                 '--','python3',
                 f'{new_cur_dir}/SimAPR/script/d4j_run_test.py',f'{new_cur_dir}/kPar/buggy'])
     
