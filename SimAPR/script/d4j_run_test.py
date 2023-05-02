@@ -321,11 +321,8 @@ def test_original_project(work_dir: str, test: Union[str, List[str]], buggy_proj
     
     if os.environ['GREYBOX_BRANCH']=='1':
       instr_result=instrument_patched_project(work_dir, buggy_project, None)
-      if not instr_result:
-        raise ValueError("Original is not instrumented")
-      
-      if not compile_project_updated(work_dir, buggy_project):
-        raise ValueError("Original is not compilable after instrumentation")
+      if instr_result:      
+        new_compile_result= compile_project_updated(work_dir, buggy_project)
 
     error_num, failed_test = run_single_test(work_dir, buggy_project, test)
     if error_num != 0:
