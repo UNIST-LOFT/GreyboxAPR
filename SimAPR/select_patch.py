@@ -258,7 +258,7 @@ def select_patch_guide_algorithm(state: GlobalState,elements:dict,parent:PatchTr
   if total_basic_patch>0:
     is_decided=False
     # Follow guided search if basic patch exist
-    if total_plausible_patch>0 and state.instrumenter_classpath=='':
+    if total_plausible_patch>0 and state.mode==Mode.casino:
       # Select with plausible patch
       for element_name in elements:
         info:PatchTreeNode = elements[element_name]
@@ -299,14 +299,14 @@ def select_patch_guide_algorithm(state: GlobalState,elements:dict,parent:PatchTr
         info:PatchTreeNode = elements[element_name]
         selected.append(info)
         if info.children_basic_patches>0:
-          if state.instrumenter_classpath!='':
+          if state.mode==Mode.greybox:
             p_b.append(info.coverage_info.select_value(PT.ALPHA_INIT,PT.BETA_INIT))
           else:
             p_b.append(info.pf.select_value(PT.ALPHA_INIT,PT.BETA_INIT))
         else:
           p_b.append(0.)
 
-        if state.instrumenter_classpath=='':
+        if state.mode==Mode.casino:
           state.logger.debug(f'Basic: a: {info.pf.pass_count}, b: {info.pf.fail_count}')
         else:
           state.logger.debug(f'Branch Coverage: a: {info.coverage_info.pass_count}, b: {info.coverage_info.fail_count}')
@@ -322,7 +322,7 @@ def select_patch_guide_algorithm(state: GlobalState,elements:dict,parent:PatchTr
       scores.append(state.previous_score)
 
       if max_index>=0:
-        if state.instrumenter_classpath!='':
+        if state.mode==Mode.greybox:
           state.logger.debug(f'Try coverage with a: {selected[max_index].coverage_info.pass_count}, b: {selected[max_index].coverage_info.fail_count}')
         else:
           state.logger.debug(f'Try basic patch with a: {selected[max_index].pf.pass_count}, b: {selected[max_index].pf.fail_count}')

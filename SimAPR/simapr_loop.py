@@ -37,14 +37,14 @@ class TBarLoop():
     return self.state.is_alive
   def save_result(self) -> None:
     result_handler.save_result(self.state)
-  def run_test(self, patch: TbarPatchInfo, test: str,run_greybox:bool=False) -> Tuple[bool, bool,float,branch_coverage.BranchCoverage]:
-    new_env=EnvGenerator.get_new_env_tbar(self.state, patch, test,run_greybox)
+  def run_test(self, patch: TbarPatchInfo, test: str) -> Tuple[bool, bool,float,branch_coverage.BranchCoverage]:
+    new_env=EnvGenerator.get_new_env_tbar(self.state, patch, test)
     start_time=time.time()
     compilable, run_result, is_timeout = run_test.run_fail_test_d4j(self.state, new_env)
     run_time=time.time()-start_time
 
     cur_cov=None
-    if run_greybox and compilable:
+    if self.state.instrumenter_classpath!='' and compilable:
       try:
         cur_cov=branch_coverage.parse_cov(new_env['GREYBOX_RESULT'])
         if self.state.use_simulation_mode:
@@ -71,7 +71,7 @@ class TBarLoop():
       if neg in self.state.failed_positive_test:
         self.state.d4j_negative_test.remove(neg)
       else:
-        compilable, run_result,_,_ = self.run_test(op, neg,self.state.instrumenter_classpath!='')
+        compilable, run_result,_,_ = self.run_test(op, neg)
         if not compilable:
           self.state.logger.warning("Project is not compilable")
           self.state.is_alive = False
@@ -115,7 +115,7 @@ class TBarLoop():
       is_compilable = True
       pass_time=0
       for neg in self.state.d4j_negative_test:
-        compilable, run_result,fail_time,cur_cov = self.run_test(patch, neg,self.state.instrumenter_classpath!='')
+        compilable, run_result,fail_time,cur_cov = self.run_test(patch, neg)
         if not compilable:
           is_compilable = False
         if run_result:
@@ -172,7 +172,7 @@ class TBarLoop():
 
         each_result=dict()
         for neg in self.state.d4j_negative_test:
-          compilable, run_result,fail_time,cur_cov = self.run_test(patch, neg,self.state.instrumenter_classpath!='')
+          compilable, run_result,fail_time,cur_cov = self.run_test(patch, neg)
           self.state.test_time+=fail_time
           if not compilable:
             is_compilable = False
@@ -255,14 +255,14 @@ class RecoderLoop(TBarLoop):
     elif self._is_method_over():
       self.state.is_alive=False
     return self.state.is_alive
-  def run_test(self, patch: RecoderPatchInfo, test: str,run_greybox:bool=False) -> Tuple[bool, bool, float, branch_coverage.BranchCoverage]:
-    new_env=EnvGenerator.get_new_env_recoder(self.state, patch, test,run_greybox)
+  def run_test(self, patch: RecoderPatchInfo, test: str) -> Tuple[bool, bool, float, branch_coverage.BranchCoverage]:
+    new_env=EnvGenerator.get_new_env_recoder(self.state, patch, test)
     start_time=time.time()
     compilable, run_result, is_timeout = run_test.run_fail_test_d4j(self.state, new_env)
     run_time=time.time() - start_time
 
     cur_cov=None
-    if run_greybox and compilable:
+    if self.state.instrumenter_classpath!='' and compilable:
       try:
         cur_cov=branch_coverage.parse_cov(new_env['GREYBOX_RESULT'])
         if self.state.use_simulation_mode:
@@ -286,7 +286,7 @@ class RecoderLoop(TBarLoop):
     original = self.state.patch_location_map["original"]
     op = RecoderPatchInfo(original)
     for neg in self.state.d4j_negative_test.copy():
-      compilable, run_result,_,_ = self.run_test(op, neg,self.state.instrumenter_classpath!='')
+      compilable, run_result,_,_ = self.run_test(op, neg)
       if not compilable:
         self.state.logger.warning("Project is not compilable")
         self.state.is_alive = False
@@ -327,7 +327,7 @@ class RecoderLoop(TBarLoop):
       pass_time=0
       each_result=dict()
       for neg in self.state.d4j_negative_test:
-        compilable, run_result,fail_time,cur_cov = self.run_test(patch, neg,self.state.instrumenter_classpath!='')
+        compilable, run_result,fail_time,cur_cov = self.run_test(patch, neg)
         self.state.test_time+=fail_time
         if not compilable:
           is_compilable = False
@@ -381,7 +381,7 @@ class RecoderLoop(TBarLoop):
         
         each_result=dict()
         for neg in self.state.d4j_negative_test:
-          compilable, run_result,fail_time,cur_cov = self.run_test(patch, neg,self.state.instrumenter_classpath!='')
+          compilable, run_result,fail_time,cur_cov = self.run_test(patch, neg)
           self.state.test_time+=fail_time
           if not compilable:
             is_compilable = False

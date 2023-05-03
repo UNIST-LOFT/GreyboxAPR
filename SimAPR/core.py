@@ -18,6 +18,8 @@ class Mode(Enum):
   orig = 3
   genprog = 4
 
+  greybox=5
+
 class ToolType(Enum):
   TEMPLATE=1
   LEARNING=2
@@ -271,7 +273,7 @@ class EnvGenerator:
   def __init__(self) -> None:
     pass
   @staticmethod
-  def get_new_env_tbar(state: 'GlobalState', patch: 'TbarPatchInfo', test: str,run_greybox:bool=False) -> Dict[str, str]:
+  def get_new_env_tbar(state: 'GlobalState', patch: 'TbarPatchInfo', test: str) -> Dict[str, str]:
     new_env = os.environ.copy()
     new_env["SIMAPR_UUID"] = str(state.uuid)
     new_env["SIMAPR_TEST"] = str(test)
@@ -284,7 +286,7 @@ class EnvGenerator:
     if patch.file_info.class_name != "":
       new_env["SIMAPR_CLASS_NAME"] = patch.file_info.class_name
 
-    if run_greybox and state.instrumenter_classpath!='':
+    if state.instrumenter_classpath!='':
       new_env['GREYBOX_BRANCH']='1'
       new_env['GREYBOX_RESULT']=f'/tmp/{state.d4j_buggy_project}-{test.replace("::","#")}.txt'
       new_env['GREYBOX_INSTR_ROOT']=state.instrumenter_classpath
@@ -294,7 +296,7 @@ class EnvGenerator:
       new_env['CLASSPATH']=state.instrumenter_classpath
     return new_env
   @staticmethod
-  def get_new_env_recoder(state: 'GlobalState', patch: 'RecoderPatchInfo', test: str,run_greybox:bool=False) -> Dict[str, str]:
+  def get_new_env_recoder(state: 'GlobalState', patch: 'RecoderPatchInfo', test: str) -> Dict[str, str]:
     new_env = os.environ.copy()
     new_env["SIMAPR_UUID"] = str(state.uuid)
     new_env["SIMAPR_TEST"] = str(test)
@@ -306,7 +308,7 @@ class EnvGenerator:
     new_env["SIMAPR_TIMEOUT"] = str(state.timeout)
     new_env["SIMAPR_RECODER"] = "-"
 
-    if run_greybox and state.instrumenter_classpath!='':
+    if state.instrumenter_classpath!='':
       new_env['GREYBOX_BRANCH']='1'
       new_env['GREYBOX_RESULT']=f'/tmp/{state.d4j_buggy_project}-{test.replace("::","#")}.txt'
       new_env['GREYBOX_INSTR_ROOT']=state.instrumenter_classpath
