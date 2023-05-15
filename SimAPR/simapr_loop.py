@@ -46,7 +46,7 @@ class TBarLoop():
     cur_cov=None
     if self.state.instrumenter_classpath!='' and compilable:
       try:
-        cur_cov=branch_coverage.parse_cov(self.state,new_env['GREYBOX_RESULT'])
+        cur_cov=branch_coverage.parse_cov(self.state.logger,new_env['GREYBOX_RESULT'])
         if self.state.use_simulation_mode:
           shutil.copyfile(new_env['GREYBOX_RESULT'],os.path.join(self.state.branch_output,f'{patch.tbar_case_info.location.replace("/","#")}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt'))
         os.remove(new_env['GREYBOX_RESULT'])
@@ -220,7 +220,7 @@ class TBarLoop():
         for test in each_result.keys():
           cov_file=os.path.join(self.state.branch_output,f'{patch.tbar_case_info.location.replace("/","#")}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt')
           if os.path.exists(cov_file):
-            cur_cov=branch_coverage.parse_cov(self.state,cov_file)
+            cur_cov=branch_coverage.parse_cov(self.state.logger,cov_file)
             if test in self.state.original_branch_cov and cur_cov is not None:
               if each_result[test]:  # if HQ patch
                 cov_diff=cur_cov.diff(self.state.original_branch_cov[test])
@@ -264,7 +264,7 @@ class RecoderLoop(TBarLoop):
     cur_cov=None
     if self.state.instrumenter_classpath!='' and compilable:
       try:
-        cur_cov=branch_coverage.parse_cov(self.state,new_env['GREYBOX_RESULT'])
+        cur_cov=branch_coverage.parse_cov(self.state.logger,new_env['GREYBOX_RESULT'])
         if self.state.use_simulation_mode:
           shutil.copyfile(new_env['GREYBOX_RESULT'],os.path.join(self.state.branch_output,f'{patch.line_info.line_id}-{patch.recoder_case_info.case_id}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt'))
         os.remove(new_env['GREYBOX_RESULT'])
@@ -426,7 +426,7 @@ class RecoderLoop(TBarLoop):
         for test in each_result.keys():
           cov_file=os.path.join(self.state.branch_output,f'{patch.line_info.line_id}-{patch.recoder_case_info.case_id}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt')
           if os.path.exists(cov_file):
-            cur_cov=branch_coverage.parse_cov(self.state,cov_file)
+            cur_cov=branch_coverage.parse_cov(self.state.logger,cov_file)
             if test in self.state.original_branch_cov and cur_cov is not None:
               if each_result[test]:  # if HQ patch
                 cov_diff=cur_cov.diff(self.state.original_branch_cov[test])
