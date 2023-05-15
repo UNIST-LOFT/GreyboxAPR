@@ -1,4 +1,8 @@
+import os
+import sys
 from typing import Dict, Set, Tuple
+
+from core import GlobalState
 
 
 class BranchCoverage:
@@ -25,7 +29,7 @@ class BranchCoverage:
                 diff.add((line,other.branch_coverage[line]))
         return diff
     
-def parse_cov(cov_file: str):
+def parse_cov(state:GlobalState, cov_file: str):
     """
     :param cov_file: branch coverage file
     :return: branch coverage vector
@@ -33,8 +37,11 @@ def parse_cov(cov_file: str):
     cov=BranchCoverage()
     with open(cov_file, 'r') as f:
         for line in f:
-            branch=int(line.strip())
-            cov.increment(branch)
+            try:
+                branch=int(line.strip())
+                cov.increment(branch)
+            except:
+                state.logger.warning(f"Error parsing branch ID: {line.strip()}")
 
     return cov
 
