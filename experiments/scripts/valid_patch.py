@@ -9,9 +9,9 @@ MAX_EXECUTION=10
 
 def get_result(output_file:str):
     try:
-        result_file=open(f'{output_file}/simapr-result.json','r')
+        result_file=open(output_file,'r')
     except:
-        print(f'Error: {output_file}/simapr-result.json does not exist')
+        print(f'Error: {output_file} does not exist')
         sys.exit(1)
         
     root=json.load(result_file)
