@@ -7,7 +7,7 @@ from benchmarks import *
 
 MAX_EXECUTION=10
 
-def get_result(output_file:str):
+def get_result_time(output_file:str):
     try:
         result_file=open(output_file,'r')
     except:
@@ -28,9 +28,9 @@ def get_result(output_file:str):
         loc=res['config'][0]['location']
 
         if is_hq:
-            hq_result.append((iteration,round(time/60)))
+            hq_result.append(round(time/60))
         if is_plausible:
-            valid_result.append((iteration,round(time/60)))
+            valid_result.append(round(time/60))
 
     return hq_result,valid_result
 
@@ -42,7 +42,7 @@ def valid_patch_each_project(result_dir:str,max_exp:int,use_casino:bool=True,use
             for i in range(max_exp):
                 result_path=f'{result_dir}/{project}-casino-{i}/simapr-result.json'
                 if os.path.exists(result_path):
-                    hq_result,valid_result=get_result(result_path)
+                    hq_result,valid_result=get_result_time(result_path)
                     
                     if project not in casino_result:
                         casino_result[project]=[]
@@ -54,7 +54,7 @@ def valid_patch_each_project(result_dir:str,max_exp:int,use_casino:bool=True,use
             for i in range(max_exp):
                 result_path=f'{result_dir}/{project}-greybox-{i}/simapr-result.json'
                 if os.path.exists(result_path):
-                    hq_result,valid_result=get_result(result_path)
+                    hq_result,valid_result=get_result_time(result_path)
                     
                     if project not in greybox_result:
                         greybox_result[project]=[]
@@ -65,7 +65,7 @@ def valid_patch_each_project(result_dir:str,max_exp:int,use_casino:bool=True,use
         for project in D4J_1_2_0_LIST:
             result_path=f'{result_dir}/{project}-orig/simapr-result.json'
             if os.path.exists(result_path):
-                hq_result,valid_result=get_result(result_path)
+                hq_result,valid_result=get_result_time(result_path)
                 
                 if project not in original_result:
                     original_result[project]=[]
@@ -76,7 +76,7 @@ def valid_patch_each_project(result_dir:str,max_exp:int,use_casino:bool=True,use
         for project in D4J_1_2_0_LIST:
             result_path=f'{result_dir}/{project}-seapr/simapr-result.json'
             if os.path.exists(result_path):
-                hq_result,valid_result=get_result(result_path)
+                hq_result,valid_result=get_result_time(result_path)
                 
                 if project not in seapr_result:
                     seapr_result[project]=[]
@@ -102,7 +102,7 @@ def valid_patch_combine(result_dir:str,max_exp:int,use_casino:bool=True,use_grey
             for i in range(max_exp):
                 result_path=f'{result_dir}/{project}-casino-{i}/simapr-result.json'
                 if os.path.exists(result_path):
-                    hq_result,valid_result=get_result(result_path)
+                    hq_result,valid_result=get_result_time(result_path)
                     
                     casino_result+=valid_result
 
@@ -112,7 +112,7 @@ def valid_patch_combine(result_dir:str,max_exp:int,use_casino:bool=True,use_grey
             for i in range(max_exp):
                 result_path=f'{result_dir}/{project}-greybox-{i}/simapr-result.json'
                 if os.path.exists(result_path):
-                    hq_result,valid_result=get_result(result_path)
+                    hq_result,valid_result=get_result_time(result_path)
                     
                     greybox_result+=valid_result
 
@@ -121,7 +121,7 @@ def valid_patch_combine(result_dir:str,max_exp:int,use_casino:bool=True,use_grey
         for project in D4J_1_2_0_LIST:
             result_path=f'{result_dir}/{project}-orig/simapr-result.json'
             if os.path.exists(result_path):
-                hq_result,valid_result=get_result(result_path)
+                hq_result,valid_result=get_result_time(result_path)
                 
                 original_result+=valid_result
 
@@ -130,7 +130,7 @@ def valid_patch_combine(result_dir:str,max_exp:int,use_casino:bool=True,use_grey
         for project in D4J_1_2_0_LIST:
             result_path=f'{result_dir}/{project}-seapr/simapr-result.json'
             if os.path.exists(result_path):
-                hq_result,valid_result=get_result(result_path)
+                hq_result,valid_result=get_result_time(result_path)
                 
                 seapr_result+=valid_result
 
