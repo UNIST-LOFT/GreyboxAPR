@@ -33,7 +33,7 @@ if __name__=='__main__':
         print(f'Algorithm: {algorithm}')
         current_result=sorted(result[algorithm])
 
-        y=[]
+        y=[0]
         for i in range(TIMEOUT):
             if i in current_result:
                 if algorithm in ('casino','greybox'):
@@ -43,7 +43,7 @@ if __name__=='__main__':
             else:
                 y.append(y[-1])
         
-        plt.plot(range(TIMEOUT),y,color=COLORS.pop(0),label=algorithm)
+        plt.plot(list(range(TIMEOUT+1)),y,color=COLORS.pop(0),label=algorithm)
     
     plt.legend()
     plt.xlabel('Time (min)')
