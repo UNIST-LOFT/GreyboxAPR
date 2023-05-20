@@ -26,9 +26,12 @@ def get_ranking_info_tbar(mode='tbar'):
             for i in range(1,len(cur_line)):
                 correct[cur_ver].append(cur_line[i].strip())
 
+    dl = mode in {'recoder', 'alpharepair'}
     # Casino
     for i in range(50):
         for result in d4j.D4J_1_2_LIST:
+            if dl:
+                result = result.replace('_', '-')
             try:
                 simapr_result=open(f'{mode}/result/{result}-casino-{i}/simapr-result.json','r')
             except:
@@ -42,6 +45,10 @@ def get_ranking_info_tbar(mode='tbar'):
                 time=res['time']
                 loc=res['config'][0]['location']
                 if is_plausible:
+                    if dl:
+                        id = res['config'][0]['id']
+                        case_id = res['config'][0]['case_id']
+                        loc = f'{id}-{case_id}'
                     cur_result[loc]=round(time/60)
 
             result_file=open(f'{mode}/result/{result}-casino-{i}/ods.csv','r')
@@ -64,6 +71,8 @@ def get_ranking_info_tbar(mode='tbar'):
     # GenProg
     for i in range(50):
         for result in d4j.D4J_1_2_LIST:
+            if dl:
+                result = result.replace('_', '-')
             try:
                 simapr_result=open(f'{mode}/result/{result}-genprog-{i}/simapr-result.json','r')
             except:
@@ -77,6 +86,10 @@ def get_ranking_info_tbar(mode='tbar'):
                 time=res['time']
                 loc=res['config'][0]['location']
                 if is_plausible:
+                    if dl:
+                        id = res['config'][0]['id']
+                        case_id = res['config'][0]['case_id']
+                        loc = f'{id}-{case_id}'
                     cur_result[loc]=round(time/60)
 
             result_file=open(f'{mode}/result/{result}-genprog-{i}/ods.csv','r')
@@ -98,6 +111,8 @@ def get_ranking_info_tbar(mode='tbar'):
 
     # SeAPR
     for result in d4j.D4J_1_2_LIST:
+        if dl:
+            result = result.replace('_', '-')
         try:
             simapr_result=open(f'{mode}/result/{result}-seapr/simapr-result.json','r')
         except:
@@ -111,6 +126,10 @@ def get_ranking_info_tbar(mode='tbar'):
             time=res['time']
             loc=res['config'][0]['location']
             if is_plausible:
+                if dl:
+                    id = res['config'][0]['id']
+                    case_id = res['config'][0]['case_id']
+                    loc = f'{id}-{case_id}'
                 cur_result[loc]=round(time/60)
 
         result_file=open(f'{mode}/result/{result}-seapr/ods.csv','r')
@@ -132,6 +151,8 @@ def get_ranking_info_tbar(mode='tbar'):
 
     # original
     for result in d4j.D4J_1_2_LIST:
+        if dl:
+            result = result.replace('_', '-')
         try:
             simapr_result=open(f'{mode}/result/{result}-orig/simapr-result.json','r')
         except:
@@ -145,6 +166,10 @@ def get_ranking_info_tbar(mode='tbar'):
             time=res['time']
             loc=res['config'][0]['location']
             if is_plausible:
+                if dl:
+                    id = res['config'][0]['id']
+                    case_id = res['config'][0]['case_id']
+                    loc = f'{id}-{case_id}'
                 cur_result[loc]=round(time/60)
 
         result_file=open(f'{mode}/result/{result}-orig/ods.csv','r')
@@ -168,6 +193,8 @@ get_ranking_info_tbar('tbar')
 get_ranking_info_tbar('avatar')
 get_ranking_info_tbar('kpar')
 get_ranking_info_tbar('fixminer')
+get_ranking_info_tbar('recoder')
+get_ranking_info_tbar('alpharepair')
 
 # Top-1
 plt.clf()
