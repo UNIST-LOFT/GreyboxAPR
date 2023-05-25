@@ -373,7 +373,8 @@ def select_patch_tbar_guided(state: GlobalState) -> TbarPatchInfo:
   p_bp_frequency=list() # frequency of basic patches from total searched patches in subtree
 
   # Select file
-  if state.total_basic_patch==0 or state.not_use_guided_search:
+  if (state.mode==Mode.casino and state.total_basic_patch==0) or \
+    (state.mode==Mode.greybox and state.diff_patch_num==0) or state.not_use_guided_search:
     # selected_switch_info=epsilon_search(state)
     selected_switch_info=epsilon_search(state)
     result = TbarPatchInfo(selected_switch_info)
