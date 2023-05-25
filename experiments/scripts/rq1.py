@@ -15,7 +15,7 @@ def plot_patches_ci_java(mode='tbar'):
     dl = mode in {'recoder', 'alpharepair'}
 
     # Casino
-    for i in range(50):
+    for i in range(10):
         casino_result.append([])
         for result in d4j.D4J_1_2_LIST:
             if dl:
@@ -41,14 +41,14 @@ def plot_patches_ci_java(mode='tbar'):
                 if time>3600:
                     break
 
-    # GenProg
-    for i in range(50):
-        genprog_result.append([])
+    # Greybox
+    for i in range(10):
+        casino_result.append([])
         for result in d4j.D4J_1_2_LIST:
             if dl:
                 result = result.replace('_', '-')
             try:
-                result_file=open(f'{mode}/result/{result}-genprog-{i}/simapr-result.json','r')
+                result_file=open(f'{mode}/result/{result}-casino-{i}/simapr-result.json','r')
             except:
                 continue
             root=json.load(result_file)
@@ -63,35 +63,63 @@ def plot_patches_ci_java(mode='tbar'):
                 loc=res['config'][0]['location']
 
                 if is_plausible:
-                    genprog_result[-1].append(round((time)/60))
+                    casino_result[-1].append(round((time)/60))
 
                 if time>3600:
                     break
 
-    # SeAPR
-    for result in d4j.D4J_1_2_LIST:
-        if dl:
-            result = result.replace('_', '-')
-        try:
-            result_file=open(f'{mode}/result/{result}-seapr/simapr-result.json','r')
-        except:
-            continue
-        root=json.load(result_file)
-        result_file.close()
 
-        prev_time=0.
-        for res in root:
-            is_hq=res['result']
-            is_plausible=res['pass_result']
-            iteration=res['iteration']
-            time=res['time']
-            loc=res['config'][0]['location']
+    # # GenProg
+    # for i in range(50):
+    #     genprog_result.append([])
+    #     for result in d4j.D4J_1_2_LIST:
+    #         if dl:
+    #             result = result.replace('_', '-')
+    #         try:
+    #             result_file=open(f'{mode}/result/{result}-genprog-{i}/simapr-result.json','r')
+    #         except:
+    #             continue
+    #         root=json.load(result_file)
+    #         result_file.close()
 
-            if is_plausible:
-                seapr_result.append(round((time)/60))
+    #         prev_time=0.
+    #         for res in root:
+    #             is_hq=res['result']
+    #             is_plausible=res['pass_result']
+    #             iteration=res['iteration']
+    #             time=res['time']
+    #             loc=res['config'][0]['location']
 
-            if time>3600:
-                break
+    #             if is_plausible:
+    #                 genprog_result[-1].append(round((time)/60))
+
+    #             if time>3600:
+    #                 break
+
+    # # SeAPR
+    # for result in d4j.D4J_1_2_LIST:
+    #     if dl:
+    #         result = result.replace('_', '-')
+    #     try:
+    #         result_file=open(f'{mode}/result/{result}-seapr/simapr-result.json','r')
+    #     except:
+    #         continue
+    #     root=json.load(result_file)
+    #     result_file.close()
+
+    #     prev_time=0.
+    #     for res in root:
+    #         is_hq=res['result']
+    #         is_plausible=res['pass_result']
+    #         iteration=res['iteration']
+    #         time=res['time']
+    #         loc=res['config'][0]['location']
+
+    #         if is_plausible:
+    #             seapr_result.append(round((time)/60))
+
+    #         if time>3600:
+    #             break
 
     # Original
     for result in d4j.D4J_1_2_LIST:
@@ -204,5 +232,5 @@ plot_patches_ci_java('tbar')
 plot_patches_ci_java('avatar')
 plot_patches_ci_java('kpar')
 plot_patches_ci_java('fixminer')
-plot_patches_ci_java('recoder')
-plot_patches_ci_java('alpharepair')
+# plot_patches_ci_java('recoder')
+# plot_patches_ci_java('alpharepair')
