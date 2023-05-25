@@ -8,16 +8,16 @@ import pandas as pd
 import d4j
 
 def plot_patches_ci_java(mode='tbar'):
-    orig_result:List[int]=[]
-    seapr_result:List[int]=[]
-    genprog_result:List[List[int]]=[]
-    casino_result:List[List[int]]=[]
-    greybox_result:List[List[int]]=[]
     dl = mode in {'recoder', 'alpharepair'}
 
     for result in d4j.D4J_1_2_LIST:
+        orig_result:List[int]=[]
+        seapr_result:List[int]=[]
+        genprog_result:List[List[int]]=[]
+        casino_result:List[List[int]]=[]
+        greybox_result:List[List[int]]=[]
+
         # Casino
-        print('Casino')
         for i in range(10):
             casino_result.append([])
             if dl:
@@ -48,7 +48,6 @@ def plot_patches_ci_java(mode='tbar'):
                 print(result)
 
         # Greybox
-        print('Greybox')
         for i in range(10):
             greybox_result.append([])
             if dl:
@@ -132,7 +131,6 @@ def plot_patches_ci_java(mode='tbar'):
         #             break
 
         # Original
-        print('Original')
         if dl:
             result = result.replace('_', '-')
         try:
