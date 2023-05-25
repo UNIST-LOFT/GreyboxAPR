@@ -16,6 +16,7 @@ def plot_patches_ci_java(mode='tbar'):
     dl = mode in {'recoder', 'alpharepair'}
 
     # Casino
+    print('Casino')
     for i in range(10):
         casino_result.append([])
         for result in d4j.D4J_1_2_LIST:
@@ -29,6 +30,7 @@ def plot_patches_ci_java(mode='tbar'):
             result_file.close()
 
             prev_time=0.
+            has_plau=False
             for res in root:
                 is_hq=res['result']
                 is_plausible=res['pass_result']
@@ -38,11 +40,15 @@ def plot_patches_ci_java(mode='tbar'):
 
                 if is_plausible:
                     casino_result[-1].append(round((time)/60))
+                    has_plau=True
 
                 # if time>3600:
                 #     break
+            if has_plau and i==0:
+                print(result)
 
     # Greybox
+    print('Greybox')
     for i in range(10):
         greybox_result.append([])
         for result in d4j.D4J_1_2_LIST:
@@ -56,6 +62,7 @@ def plot_patches_ci_java(mode='tbar'):
             result_file.close()
 
             prev_time=0.
+            has_plau=False
             for res in root:
                 is_hq=res['result']
                 is_plausible=res['pass_result']
@@ -65,9 +72,12 @@ def plot_patches_ci_java(mode='tbar'):
 
                 if is_plausible:
                     greybox_result[-1].append(round((time)/60))
+                    has_plau=True
 
                 # if time>3600:
                 #     break
+            if has_plau and i==0:
+                print(result)
 
 
     # # GenProg
@@ -123,6 +133,7 @@ def plot_patches_ci_java(mode='tbar'):
     #             break
 
     # Original
+    print('Original')
     for result in d4j.D4J_1_2_LIST:
         if dl:
             result = result.replace('_', '-')
@@ -134,6 +145,7 @@ def plot_patches_ci_java(mode='tbar'):
         result_file.close()
 
         prev_time=0.
+        has_plau=False
         for res in root:
             is_hq=res['result']
             is_plausible=res['pass_result']
@@ -143,9 +155,12 @@ def plot_patches_ci_java(mode='tbar'):
 
             if is_plausible:
                 orig_result.append(round((time)/60))
+                has_plau=True
 
             # if time>3600:
             #     break
+        if has_plau:
+            print(result)
 
     # Plausible patch plot
     plt.clf()
