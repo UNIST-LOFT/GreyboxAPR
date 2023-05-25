@@ -191,9 +191,9 @@ def plot_patches_ci_java(mode='tbar'):
             guided_list.append([0])
             for i in range(0,300):
                 if i in cur_result:
-                    guided_list[-1].append(guided_list[-1][-1]+cur_result.count(i)/10)
+                    guided_list[-1].append(10*(guided_list[-1][-1]+cur_result.count(i)/10))
                     guided_x.append(i)
-                    guided_y.append(guided_list[-1][-1]+cur_result.count(i)/10)
+                    guided_y.append(10*(guided_list[-1][-1]+cur_result.count(i)/10))
                 else:
                     guided_list[-1].append(guided_list[-1][-1])
                     guided_x.append(i)
@@ -214,9 +214,9 @@ def plot_patches_ci_java(mode='tbar'):
             guided_list.append([0])
             for i in range(0,300):
                 if i in cur_result:
-                    guided_list[-1].append(guided_list[-1][-1]+cur_result.count(i)/10)
+                    guided_list[-1].append(10*(guided_list[-1][-1]+cur_result.count(i)/10))
                     guided_x.append(i)
-                    guided_y.append(guided_list[-1][-1]+cur_result.count(i)/10)
+                    guided_y.append(10*(guided_list[-1][-1]+cur_result.count(i)/10))
                 else:
                     guided_list[-1].append(guided_list[-1][-1])
                     guided_x.append(i)
