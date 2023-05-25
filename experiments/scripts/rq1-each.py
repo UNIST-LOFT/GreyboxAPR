@@ -200,8 +200,19 @@ def plot_patches_ci_java(mode='tbar'):
                     guided_y.append(guided_list[-1][-1])
                 if i%60==0:
                     temp_[i//60].append(guided_list[-1][-1])
-        guided_df=pd.DataFrame({'Time':guided_x,'Number of valid patches':guided_y})
-        seaborn.lineplot(data=guided_df,x='Time',y='Number of valid patches',color='r',label='Casino')
+        # guided_df=pd.DataFrame({'Time':guided_x,'Number of valid patches':guided_y})
+        # seaborn.lineplot(data=guided_df,x='Time',y='Number of valid patches',color='r',label='Casino')
+
+        guided_y_temp=[]
+        guided_y=[0]
+        for i in range(10):
+            guided_y_temp+=casino_result[i]
+        for i in range(0,300):
+            if i in guided_y_temp:
+                guided_y.append(guided_y[-1]+guided_y_temp.count(i)/10)
+            else:
+                guided_y.append(guided_y[-1])
+        plt.plot(list(range(0,301)),guided_y,'r',label='Casino')
         for i in range(5):
             print(f'{i*60}: {np.std(temp_[i])}')
 
@@ -221,8 +232,20 @@ def plot_patches_ci_java(mode='tbar'):
                     guided_list[-1].append(guided_list[-1][-1])
                     guided_x.append(i)
                     guided_y.append(guided_list[-1][-1])
-        guided_df=pd.DataFrame({'Time':guided_x,'Number of valid patches':guided_y})
-        seaborn.lineplot(data=guided_df,x='Time',y='Number of valid patches',color='g',label='Greybox')
+        # guided_df=pd.DataFrame({'Time':guided_x,'Number of valid patches':guided_y})
+        # seaborn.lineplot(data=guided_df,x='Time',y='Number of valid patches',color='g',label='Greybox')
+
+        guided_y_temp=[]
+        guided_y=[0]
+        for i in range(10):
+            guided_y_temp+=greybox_result[i]
+        for i in range(0,300):
+            if i in guided_y_temp:
+                guided_y.append(guided_y[-1]+guided_y_temp.count(i)/10)
+            else:
+                guided_y.append(guided_y[-1])
+
+        plt.plot(list(range(0,301)),guided_y,'r',label='Greybox')
 
         # # SeAPR
         # results=sorted(seapr_result)
