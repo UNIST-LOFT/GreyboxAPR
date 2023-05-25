@@ -39,8 +39,8 @@ def plot_patches_ci_java(mode='tbar'):
                 if is_plausible:
                     casino_result[-1].append(round((time)/60))
 
-                if time>3600:
-                    break
+                # if time>3600:
+                #     break
 
     # Greybox
     for i in range(10):
@@ -66,8 +66,8 @@ def plot_patches_ci_java(mode='tbar'):
                 if is_plausible:
                     greybox_result[-1].append(round((time)/60))
 
-                if time>3600:
-                    break
+                # if time>3600:
+                #     break
 
 
     # # GenProg
@@ -144,8 +144,8 @@ def plot_patches_ci_java(mode='tbar'):
             if is_plausible:
                 orig_result.append(round((time)/60))
 
-            if time>3600:
-                break
+            # if time>3600:
+            #     break
 
     # Plausible patch plot
     plt.clf()
