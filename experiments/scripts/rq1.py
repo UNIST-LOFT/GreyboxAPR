@@ -213,7 +213,7 @@ def plot_patches_ci_java(mode='tbar'):
         guided_y_temp+=casino_result[i]
     for i in range(0,300):
         if i in guided_y_temp:
-            guided_y.append(guided_y[-1]+guided_y_temp.count(i)/10)
+            guided_y.append((10*guided_y[-1]+guided_y_temp.count(i))/10)
         else:
             guided_y.append(guided_y[-1])
     plt.plot(list(range(0,301)),guided_y,'r',label='Casino')
@@ -246,7 +246,7 @@ def plot_patches_ci_java(mode='tbar'):
         guided_y_temp+=greybox_result[i]
     for i in range(0,300):
         if i in guided_y_temp:
-            guided_y.append(guided_y[-1]+guided_y_temp.count(i)/10)
+            guided_y.append((10*guided_y[-1]+guided_y_temp.count(i))/10)
         else:
             guided_y.append(guided_y[-1])
 
