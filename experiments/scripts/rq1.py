@@ -12,6 +12,7 @@ def plot_patches_ci_java(mode='tbar'):
     seapr_result:List[int]=[]
     genprog_result:List[List[int]]=[]
     casino_result:List[List[int]]=[]
+    greybox_result:List[List[int]]=[]
     dl = mode in {'recoder', 'alpharepair'}
 
     # Casino
@@ -43,7 +44,7 @@ def plot_patches_ci_java(mode='tbar'):
 
     # Greybox
     for i in range(10):
-        casino_result.append([])
+        greybox_result.append([])
         for result in d4j.D4J_1_2_LIST:
             if dl:
                 result = result.replace('_', '-')
@@ -63,7 +64,7 @@ def plot_patches_ci_java(mode='tbar'):
                 loc=res['config'][0]['location']
 
                 if is_plausible:
-                    casino_result[-1].append(round((time)/60))
+                    greybox_result[-1].append(round((time)/60))
 
                 if time>3600:
                     break
@@ -179,9 +180,9 @@ def plot_patches_ci_java(mode='tbar'):
         guided_list.append([0])
         for i in range(0,300):
             if i in cur_result:
-                guided_list[-1].append((50*guided_list[-1][-1]+cur_result.count(i))/50)
+                guided_list[-1].append((10*guided_list[-1][-1]+cur_result.count(i))/10)
                 guided_x.append(i)
-                guided_y.append((50*guided_list[-1][-1]+cur_result.count(i))/50)
+                guided_y.append((10*guided_list[-1][-1]+cur_result.count(i))/10)
             else:
                 guided_list[-1].append(guided_list[-1][-1])
                 guided_x.append(i)
@@ -198,13 +199,13 @@ def plot_patches_ci_java(mode='tbar'):
     guided_x=[]
     guided_y=[]
     for j in range(10):
-        cur_result=sorted(casino_result[j])
+        cur_result=sorted(greybox_result[j])
         guided_list.append([0])
         for i in range(0,300):
             if i in cur_result:
-                guided_list[-1].append((50*guided_list[-1][-1]+cur_result.count(i))/50)
+                guided_list[-1].append((10*guided_list[-1][-1]+cur_result.count(i))/10)
                 guided_x.append(i)
-                guided_y.append((50*guided_list[-1][-1]+cur_result.count(i))/50)
+                guided_y.append((10*guided_list[-1][-1]+cur_result.count(i))/10)
             else:
                 guided_list[-1].append(guided_list[-1][-1])
                 guided_x.append(i)
