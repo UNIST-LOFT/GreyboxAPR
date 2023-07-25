@@ -35,8 +35,8 @@ def parse_cov(logger:Logger, cov_file: str):
     with open(cov_file, 'r') as f:
         for line in f:
             try:
-                branch=int(line.strip())
-                cov.increment(branch)
+                branch_id,count=line.strip().split(":")
+                cov.branch_coverage[int(branch_id)]=int(count)
             except:
                 logger.warning(f"Error parsing branch ID: {line.strip()}")
 
