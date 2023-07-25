@@ -226,9 +226,15 @@ class TBarLoop():
                 cov_diff=cur_cov.diff(self.state.original_branch_cov[test])
                 for cov in cov_diff:
                   self.state.hq_patch_diff_coverage_set.add(cov)
+                #result_handler.update_result_branch_coverage_tbar(self.state, patch, cov_diff)
               if is_compilable or self.state.ignore_compile_error:
-                cov_diff=cur_cov.diff(self.state.original_branch_cov[test])
-                result_handler.update_result_branch_coverage_tbar(self.state, patch, cov_diff)
+                # if not each_result[test]: #if not HQ patch
+                  cov_diff=cur_cov.diff(self.state.original_branch_cov[test])
+                  # for cov in cov_diff:
+                  #   if cov in self.state.hq_patch_diff_coverage_set:
+                  #     self.state.logger.info(f"Removine!")
+                  #     self.state.hq_patch_diff_coverage_set.remove(cov)
+                  result_handler.update_result_branch_coverage_tbar(self.state, patch, cov_diff)
 
         if is_compilable or self.state.ignore_compile_error:
           result_handler.update_result_tbar(self.state, patch, pass_exists)

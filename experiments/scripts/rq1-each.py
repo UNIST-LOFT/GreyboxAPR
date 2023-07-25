@@ -53,7 +53,7 @@ def plot_patches_ci_java(mode='tbar'):
             if dl:
                 result = result.replace('_', '-')
             try:
-                result_file=open(f'{mode}/result/{result}-casino-{i}/simapr-result.json','r')
+                result_file=open(f'{mode}/result/{result}-greybox-{i}/simapr-result.json','r')
             except:
                 continue
             root=json.load(result_file)
@@ -245,7 +245,7 @@ def plot_patches_ci_java(mode='tbar'):
             else:
                 guided_y.append(guided_y[-1])
 
-        plt.plot(list(range(0,301)),guided_y,'r',label='Greybox')
+        plt.plot(list(range(0,301)),guided_y,'green',label='Greybox')
 
         # # SeAPR
         # results=sorted(seapr_result)
@@ -281,6 +281,7 @@ def plot_patches_ci_java(mode='tbar'):
         plt.xticks(fontsize=15)
         plt.yticks(fontsize=15)
         plt.savefig(f'{mode}/result/rq1-{result}.pdf',bbox_inches='tight')
+        print(f'{mode}/result/rq1-{result}.pdf')
 
 from sys import argv
 

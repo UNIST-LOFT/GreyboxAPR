@@ -232,10 +232,10 @@ def update_result_branch_coverage_tbar(state: GlobalState, selected_patch:TbarPa
   if total_same>0:
     state.diff_patch_num+=1
     # TODO: Do we need exp_alpha?
-    selected_patch.file_info.coverage_info.update(True, total_same,0)
-    selected_patch.func_info.coverage_info.update(True, total_same,0)
-    selected_patch.line_info.coverage_info.update(True, total_same,0)
-    selected_patch.tbar_type_info.coverage_info.update(True, total_same,0)
+    selected_patch.file_info.coverage_info.update(True, 1,0)
+    selected_patch.func_info.coverage_info.update(True, 1,0)
+    selected_patch.line_info.coverage_info.update(True, 1,0)
+    selected_patch.tbar_type_info.coverage_info.update(True, 1,0)
 
 def update_result_branch_coverage_recoder(state: GlobalState, selected_patch:RecoderPatchInfo, coverage_diff:Set[Tuple[int,int]]):
   total_same=0
