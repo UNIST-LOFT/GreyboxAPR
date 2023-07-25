@@ -52,33 +52,19 @@ if len(argv)!=2:
 pool=mp.Pool(int(argv[1]))
 
 
-pool.apply_async(run,(f'Chart_13',))
-pool.apply_async(run,(f'Closure_86',))
-pool.apply_async(run,(f'Closure_92',))
-pool.apply_async(run,(f'Closure_93',))
-pool.apply_async(run,(f'Math_18',))
-pool.apply_async(run,(f'Math_20',))
-pool.apply_async(run,(f'Math_23',))
-pool.apply_async(run,(f'Math_24',))
-pool.apply_async(run,(f'Math_28',))
-pool.apply_async(run,(f'Math_30',))
-pool.apply_async(run,(f'Math_32',))
-pool.apply_async(run,(f'Math_33',))
-pool.apply_async(run,(f'Math_34',))
-
-# for i in range(1,2):
-#    pool.apply_async(run,(f'Chart_{i}',))
-# for i in range(1,2):
-#    pool.apply_async(run,(f'Closure_{i}',))
-# for i in range(1,2):
-#    pool.apply_async(run,(f'Lang_{i}',))
-# for i in range(1,2):
-#    pool.apply_async(run,(f'Math_{i}',))
-# for i in range(1,2):
-#    if i in d4j_tbar.MOCKITO_SKIP: continue
-#    pool.apply_async(run,(f'Mockito_{i}',))
-# for i in range(1,2):
-#    pool.apply_async(run,(f'Time_{i}',))
+pool.apply_async(run,(f'Chart_3',))
+# pool.apply_async(run,(f'Closure_86',))
+# pool.apply_async(run,(f'Closure_92',))
+# pool.apply_async(run,(f'Closure_93',))
+# pool.apply_async(run,(f'Math_18',))
+# pool.apply_async(run,(f'Math_20',))
+# pool.apply_async(run,(f'Math_23',))
+# pool.apply_async(run,(f'Math_24',))
+# pool.apply_async(run,(f'Math_28',))
+# pool.apply_async(run,(f'Math_30',))
+# pool.apply_async(run,(f'Math_32',))
+# pool.apply_async(run,(f'Math_33',))
+# pool.apply_async(run,(f'Math_34',))
 
 # for i in range(1,d4j_tbar.CHART_SIZE+1):
 #    pool.apply_async(run,(f'Chart_{i}',))

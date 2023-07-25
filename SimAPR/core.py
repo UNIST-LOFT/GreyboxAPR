@@ -604,6 +604,9 @@ class GlobalState:
     self.diff_patch_num=0  # # of patches that has diff coverage with orig
     self.original_branch_cov:Dict[str,branch_coverage.BranchCoverage]=dict()  # [test, coverage]
     self.hq_patch_diff_coverage_set:Set[branch_coverage.BranchCoverage]=set()  # Every (cov_patch - cov_original) coverage of HQ patches
+    self.branchInfoPath=''
+    self.branchInfo:List[dict]=[]
+    self.have_branch_info=False
 
 def remove_file_or_pass(file:str):
   try:

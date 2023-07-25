@@ -221,20 +221,81 @@ class TBarLoop():
           cov_file=os.path.join(self.state.branch_output,f'{patch.tbar_case_info.location.replace("/","#")}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt')
           if os.path.exists(cov_file):
             cur_cov=branch_coverage.parse_cov(self.state.logger,cov_file)
+            if pass_result:
+              gt_path = "/root/project/SimAPR/experiments/tbar/result/A_CorrectBranches/" + self.state.d4j_buggy_project + ".txt"
+              # with open(gt_path, 'a') as file:
+              #   for item in cur_cov.branch_coverage:
+              #       file.write(str(item) + '\n')
+              #   file.write('\n')
+                
+            #initilize lists to increment alpha
+            fileList = []
+            methodList = []
+            lineList = []
             if test in self.state.original_branch_cov and cur_cov is not None:
               if each_result[test]:  # if HQ patch
+                #get cov_diff
                 cov_diff=cur_cov.diff(self.state.original_branch_cov[test])
+                
+                #extract interesting branches
+                interestingBranches = [item[0] for item in cov_diff]
+                
+                #get info of interesting branches
+                interestingBranchesInfo = [branch for branch in self.state.branchInfo if int(branch['id']) in interestingBranches]
+                
+                # just to check 
+                path = "/root/project/SimAPR/experiments/tbar/result/A_orgIBranches/" + self.state.d4j_buggy_project + ".txt"
+                filtered_path = "/root/project/SimAPR/experiments/tbar/result/A_filteredIBranches/" + self.state.d4j_buggy_project + ".txt"
+                # if len(interestingBranchesInfo) > 0:
+                #   with open(path, 'a') as file:
+                #     for item in interestingBranchesInfo:
+                #         file.write(str(item) + '\n')
+                #     file.write('\n')
+                
+                # list that stores the branches that exist in patchable files
+                filtered_branch_info = []
+                
+                # iterate through each interesting branches
+                for data_point in interestingBranchesInfo:
+                    file_name = ""
+                    if ("src/" + data_point['fileName']) in list(self.state.file_info_map.keys()): 
+                      file_name = "src/" + data_point['fileName']
+                    if ("source/" + data_point['fileName']) in list(self.state.file_info_map.keys()):
+                      file_name = "source/" + data_point['fileName']
+                    # if there is an interesting branch in one of the patchable files
+                    if file_name != "":
+                      filtered_branch_info.append({'id': data_point['id'], 'fileName': file_name, 'methodName': data_point["methodName"], 'lineRange': data_point["lineRange"]})
+                      # append the file to fileList
+                      fileList.append(self.state.file_info_map[file_name])
+                      start, end = map(int, data_point["lineRange"].split('-'))
+                      for key, funcInfo in self.state.file_info_map[file_name].func_info_map.items():
+                        if key == data_point["methodName"] + ":" + data_point['lineRange']:
+                          # append the method to the methodList
+                          methodList.append(self.state.file_info_map[file_name].func_info_map[key])
+                          # append the line to the lineList
+                          for key2, lineInfo in self.state.file_info_map[file_name].func_info_map[key].line_info_map.items():
+                            if start <= lineInfo.line_number <= end:
+                              lineList.append(self.state.file_info_map[file_name].func_info_map[key].line_info_map[key2])
+                              
+                        # append the "no_function_found" methods within the lineRange of interesting branches
+                        if key.startswith("no_function_found"):
+                          if start <= funcInfo.begin <= end:
+                            methodList.append(self.state.file_info_map[file_name].func_info_map[key])
+                            # append the line to the lineList
+                            for key3, lineInfo in self.state.file_info_map[file_name].func_info_map[key].line_info_map.items():
+                              if lineInfo.line_number == funcInfo.begin:
+                                lineList.append(self.state.file_info_map[file_name].func_info_map[key].line_info_map[key3])
+                # if len(filtered_branch_info) > 0:
+                #   with open(filtered_path, 'a') as file:
+                #     for item in filtered_branch_info:
+                #         file.write(item['id'] + '\n')
+                #     file.write('\n')
                 for cov in cov_diff:
                   self.state.hq_patch_diff_coverage_set.add(cov)
                 #result_handler.update_result_branch_coverage_tbar(self.state, patch, cov_diff)
               if is_compilable or self.state.ignore_compile_error:
-                # if not each_result[test]: #if not HQ patch
                   cov_diff=cur_cov.diff(self.state.original_branch_cov[test])
-                  # for cov in cov_diff:
-                  #   if cov in self.state.hq_patch_diff_coverage_set:
-                  #     self.state.logger.info(f"Removine!")
-                  #     self.state.hq_patch_diff_coverage_set.remove(cov)
-                  result_handler.update_result_branch_coverage_tbar(self.state, patch, cov_diff)
+                  result_handler.update_result_branch_coverage_tbar(self.state, patch, cov_diff, fileList, methodList, lineList)
 
         if is_compilable or self.state.ignore_compile_error:
           result_handler.update_result_tbar(self.state, patch, pass_exists)

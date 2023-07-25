@@ -17,15 +17,10 @@ def run(project,seed):
     print(f"Run {project}-greybox")
     result=subprocess.run(['python3',f'{new_cur_dir}/SimAPR/simapr.py','-o',f'result/{project}-greybox','-m','greybox','--seed',f'{seed}',
                 '-k','template','-w',f'{new_cur_dir}/TBar/d4j/{project}','-t','180000','--use-simulation-mode',f'result/cache/{project}-cache.json',
+                '--branchInfo', f'result/branchInfo/{project}/branchInfo.json',
                 '--instr-cp','../../../JPatchInst','--branch-output',f'result/branch/{project}',
                 '-T','18000', '--','python3',
                 f'{new_cur_dir}/SimAPR/script/d4j_run_test.py',f'{new_cur_dir}/TBar/buggy'])
-    
-    # result=subprocess.run(['python3',f'{new_cur_dir}/SimAPR/simapr.py','-o',f'result/{project}-greybox','-m','greybox','--seed',f'{seed}',
-    #         '-k','template','-w',f'{new_cur_dir}/TBar/d4j/{project}','-t','180000','--use-simulation-mode',f'result/cache/{project}-cache.json',
-    #         '--instr-cp','../../../JPatchInst','--branch-output',f'result/branch/{project}',
-    #         '-T','18000', '--','python3',
-    #         f'{new_cur_dir}/SimAPR/script/d4j_run_test.py',f'{new_cur_dir}/TBar/buggy'])
     
     print(f'{project} greybox finish with return code {result.returncode}')
     exit(result.returncode)

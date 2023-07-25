@@ -19,8 +19,8 @@ def parse_args(argv: list) -> GlobalState:
               "use-pattern", "use-simulation-mode=",
               'seapr-mode=','top-fl=','ignore-compile-error',
               'finish-correct-patch','not-count-compile-fail','not-use-guide','not-use-epsilon',
-              'finish-top-method', 'prapr-mode','instr-cp=','branch-output=']
-  opts, args = getopt.getopt(argv[1:], "ho:w:t:m:c:T:E:k:", longopts)
+              'finish-top-method', 'prapr-mode','instr-cp=','branch-output=','branchInfo=']
+  opts, args = getopt.getopt(argv[1:], "ho:w:t:m:c:T:E:k:b", longopts)
   state = GlobalState()
   state.original_args = argv
   state.args = args  # After --
@@ -30,6 +30,9 @@ def parse_args(argv: list) -> GlobalState:
       exit(1)
     elif o in ['-o', '--outdir']:
       state.out_dir = a
+    elif o in ['-b', '--branchInfo']: 
+      state.have_branch_info = True
+      state.branchInfoPath = a
     elif o in ['-t', '--timeout']:
       state.timeout = int(a)
     elif o in ['-w', '--workdir']:
@@ -545,12 +548,20 @@ def read_info_tbar(state: GlobalState) -> None:
   state.switch_case_map["original"] = temp_tbar_case
   state.patch_location_map["original"] = temp_tbar_case
   if state.use_simulation_mode:
+    state.logger.info(state.prev_data)
     if os.path.exists(state.prev_data):
       with open(state.prev_data, "r") as f:
         prev_info = json.load(f)
         for key in prev_info:
           data=prev_info[key]
           state.simulation_data[key] = data
+
+  if state.have_branch_info:
+    state.logger.info(state.branchInfoPath)
+    if os.path.exists(state.branchInfoPath):
+      with open(state.branchInfoPath, "r") as f:
+        branch_info = json.load(f)
+        state.branchInfo = branch_info
 
 def read_info_prapr(state: GlobalState) -> None:
   with open(os.path.join(state.work_dir, 'switch-info.json'), 'r') as f:

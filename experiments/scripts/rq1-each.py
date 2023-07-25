@@ -281,7 +281,6 @@ def plot_patches_ci_java(mode='tbar'):
         plt.xticks(fontsize=15)
         plt.yticks(fontsize=15)
         plt.savefig(f'{mode}/result/rq1-{result}.pdf',bbox_inches='tight')
-        print(f'{mode}/result/rq1-{result}.pdf')
 
 from sys import argv
 
