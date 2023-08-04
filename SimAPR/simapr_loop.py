@@ -4,6 +4,7 @@ import select_patch
 import result_handler as result_handler
 import run_test
 import shutil
+import json
 
 class TBarLoop():
   def __init__(self, state: GlobalState) -> None:
@@ -47,8 +48,9 @@ class TBarLoop():
     if self.state.instrumenter_classpath!='' and compilable:
       try:
         cur_cov=branch_coverage.parse_cov(self.state.logger,new_env['GREYBOX_RESULT'])
-        if self.state.use_simulation_mode:
-          shutil.copyfile(new_env['GREYBOX_RESULT'],os.path.join(self.state.branch_output,f'{patch.tbar_case_info.location.replace("/","#")}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt'))
+        shutil.copyfile(new_env['GREYBOX_RESULT'],os.path.join(self.state.branch_output,f'{patch.tbar_case_info.location.replace("/","#")}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt'))
+        # if self.state.use_simulation_mode:
+        #   shutil.copyfile(new_env['GREYBOX_RESULT'],os.path.join(self.state.branch_output,f'{patch.tbar_case_info.location.replace("/","#")}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt'))
         os.remove(new_env['GREYBOX_RESULT'])
         
         if patch.tbar_case_info.location=='original':
@@ -136,7 +138,7 @@ class TBarLoop():
         if is_compilable or self.state.ignore_compile_error:
           if neg in self.state.original_branch_cov and cur_cov is not None:
             cov_diff=cur_cov.diff(self.state.original_branch_cov[neg])
-            result_handler.update_result_branch_coverage_tbar(self.state, patch, cov_diff)
+            #result_handler.update_result_branch_coverage_tbar(self.state, patch, cov_diff)
 
         self.state.test_time+=fail_time
       if is_compilable or self.state.ignore_compile_error:
@@ -154,6 +156,9 @@ class TBarLoop():
   def run_sim(self) -> None:
     self.state.start_time = time.time()
     self.state.cycle = 0
+    
+    #delete later
+    info = {}
     while(self.is_alive()):
       self.state.logger.info(f'[{self.state.cycle}]: executing')
       patch = select_patch.select_patch_tbar_mode(self.state)
@@ -194,7 +199,7 @@ class TBarLoop():
           if is_compilable or self.state.ignore_compile_error:
             if neg in self.state.original_branch_cov and cur_cov is not None:
               cov_diff=cur_cov.diff(self.state.original_branch_cov[neg])
-              result_handler.update_result_branch_coverage_tbar(self.state, patch, cov_diff)
+              #result_handler.update_result_branch_coverage_tbar(self.state, patch, cov_diff)
 
         if is_compilable or self.state.ignore_compile_error:
           result_handler.update_result_tbar(self.state, patch, pass_exists)
@@ -216,41 +221,80 @@ class TBarLoop():
         self.state.test_time+=pass_time
         pass_time=simapr_result['pass_time']
         is_compilable=simapr_result['compilable']
-
+        
+        count_no_pass=0 #counter for number of test passed
+        interesting=False
+        patch_ochiai=0            
+        ourData = {}
+        ochiaiDataPath = "/root/project/SimAPR/experiments/tbar/result/A_OchiaiData/" + self.state.d4j_buggy_project + ".json"
+        if os.path.exists(ochiaiDataPath):
+          with open(ochiaiDataPath, "r") as json_file:
+            ourData = json.load(json_file)
         for test in each_result.keys():
           cov_file=os.path.join(self.state.branch_output,f'{patch.tbar_case_info.location.replace("/","#")}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt')
           if os.path.exists(cov_file):
             cur_cov=branch_coverage.parse_cov(self.state.logger,cov_file)
+            
+            no_of_branch=0
+            for branchKey in cur_cov.branch_coverage.keys():
+              no_of_branch+=1
+              if str(branchKey) in ourData:
+                branchOchiai = ourData[str(branchKey)][0]
+                patch_ochiai += branchOchiai
+                # if branchOchiai > patch_ochiai:
+                #   patch_ochiai = branchOchiai
+            patch_ochiai = float(patch_ochiai)/float(no_of_branch)
+                
             if pass_result:
               gt_path = "/root/project/SimAPR/experiments/tbar/result/A_CorrectBranches/" + self.state.d4j_buggy_project + ".txt"
-              # with open(gt_path, 'a') as file:
-              #   for item in cur_cov.branch_coverage:
-              #       file.write(str(item) + '\n')
-              #   file.write('\n')
+              with open(gt_path, 'a') as file:
+                for item in cur_cov.branch_coverage:
+                    file.write(str(item) + '\n')
+                file.write('\n')
                 
             #initilize lists to increment alpha
             fileList = []
             methodList = []
             lineList = []
             if test in self.state.original_branch_cov and cur_cov is not None:
-              if each_result[test]:  # if HQ patch
-                #get cov_diff
-                cov_diff=cur_cov.diff(self.state.original_branch_cov[test])
+              #get cov_diff
+              cov_diff=cur_cov.diff(self.state.original_branch_cov[test])
+              
+              #extract interesting branches
+              interestingBranches = [item[0] for item in cov_diff]
+              
+              #extract branches that does not have any change
+              cur_cov_set = set(cur_cov.branch_coverage.keys())
+              unchangedBranches = cur_cov_set.difference(set(x[0] for x in cov_diff))
                 
-                #extract interesting branches
-                interestingBranches = [item[0] for item in cov_diff]
+              if each_result[test]:  # if HQ patch
+                interesting=True
+                count_no_pass+=1                
+                for branch in interestingBranches:
+                  if branch not in self.state.branch_map_ochiai:
+                    newBranch = BranchInfo(0,0,0,0)
+                    self.state.branch_map_ochiai[branch] = newBranch
+                  else: #branchInfo is already created
+                    self.state.branch_map_ochiai[branch].update_ci(self.state.branch_map_ochiai[branch].c_i+1)
+                    
+                for branch in unchangedBranches:
+                  if branch not in self.state.branch_map_ochiai:
+                    newBranch = BranchInfo(0,0,0,0)
+                    self.state.branch_map_ochiai[branch] = newBranch
+                  else: #branchInfo is already created
+                    self.state.branch_map_ochiai[branch].update_ni(self.state.branch_map_ochiai[branch].c_i+1)
                 
                 #get info of interesting branches
-                interestingBranchesInfo = [branch for branch in self.state.branchInfo if int(branch['id']) in interestingBranches]
+                interestingBranchesInfo = [branch for branch in self.state.branchInfoData if int(branch['id']) in interestingBranches]
                 
                 # just to check 
                 path = "/root/project/SimAPR/experiments/tbar/result/A_orgIBranches/" + self.state.d4j_buggy_project + ".txt"
                 filtered_path = "/root/project/SimAPR/experiments/tbar/result/A_filteredIBranches/" + self.state.d4j_buggy_project + ".txt"
-                # if len(interestingBranchesInfo) > 0:
-                #   with open(path, 'a') as file:
-                #     for item in interestingBranchesInfo:
-                #         file.write(str(item) + '\n')
-                #     file.write('\n')
+                if (len(interestingBranchesInfo) > 0) and not pass_result:
+                  with open(path, 'a') as file:
+                    for item in interestingBranchesInfo:
+                        file.write(str(item) + '\n')
+                    file.write('\n')
                 
                 # list that stores the branches that exist in patchable files
                 filtered_branch_info = []
@@ -269,7 +313,7 @@ class TBarLoop():
                       fileList.append(self.state.file_info_map[file_name])
                       start, end = map(int, data_point["lineRange"].split('-'))
                       for key, funcInfo in self.state.file_info_map[file_name].func_info_map.items():
-                        if key == data_point["methodName"] + ":" + data_point['lineRange']:
+                        if key.split(":")[0] == data_point["methodName"]:
                           # append the method to the methodList
                           methodList.append(self.state.file_info_map[file_name].func_info_map[key])
                           # append the line to the lineList
@@ -285,17 +329,37 @@ class TBarLoop():
                             for key3, lineInfo in self.state.file_info_map[file_name].func_info_map[key].line_info_map.items():
                               if lineInfo.line_number == funcInfo.begin:
                                 lineList.append(self.state.file_info_map[file_name].func_info_map[key].line_info_map[key3])
-                # if len(filtered_branch_info) > 0:
-                #   with open(filtered_path, 'a') as file:
-                #     for item in filtered_branch_info:
-                #         file.write(item['id'] + '\n')
-                #     file.write('\n')
+                if (len(filtered_branch_info) > 0) and not pass_result:
+                  with open(filtered_path, 'a') as file:
+                    for item in filtered_branch_info:
+                        file.write(item['id'] + '\n')
+                    file.write('\n')
                 for cov in cov_diff:
                   self.state.hq_patch_diff_coverage_set.add(cov)
                 #result_handler.update_result_branch_coverage_tbar(self.state, patch, cov_diff)
+              else: #neu kp la interesting patch
+                for branch in interestingBranches:
+                  if branch not in self.state.branch_map_ochiai:
+                    newBranch = BranchInfo(0,0,0,0)
+                    self.state.branch_map_ochiai[branch] = newBranch
+                  else: #branchInfo is already created
+                    self.state.branch_map_ochiai[branch].update_cu(self.state.branch_map_ochiai[branch].c_u+1)
+                    
+                for branch in unchangedBranches:
+                  if branch not in self.state.branch_map_ochiai:
+                    newBranch = BranchInfo(0,0,0,0)
+                    self.state.branch_map_ochiai[branch] = newBranch
+                  else: #branchInfo is already created
+                    self.state.branch_map_ochiai[branch].update_nu(self.state.branch_map_ochiai[branch].c_i+1)
+                    
+                    
               if is_compilable or self.state.ignore_compile_error:
                   cov_diff=cur_cov.diff(self.state.original_branch_cov[test])
                   result_handler.update_result_branch_coverage_tbar(self.state, patch, cov_diff, fileList, methodList, lineList)
+
+        #Over for loop
+        if(interesting or patch_ochiai != 0):
+          info[patch.tbar_case_info.location] = {'no_test_passed': count_no_pass, 'ochiai_score': patch_ochiai, 'correctPatch': pass_result, 'interesting': interesting}
 
         if is_compilable or self.state.ignore_compile_error:
           result_handler.update_result_tbar(self.state, patch, pass_exists)
@@ -305,6 +369,18 @@ class TBarLoop():
           self.state.iteration += 1
       result_handler.append_result(self.state, [patch], each_result, pass_result, is_compilable,fail_time,pass_time)
       result_handler.remove_patch_tbar(self.state, patch)
+      
+    oderered_info = dict(sorted(info.items(), key=lambda x: x[1]['ochiai_score'], reverse=True))
+    with open("/root/project/SimAPR/experiments/tbar/result/A_OchiaiData/" + self.state.d4j_buggy_project + "-Ochiai.json", "w") as json_file:
+        json.dump(oderered_info, json_file, indent=4)
+    self.state.logger.info(f'RUN SIM XONG ROIIII')
+    ochiaiData = {}
+    for branchID, branch in self.state.branch_map_ochiai.items():
+      if branch.ochiai != float('inf'):
+        ochiaiData[branchID] = [branch.ochiai, branch.c_i, branch.c_u, branch.n_i, branch.n_u]
+        ochiaiDataPath = "/root/project/SimAPR/experiments/tbar/result/A_OchiaiData/" + self.state.d4j_buggy_project + ".json"
+        with open(ochiaiDataPath, "w") as json_file:
+            json.dump(ochiaiData, json_file, indent=4)
 
 
 class RecoderLoop(TBarLoop):

@@ -269,6 +269,37 @@ class FileLine:
   def __eq__(self, other) -> bool:
     return self.file_info == other.file_info and self.line_info == other.line_info
 
+class BranchInfo:
+  def __init__(self, c_i: int, c_u: int, n_i: int, n_u:int) -> None:
+    self.c_i = c_i # the number of interesting paths that change the counts of the given critical branch
+    self.c_u = c_u # the number of uninteresting paths that change the counts of the given critical branch
+    self.n_i = n_i # the number of interesting paths that does not change the counts of the given critical branch
+    self.n_u = n_u # the number of uninteresting paths that does not change the counts of the given critical branch
+    self.ochiai = self.calculate_ochiai()    
+    
+  def calculate_ochiai(self):
+    denominator = math.sqrt((self.c_i + self.n_i ) * (self.c_i + self.c_u))
+    if denominator == 0:
+        return float('inf')  # Handle division by zero error
+    result = self.c_i / denominator
+    return result
+  
+  def update_ci(self, c_i: int):
+    self.c_i = c_i
+    self.ochiai = self.calculate_ochiai()    
+    
+  def update_cu(self, c_u: int):
+    self.c_u = c_u
+    self.ochiai = self.calculate_ochiai()   
+    
+  def update_ni(self, n_i: int):
+    self.n_i = n_i
+    self.ochiai = self.calculate_ochiai()   
+    
+  def update_nu(self, n_u: int):
+    self.n_u = n_u
+    self.ochiai = self.calculate_ochiai()   
+
 class EnvGenerator:
   def __init__(self) -> None:
     pass
@@ -604,9 +635,10 @@ class GlobalState:
     self.diff_patch_num=0  # # of patches that has diff coverage with orig
     self.original_branch_cov:Dict[str,branch_coverage.BranchCoverage]=dict()  # [test, coverage]
     self.hq_patch_diff_coverage_set:Set[branch_coverage.BranchCoverage]=set()  # Every (cov_patch - cov_original) coverage of HQ patches
-    self.branchInfoPath=''
-    self.branchInfo:List[dict]=[]
+    self.branchInfoDataPath=''
+    self.branchInfoData:List[dict]=[]
     self.have_branch_info=False
+    self.branch_map_ochiai:Dict[int, BranchInfo] = dict() #map each branch to list of (c_i,c_u,n_i,n_u,ochiai_score)
 
 def remove_file_or_pass(file:str):
   try:
