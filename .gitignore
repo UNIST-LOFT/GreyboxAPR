@@ -6,3 +6,7 @@
 **/out
 
 **/*.json
+!pyrightconfig.json
+**/*.txt
+**/*.pdf
+**/*.log

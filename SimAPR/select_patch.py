@@ -1,5 +1,6 @@
 from core import *
 import numpy as np
+import random
 
 def epsilon_greedy(total:int,x:int):
   """
@@ -240,6 +241,107 @@ def epsilon_select(state:GlobalState,source:PatchTreeNode=None):
     else:
       raise ValueError(f'Parameter "source" should be FileInfo|FuncInfo|LineInfo|TbarTypeInfo|None, given: {type(source)}')
 
+def ochiai_select(state:GlobalState,source:PatchTreeNode=None):
+  """
+    Do epsilon search if there's no basic patch.
+    source: File/Function/Line/TbarType info, or None if file selection
+  """
+  top_fl_patches:List[TbarCaseInfo]=[] # All 'not searched' top scored patches
+  top_all_patches=[] # All top scored patches, include searched or not searched
+  cur_score=-100.
+  start_time=time.time()
+  # Get all top fl patches
+  if source is None:
+    cur_list=state.java_patch_ranking
+    cur_remain_list=state.java_remain_patch_ranking
+    cur_remain_list_sorted=sorted(cur_remain_list.keys(),reverse=True)
+    for score in cur_remain_list_sorted:
+      if len(cur_remain_list[score])>0 and cur_score==-100.:
+        cur_score=score
+        top_fl_patches += cur_remain_list[score]
+        top_all_patches += cur_list[score]
+        break
+  else:
+    cur_remain_list_sorted=sorted(source.remain_patches_by_score.keys(),reverse=True)
+    for score in cur_remain_list_sorted:
+      if len(source.remain_patches_by_score[score])>0 and cur_score==-100.:
+        cur_score=score
+        top_fl_patches += source.remain_patches_by_score[score]
+        top_all_patches += source.patches_by_score[score]
+        break
+  
+  cur_fl_patches=top_fl_patches
+  selected_patch=None
+  highest_ochiai=-1.
+  for patch in cur_fl_patches:
+    if patch.location in state.patch_to_ochiai_map and state.patch_to_ochiai_map[patch.location] > highest_ochiai:
+      selected_patch = patch
+      highest_ochiai = state.patch_to_ochiai_map[patch.location]
+  if highest_ochiai != -1.:
+    if state.tool_type in [ToolType.TEMPLATE,ToolType.PRAPR]:
+      # For java
+      if source is None:
+        return selected_patch.parent.parent.parent.parent
+      elif type(source) == FileInfo:
+        return selected_patch.parent.parent.parent
+      elif type(source) == FuncInfo:
+        return selected_patch.parent.parent
+      elif type(source) == LineInfo:
+        return selected_patch.parent
+      elif type(source) == TbarTypeInfo:
+        return selected_patch
+      else:
+        raise ValueError(f'Parameter "source" should be FileInfo|FuncInfo|LineInfo|TbarTypeInfo|None, given: {type(source)}')
+  else:
+    return epsilon_select(state,source)
+  # elements = dict()
+  # if source is None:
+  #   elements = state.file_info_map
+  # elif type(source) == FileInfo:
+  #   elements = source.func_info_map
+  # elif type(source) == FuncInfo:
+  #   elements = source.line_info_map
+  # elif type(source) == LineInfo and state.tool_type in [ToolType.TEMPLATE,ToolType.PRAPR]:
+  #   elements = source.tbar_type_info_map
+  # elif type(source) == LineInfo and state.tool_type==ToolType.LEARNING:
+  #   elements = source.recoder_case_info_map
+  # elif type(source) == TbarTypeInfo:
+  #   elements = source.tbar_case_info_map
+  # else:
+  #   raise ValueError(f'Parameter "source" should be FileInfo|FuncInfo|LineInfo|TbarTypeInfo|None, given: {type(source)}')
+    
+  # state.logger.debug(f'Using ochiai for horizontal navigation with element type: {type(source)} ')
+  # p_b=[]
+  # selected:List[PatchTreeNode]=[]
+  # selected.clear()
+  # for element_name in elements:
+  #   info:PatchTreeNode = elements[element_name]
+  #   selected.append(info)
+  #   total=0.
+  #   for patch_name in info.patches_template_type:
+  #     ochiai_score = state.patch_to_ochiai_map[patch_name]
+  #     if ochiai_score != -1.0 and ochiai_score > total:
+  #       total = ochiai_score
+  #   p_b.append(float(total))
+    
+  # max_index = -1
+  # sum_prob = sum(p_b)
+  # if(sum_prob != 0):
+  #   # highest_float = max(p_b)
+  #   # indices_of_highest = [index for index, value in enumerate(p_b) if value == highest_float]
+  #   # if len(indices_of_highest) > 1:
+  #   #   max_index=random.choice(indices_of_highest)
+  #   # else:
+  #   #   max_index=indices_of_highest[0] 
+  #     probs = [score/sum_prob for score in p_b]
+  #     max_index = random.choices(range(len(p_b)), probs)[0]
+  
+  # state.logger.debug(f'Using ochiai for horizontal navigation with ochiai scores: {p_b} ')
+  # if max_index != -1:
+  #   return selected[max_index]
+  # else:
+  #   return random.choice(selected)
+
 def select_patch_guide_algorithm(state: GlobalState,elements:dict,parent:PatchTreeNode=None):
   start_time=time.time()
 
@@ -258,7 +360,8 @@ def select_patch_guide_algorithm(state: GlobalState,elements:dict,parent:PatchTr
   if total_basic_patch>0:
     is_decided=False
     # Follow guided search if basic patch exist
-    if total_plausible_patch>0 and state.mode==Mode.casino:
+    #if total_plausible_patch>0 and state.mode==Mode.casino:
+    if total_plausible_patch>0:
       # Select with plausible patch
       for element_name in elements:
         info:PatchTreeNode = elements[element_name]
@@ -294,15 +397,27 @@ def select_patch_guide_algorithm(state: GlobalState,elements:dict,parent:PatchTr
     
     if not is_decided:
       # Select with basic patch
+      # state.logger.debug(f'Bat dau 1 cai iteration chon {element_type} moi')
       selected.clear()
       for element_name in elements:
+        # state.logger.debug(f'No co nhung cai nay {element_name}')
         info:PatchTreeNode = elements[element_name]
         selected.append(info)
         if info.children_basic_patches>0:
-          if state.mode==Mode.greybox:
-            p_b.append(info.coverage_info.select_value(PT.ALPHA_INIT,PT.BETA_INIT))
-          else:
-            p_b.append(info.pf.select_value(PT.ALPHA_INIT,PT.BETA_INIT))
+          p_b.append(info.positive_pf.select_value(PT.ALPHA_INIT,PT.BETA_INIT))
+          # if state.mode==Mode.greybox:
+          #   if element_type == TbarTypeInfo:
+          #     p_b.append(info.coverage_info.select_value(PT.ALPHA_INIT,PT.BETA_INIT))
+          #   else:
+          #     total=0.
+          #     #valid_scores=0
+          #     for patch_name in info.patches_template_type:
+          #       ochiai_score = state.patch_to_ochiai_map[patch_name]
+          #       if ochiai_score != -1.0 and ochiai_score > total:
+          #         total = ochiai_score
+          #     p_b.append(float(total))
+          # else:
+          #   p_b.append(info.pf.select_value(PT.ALPHA_INIT,PT.BETA_INIT))
         else:
           p_b.append(0.)
 
@@ -320,7 +435,20 @@ def select_patch_guide_algorithm(state: GlobalState,elements:dict,parent:PatchTr
           max_score=p_b[i]
           max_index=i
       scores.append(state.previous_score)
-
+      
+      # state.logger.debug(f'Day la pb: {p_b}')
+      # sum_prob = sum(p_b)
+      # if(sum_prob != 0):
+        #probs = [score/sum_prob for score in p_b]
+        
+        #selected_index = random.choices(range(len(p_b)), probs)[0]
+        # highest_float = max(p_b)
+        # indices_of_highest = [index for index, value in enumerate(p_b) if value == highest_float]
+        # if len(indices_of_highest) > 1:
+        #   max_index=random.choice(indices_of_highest)
+        # else:
+        #   max_index=indices_of_highest[0]
+        
       if max_index>=0:
         if state.mode==Mode.greybox:
           state.logger.debug(f'Try coverage with a: {selected[max_index].coverage_info.pass_count}, b: {selected[max_index].coverage_info.fail_count}')
@@ -341,12 +469,14 @@ def select_patch_guide_algorithm(state: GlobalState,elements:dict,parent:PatchTr
         state.logger.debug(f'Do not use guide, use original order!')   
         state.select_time+=time.time()-start_time
         # return epsilon_select(state,parent),False
-        return epsilon_select(state,parent),False
+        # return epsilon_select(state,parent),False
+        return ochiai_select(state,parent),False
   else:
     # No guide in this layer, use top ranked patch
     state.logger.debug(f'No guided found in this layer, use original order!')
     # return epsilon_select(state,parent),False
-    return epsilon_select(state,parent),False
+    # return epsilon_select(state,parent),False
+    return ochiai_select(state,parent),False
 
 def select_patch_tbar_mode(state: GlobalState) -> TbarPatchInfo:
   if state.mode == Mode.orig:
@@ -373,9 +503,10 @@ def select_patch_tbar_guided(state: GlobalState) -> TbarPatchInfo:
   p_bp_frequency=list() # frequency of basic patches from total searched patches in subtree
 
   # Select file
+  # if (state.mode==Mode.casino and state.total_basic_patch==0) or \
+  #   (state.mode==Mode.greybox and state.diff_patch_num==0) or state.not_use_guided_search:
   if (state.mode==Mode.casino and state.total_basic_patch==0) or \
-    (state.mode==Mode.greybox and state.diff_patch_num==0) or state.not_use_guided_search:
-    # selected_switch_info=epsilon_search(state)
+    (state.mode==Mode.greybox and state.total_basic_patch==0) or state.not_use_guided_search:
     selected_switch_info=epsilon_search(state)
     result = TbarPatchInfo(selected_switch_info)
     state.patch_ranking.remove(selected_switch_info.location)

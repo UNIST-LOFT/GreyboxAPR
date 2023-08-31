@@ -14,12 +14,13 @@ def plot_patches_ci_java(mode='tbar'):
     casino_result:List[List[int]]=[]
     greybox_result:List[List[int]]=[]
     dl = mode in {'recoder', 'alpharepair'}
-
+    #d4j.D4J_1_2_LIST
+    list1 = ['Chart_3', 'Chart_12', 'Chart_15', 'Chart_7', 'Closure_2', 'Closure_46', 'Closure_62', 'Closure_63', 'Closure_93', 'Closure_126', 'Closure_133', 'Closure_21', 'Closure_22', 'Lang_7', 'Lang_44', 'Lang_51', 'Lang_56', 'Lang_58', 'Lang_63', 'Math_2', 'Math_5', 'Math_7', 'Math_8', 'Math_15', 'Math_20', 'Math_24', 'Math_28', 'Math_40', 'Mockito_38' ]
     # Casino
     print('Casino')
     for i in range(10):
         casino_result.append([])
-        for result in d4j.D4J_1_2_LIST:
+        for result in list1:
             if dl:
                 result = result.replace('_', '-')
             try:
@@ -39,7 +40,11 @@ def plot_patches_ci_java(mode='tbar'):
                 loc=res['config'][0]['location']
 
                 if is_plausible:
-                    casino_result[-1].append(round((time)/60))
+                    #time
+                    #casino_result[-1].append(round((time)/60))
+                    
+                    #iteration
+                    casino_result[-1].append(iteration)
                     has_plau=True
 
                 # if time>3600:
@@ -51,7 +56,7 @@ def plot_patches_ci_java(mode='tbar'):
     print('Greybox')
     for i in range(10):
         greybox_result.append([])
-        for result in d4j.D4J_1_2_LIST:
+        for result in list1:
             if dl:
                 result = result.replace('_', '-')
             try:
@@ -71,7 +76,11 @@ def plot_patches_ci_java(mode='tbar'):
                 loc=res['config'][0]['location']
 
                 if is_plausible:
-                    greybox_result[-1].append(round((time)/60))
+                    #time
+                    #greybox_result[-1].append(round((time)/60))
+                    
+                    #iteration
+                    greybox_result[-1].append(iteration)
                     has_plau=True
 
                 # if time>3600:
@@ -134,7 +143,7 @@ def plot_patches_ci_java(mode='tbar'):
 
     # Original
     print('Original')
-    for result in d4j.D4J_1_2_LIST:
+    for result in list1:
         if dl:
             result = result.replace('_', '-')
         try:
@@ -154,7 +163,11 @@ def plot_patches_ci_java(mode='tbar'):
             loc=res['config'][0]['location']
 
             if is_plausible:
-                orig_result.append(round((time)/60))
+                #time
+                #orig_result.append(round((time)/60))
+                
+                #iteration
+                orig_result.append(iteration)
                 has_plau=True
 
             # if time>3600:
@@ -178,22 +191,52 @@ def plot_patches_ci_java(mode='tbar'):
     # Original
     results=sorted(orig_result)
     other_list=[0]
-    for i in range(0,300):
-        if i in results:
-            other_list.append(other_list[-1]+results.count(i))
-        else:
-            other_list.append(other_list[-1])
-    plt.plot(list(range(0,301)),other_list,'-.b',label=name)
+    
+        #time 
+    # for i in range(0,300):
+    #     if i in results:
+    #         other_list.append(other_list[-1]+results.count(i))
+    #     else:
+    #         other_list.append(other_list[-1])
+    # plt.plot(list(range(0,301)),other_list,'-.b',label=name)
+    
+        #iteration
+    # for i in range(0,500):
+    #     if i in results:
+    #         other_list.append(other_list[-1]+results.count(i))
+    #     else:
+    #         other_list.append(other_list[-1])
+    # plt.plot(list(range(0,501)),other_list,'-.b',label=name)
 
     # Casino
     guided_list:List[List[int]]=[]
     guided_x=[]
     guided_y=[]
     temp_=[[],[],[],[],[]]
+    
+        #time
+    # for j in range(10):
+    #     cur_result=sorted(casino_result[j])
+    #     guided_list.append([0])
+    #     for i in range(0,300):
+    #         if i in cur_result:
+    #             guided_list[-1].append((10*guided_list[-1][-1]+cur_result.count(i))/10)
+    #             guided_x.append(i)
+    #             guided_y.append((10*guided_list[-1][-1]+cur_result.count(i))/10)
+    #         else:
+    #             guided_list[-1].append(guided_list[-1][-1])
+    #             guided_x.append(i)
+    #             guided_y.append(guided_list[-1][-1])
+    #         if i%60==0:
+    #             temp_[i//60].append(guided_list[-1][-1])
+    # guided_df=pd.DataFrame({'Time':guided_x,'Number of valid patches':guided_y})
+    # seaborn.lineplot(data=guided_df,x='Time',y='Number of valid patches',color='r',label='Casino')
+    
+        #iteration
     for j in range(10):
         cur_result=sorted(casino_result[j])
         guided_list.append([0])
-        for i in range(0,300):
+        for i in range(0,500):
             if i in cur_result:
                 guided_list[-1].append((10*guided_list[-1][-1]+cur_result.count(i))/10)
                 guided_x.append(i)
@@ -202,33 +245,47 @@ def plot_patches_ci_java(mode='tbar'):
                 guided_list[-1].append(guided_list[-1][-1])
                 guided_x.append(i)
                 guided_y.append(guided_list[-1][-1])
-            if i%60==0:
-                temp_[i//60].append(guided_list[-1][-1])
-    # guided_df=pd.DataFrame({'Time':guided_x,'Number of valid patches':guided_y})
-    # seaborn.lineplot(data=guided_df,x='Time',y='Number of valid patches',color='r',label='Casino')
 
     guided_y_temp=[]
     guided_y=[0]
     for i in range(10):
         guided_y_temp+=casino_result[i]
-    for i in range(0,300):
+    for i in range(0,500):
         if i in guided_y_temp:
             guided_y.append((10*guided_y[-1]+guided_y_temp.count(i))/10)
         else:
             guided_y.append(guided_y[-1])
-    plt.plot(list(range(0,301)),guided_y,'r',label='Casino')
+    plt.plot(list(range(0,501)),guided_y,'r',label='Casino')
 
-    for i in range(5):
-        print(f'{i*60}: {np.std(temp_[i])}')
+    # for i in range(5):
+    #     print(f'{i*60}: {np.std(temp_[i])}')
 
     # Greybox
     guided_list:List[List[int]]=[]
     guided_x=[]
     guided_y=[]
+    
+        #time
+    # for j in range(10):
+    #     cur_result=sorted(greybox_result[j])
+    #     guided_list.append([0])
+    #     for i in range(0,300):
+    #         if i in cur_result:
+    #             guided_list[-1].append((10*guided_list[-1][-1]+cur_result.count(i))/10)
+    #             guided_x.append(i)
+    #             guided_y.append((10*guided_list[-1][-1]+cur_result.count(i))/10)
+    #         else:
+    #             guided_list[-1].append(guided_list[-1][-1])
+    #             guided_x.append(i)
+    #             guided_y.append(guided_list[-1][-1])
+    # guided_df=pd.DataFrame({'Time':guided_x,'Number of valid patches':guided_y})
+    # seaborn.lineplot(data=guided_df,x='Time',y='Number of valid patches',color='g',label='Greybox')
+    
+        #iteration
     for j in range(10):
         cur_result=sorted(greybox_result[j])
         guided_list.append([0])
-        for i in range(0,300):
+        for i in range(0,500):
             if i in cur_result:
                 guided_list[-1].append((10*guided_list[-1][-1]+cur_result.count(i))/10)
                 guided_x.append(i)
@@ -237,20 +294,17 @@ def plot_patches_ci_java(mode='tbar'):
                 guided_list[-1].append(guided_list[-1][-1])
                 guided_x.append(i)
                 guided_y.append(guided_list[-1][-1])
-    # guided_df=pd.DataFrame({'Time':guided_x,'Number of valid patches':guided_y})
-    # seaborn.lineplot(data=guided_df,x='Time',y='Number of valid patches',color='g',label='Greybox')
 
     guided_y_temp=[]
     guided_y=[0]
     for i in range(10):
         guided_y_temp+=greybox_result[i]
-    for i in range(0,300):
+    for i in range(0,500):
         if i in guided_y_temp:
             guided_y.append((10*guided_y[-1]+guided_y_temp.count(i))/10)
         else:
             guided_y.append(guided_y[-1])
-
-    plt.plot(list(range(0,301)),guided_y,'g',label='Greybox', alpha=0.5)
+    plt.plot(list(range(0,501)),guided_y,'g',label='Greybox', alpha=0.5)
 
     # # SeAPR
     # results=sorted(seapr_result)
@@ -281,7 +335,13 @@ def plot_patches_ci_java(mode='tbar'):
     # other_df=pd.DataFrame({'Time':other_x,'Number of valid patches':other_y})
     # seaborn.lineplot(data=other_df,x='Time',y='Number of valid patches',color='y',label='GenProg',linestyle='dashed')
     plt.legend(fontsize=12)
-    plt.xlabel('Time (min)',fontsize=15)
+    
+    #time
+    # plt.xlabel('Time (min)',fontsize=15)
+    
+    #iteration
+    plt.xlabel('Iteration',fontsize=15)
+    
     plt.ylabel('# of Valid Patches',fontsize=15)
     plt.xticks(fontsize=15)
     plt.yticks(fontsize=15)

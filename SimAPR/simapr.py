@@ -32,7 +32,7 @@ def parse_args(argv: list) -> GlobalState:
       state.out_dir = a
     elif o in ['-b', '--branchInfo']: 
       state.have_branch_info = True
-      state.branchInfoPath = a
+      state.branchInfoDataPath = a
     elif o in ['-t', '--timeout']:
       state.timeout = int(a)
     elif o in ['-w', '--workdir']:
@@ -557,11 +557,11 @@ def read_info_tbar(state: GlobalState) -> None:
           state.simulation_data[key] = data
 
   if state.have_branch_info:
-    state.logger.info(state.branchInfoPath)
-    if os.path.exists(state.branchInfoPath):
-      with open(state.branchInfoPath, "r") as f:
+    state.logger.info(state.branchInfoDataPath)
+    if os.path.exists(state.branchInfoDataPath):
+      with open(state.branchInfoDataPath, "r") as f:
         branch_info = json.load(f)
-        state.branchInfo = branch_info
+        state.branchInfoData = branch_info
 
 def read_info_prapr(state: GlobalState) -> None:
   with open(os.path.join(state.work_dir, 'switch-info.json'), 'r') as f:

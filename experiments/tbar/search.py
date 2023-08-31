@@ -18,7 +18,7 @@ def run(project):
    #    f.write(result.stdout.decode("utf-8"))
    # print(f'Finish {project}-seapr with returncode {result.returncode}')
 
-   for i in range(1):
+   for i in range(10):
       # print(f'Run {project}-casino-{i}')
       # result=subprocess.run(['python3','search-tbar-casino.py',project,str(seeds.SEEDS[i])],stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
       # with open(f'result/{project}-casino-{i}.log','w') as f:
@@ -41,7 +41,7 @@ def run(project):
          f.write(result.stdout.decode("utf-8"))
       shutil.copytree(f'result/{project}-greybox',f'result/{project}-greybox-{i}',dirs_exist_ok=True)
       shutil.rmtree(f'result/{project}-greybox')
-      print(f'Finish {project}-greybox with returncode {result.returncode}')
+      print(f'Finish {project}-greybox-{i} with returncode {result.returncode}')
 
 from sys import argv
 
@@ -52,15 +52,33 @@ if len(argv)!=2:
 pool=mp.Pool(int(argv[1]))
 
 
-pool.apply_async(run,(f'Chart_3',))
-# pool.apply_async(run,(f'Closure_86',))
-# pool.apply_async(run,(f'Closure_92',))
-# pool.apply_async(run,(f'Closure_93',))
+
+list1 = [3,12,15,7] #Chart
+
+list2 = [2,
+      46, 62, 63, 93,
+      126, 133, 21, 22] #Closure
+
+list3 = [7,44,51,56,58,63] #Lang
+
+list4 = [2,5,7,8,15,20,24,28,40] #Math
+
+# pool.apply_async(run,(f'Chart_3',))
+for i in list1:
+   pool.apply_async(run,(f'Chart_{i}',))
+for i in list2:
+   pool.apply_async(run,(f'Closure_{i}',))
+for i in list3:
+   pool.apply_async(run,(f'Lang_{i}',))
+for i in list4:
+   pool.apply_async(run,(f'Math_{i}',))
+pool.apply_async(run,(f'Mockito_38',))
+# pool.apply_async(run,(f'Lang_7',))
+# pool.apply_async(run,(f'Closure_62',))
 # pool.apply_async(run,(f'Math_18',))
 # pool.apply_async(run,(f'Math_20',))
 # pool.apply_async(run,(f'Math_23',))
 # pool.apply_async(run,(f'Math_24',))
-# pool.apply_async(run,(f'Math_28',))
 # pool.apply_async(run,(f'Math_30',))
 # pool.apply_async(run,(f'Math_32',))
 # pool.apply_async(run,(f'Math_33',))

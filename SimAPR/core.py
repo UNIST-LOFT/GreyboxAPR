@@ -154,6 +154,7 @@ class PatchTreeNode:
 
     # greybox things
     self.coverage_info=PassFail()
+    self.patches_template_type:List[str] = []
 
 class LocationNode(PatchTreeNode):
   def __init__(self):
@@ -168,6 +169,7 @@ class FileInfo(LocationNode):
     self.file_name = file_name
     self.func_info_map: Dict[str, FuncInfo] = dict() # f"{func_name}:{func_line_begin}-{func_line_end}"
     self.class_name: str = ""
+    
   def __hash__(self) -> int:
     return hash(self.file_name)
   def __eq__(self, other) -> bool:
@@ -188,7 +190,8 @@ class FuncInfo(LocationNode):
     self.searched_patches_by_score:Dict[float,int]=dict() # Total searched patches grouped by score
     self.same_seapr_pf = PassFail(1, 1)
     self.diff_seapr_pf = PassFail(1, 1)
-    self.case_rank_list: List[str] = list()
+    self.case_rank_list: List[str] = list()    
+  
   def __hash__(self) -> int:
     return hash(self.id)
   def __eq__(self, other) -> bool:
@@ -203,6 +206,7 @@ class LineInfo(LocationNode):
     self.tbar_type_info_map: Dict[str, TbarTypeInfo] = dict()
     self.line_id = -1
     self.recoder_case_info_map: Dict[int, RecoderCaseInfo] = dict()
+  
   def __hash__(self) -> int:
     return hash(self.uuid)
   def __eq__(self, other) -> bool:
@@ -270,18 +274,39 @@ class FileLine:
     return self.file_info == other.file_info and self.line_info == other.line_info
 
 class BranchInfo:
-  def __init__(self, c_i: int, c_u: int, n_i: int, n_u:int) -> None:
+  def __init__(self, id: int, c_i: int, c_u: int, n_i: int, n_u:int) -> None:
+    self.id = id
     self.c_i = c_i # the number of interesting paths that change the counts of the given critical branch
     self.c_u = c_u # the number of uninteresting paths that change the counts of the given critical branch
     self.n_i = n_i # the number of interesting paths that does not change the counts of the given critical branch
     self.n_u = n_u # the number of uninteresting paths that does not change the counts of the given critical branch
     self.ochiai = self.calculate_ochiai()    
+    self.patch_list = []
+    self.interesting_patch_list = []
+    self.intPatch_probability = self.calculate_prob() 
+    self.plausible_pass_count=0
+    self.interesting_pass_count=0
+      
+  def calculate_prob(self):
+    if len(self.patch_list) != 0:
+      prob = float(len(self.interesting_patch_list))/float(len(self.patch_list))
+      return prob
+    else:
+      return 0.
+  
+  def add_patch(self, patch):
+    self.patch_list.append(patch)
+    self.calculate_prob()
     
+  def add_interesting_patch(self, patch):
+    self.interesting_patch_list.append(patch)
+    self.calculate_prob()
+  
   def calculate_ochiai(self):
     denominator = math.sqrt((self.c_i + self.n_i ) * (self.c_i + self.c_u))
     if denominator == 0:
-        return float('inf')  # Handle division by zero error
-    result = self.c_i / denominator
+        return -1.  # Handle division by zero error
+    result = float(self.c_i)/float(denominator)
     return result
   
   def update_ci(self, c_i: int):
@@ -363,7 +388,8 @@ class TbarPatchInfo:
     self.func_info = self.line_info.parent
     self.file_info = self.func_info.parent
     self.out_dist = -1.0
-    self.out_diff = False
+    self.out_diff = False    
+    
   def update_result(self, result: bool, n: float, b_n:float,exp_alpha: bool) -> None:
     self.tbar_case_info.pf.update(result, n,b_n, exp_alpha)
     self.tbar_type_info.pf.update(result, n,b_n, exp_alpha)
@@ -638,8 +664,25 @@ class GlobalState:
     self.branchInfoDataPath=''
     self.branchInfoData:List[dict]=[]
     self.have_branch_info=False
-    self.branch_map_ochiai:Dict[int, BranchInfo] = dict() #map each branch to list of (c_i,c_u,n_i,n_u,ochiai_score)
-
+    self.branch_map_ochiai:Dict[int, BranchInfo] = dict() #map each branch to each Branch object
+    self.min_ochiai=0. #to maintain the min ochiai score to use when Patches(e) is empty 
+    self.visited_tbar_patch:List[str] = list() 
+    self.patch_to_branches_map:Dict[str, List[BranchInfo]] = dict() 
+    self.critical_branches:List[BranchInfo] = []
+    self.patch_to_ochiai_map:Dict[str, float] = dict() 
+    
+def patch_ochiai_calculator(state:GlobalState, str):
+  valid_branches=0
+  total = 0.
+  for branch_info in state.patch_to_branches_map[str]:
+    if branch_info.ochiai != -1.:
+      total += branch_info.ochiai
+      valid_branches+=1
+  if valid_branches != 0:
+    return float(total)/float(valid_branches)
+  else:
+    return -1.0
+      
 def remove_file_or_pass(file:str):
   try:
     if os.path.exists(file):
