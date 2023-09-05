@@ -3,7 +3,7 @@ import sys
 import subprocess
 
 
-def run(project,seed):
+def run(project,seed,trial):
     cur_dir=os.getcwd()
     if not cur_dir.endswith('experiments/tbar'):
         print('Please run this script in experiments/tbar',file=sys.stderr)
@@ -15,7 +15,7 @@ def run(project,seed):
         new_cur_dir+=dir+'/'
 
     print(f"Run {project}-casino")
-    result=subprocess.run(['python3',f'{new_cur_dir}/SimAPR/simapr.py','-o',f'result/{project}-casino','-m','casino','--seed',f'{seed}',
+    result=subprocess.run(['python3',f'{new_cur_dir}/SimAPR/simapr.py','-o',f'result/{project}-casino-{trial}','-m','casino','--seed',f'{seed}',
                 '-k','template','-w',f'{new_cur_dir}/TBar/d4j/{project}','-t','180000','--use-simulation-mode',f'result/cache/{project}-cache.json',
                 '--instr-cp','../../../JPatchInst','--branch-output',f'result/branch/{project}',
                 '-T','18000', '--','python3',
@@ -26,8 +26,8 @@ def run(project,seed):
 
 if __name__ == '__main__':
     args=sys.argv
-    if len(args)!=3:
-        print('Usage: python3 search-tbar-casino.py <project> <seed>')
+    if len(args)!=4:
+        print('Usage: python3 search-tbar-casino.py <project> <seed> <trial>')
         sys.exit(1)
     
-    run(args[1],args[2])
+    run(args[1],args[2],args[3])
