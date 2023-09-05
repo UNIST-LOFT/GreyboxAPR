@@ -337,6 +337,7 @@ def read_info_tbar(state: GlobalState) -> None:
     state.d4j_negative_test = info["failing_test_cases"]
     state.d4j_positive_test = info["passing_test_cases"]
     state.d4j_failed_passing_tests = set(info["failed_passing_tests"])
+    state.d4j_buggy_project = info["project_name"]
 
     rank_list=[]
     ranking = info['ranking']
@@ -353,7 +354,7 @@ def read_info_tbar(state: GlobalState) -> None:
     ff_map: Dict[str, Dict[str, Tuple[int, int]]] = dict()
     check_func: Set[FuncInfo] = set()
     for file in info["func_locations"]:
-      file_name = file["file"]
+      file_name = file["file"].split(state.d4j_buggy_project)[-1][1:]
       ff_map[file_name] = dict()
       for func in file["functions"]:
         func_name = func["function"]

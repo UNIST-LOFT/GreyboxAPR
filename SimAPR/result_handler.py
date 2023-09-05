@@ -236,28 +236,7 @@ def update_result_branch_coverage_tbar(state: GlobalState, selected_patch:TbarPa
     selected_patch.func_info.coverage_info.update(True, total_same,0)
     selected_patch.line_info.coverage_info.update(True, total_same,0)
     selected_patch.tbar_type_info.coverage_info.update(True, total_same,0)
-    
-  # for file in fileList:
-  #   if file.file_name != selected_patch.file_info.file_name:
-  #     # with open("/root/project/SimAPR/experiments/tbar/result/AddedExtra/" + state.d4j_buggy_project + ".txt", 'a') as f:
-  #     #   f.write("file: " + file.file_name + '\n')
-  #     #   f.write('\n')
-  #     file.coverage_info.update(True, 0,0)
   
-  # for method in methodList:
-  #   if method.id != selected_patch.func_info.id:
-  #     # with open("/root/project/SimAPR/experiments/tbar/result/AddedExtra/" + state.d4j_buggy_project + ".txt", 'a') as f:
-  #     #   f.write("method: " + method.id + '\n')
-  #     #   f.write('\n')
-  #     method.coverage_info.update(True, 0,0)
-  
-  # for line in lineList:
-  #   if line.line_number != selected_patch.line_info.line_number:
-  #     # with open("/root/project/SimAPR/experiments/tbar/result/AddedExtra/" + state.d4j_buggy_project + ".txt", 'a') as f:
-  #     #   f.write("line: " + str(line.line_number) + '\n')
-  #     #   f.write('\n')
-  #     line.coverage_info.update(True, 0,0)
-
 def update_result_branch_coverage_recoder(state: GlobalState, selected_patch:RecoderPatchInfo, coverage_diff:Set[Tuple[int,int]],  fileList:List[FileInfo], methodList:List[FuncInfo], lineList:List[LineInfo]):
   total_same=0
   for cov in coverage_diff:
@@ -270,23 +249,3 @@ def update_result_branch_coverage_recoder(state: GlobalState, selected_patch:Rec
     selected_patch.func_info.coverage_info.update(True, total_same,0)
     selected_patch.line_info.coverage_info.update(True, total_same,0)
     
-  # for file in fileList:
-  #   if file.file_name != selected_patch.file_info.file_name:
-  #     with open("/root/project/SimAPR/experiments/tbar/result/AddedExtra/" + state.d4j_buggy_project + ".txt", 'a') as f:
-  #       f.write("file: " + file.file_name + '\n')
-  #       f.write('\n')
-  #     file.coverage_info.update(True, 1,0)
-  
-  # for method in methodList:
-  #   if method.id != selected_patch.func_info.id:
-  #     with open("/root/project/SimAPR/experiments/tbar/result/AddedExtra/" + state.d4j_buggy_project + ".txt", 'a') as f:
-  #       f.write("method: " + method.id + '\n')
-  #       f.write('\n')
-  #     method.coverage_info.update(True, 1,0)
-  
-  # for line in lineList:
-  #   if line.line_number != selected_patch.line_info.line_number:
-  #     with open("/root/project/SimAPR/experiments/tbar/result/AddedExtra/" + state.d4j_buggy_project + ".txt", 'a') as f:
-  #       f.write("line: " + str(line.line_number) + '\n')
-  #       f.write('\n')
-  #     line.coverage_info.update(True, 1,0)
