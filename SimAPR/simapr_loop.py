@@ -228,8 +228,9 @@ class TBarLoop():
           for test in each_result.keys():
             cov_file=os.path.join(self.state.branch_output,
                                   f'{patch.tbar_case_info.location.replace("/","#")}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt')
-            cur_cov=branch_coverage.parse_cov(self.state.logger,cov_file)
-            coverages[test]=cur_cov
+            if os.path.exists(cov_file):
+              cur_cov=branch_coverage.parse_cov(self.state.logger,cov_file)
+              coverages[test]=cur_cov
 
         #add an entry that maps this patch to its branchess
         if is_compilable:
