@@ -118,6 +118,7 @@ class TBarLoop():
       each_result=dict()
       is_compilable = True
       pass_time=0
+      coverages:Dict[str,branch_coverage.BranchCoverage]=dict()
       for neg in self.state.d4j_negative_test:
         compilable, run_result,fail_time,cur_cov = self.run_test(patch, neg)
         if not compilable:
@@ -132,17 +133,17 @@ class TBarLoop():
             break
         else:
           each_result[neg]=True
-          if neg in self.state.original_branch_cov and cur_cov is not None:
-            cov_diff=cur_cov.diff(self.state.original_branch_cov[neg])
-            for cov in cov_diff:
-              self.state.hq_patch_diff_coverage_set.add(cov)
-        
-        if is_compilable or self.state.ignore_compile_error:
-          if neg in self.state.original_branch_cov and cur_cov is not None:
-            cov_diff=cur_cov.diff(self.state.original_branch_cov[neg])
-            #result_handler.update_result_branch_coverage_tbar(self.state, patch, cov_diff)
 
+        if cur_cov is not None:
+          coverages[neg]=cur_cov
         self.state.test_time+=fail_time
+        
+      #add an entry that maps this patch to its branchess
+      if is_compilable:
+        self.state.visited_tbar_patch.append(patch.tbar_case_info.location)
+        self.state.patch_to_branches_map[patch.tbar_case_info.location] = []
+      result_handler.update_result_branch(self.state,patch,coverages,is_compilable,each_result,pass_result)
+
       if is_compilable or self.state.ignore_compile_error:
         result_handler.update_result_tbar(self.state, patch, pass_exists)
         if result and self.state.use_pass_test:
@@ -159,22 +160,11 @@ class TBarLoop():
     self.state.start_time = time.time()
     self.state.cycle = 0
     
-    #delete later
-    info = {}
-    ochiai_score_patch = []
-    ochiai_score_rate = []
-    follow_pattern=0
-    total=0
-    iteration_count=0
-    ochiai_data_every_iteration={}
-    patch_interesting_plausible_info={}
     while(self.is_alive()):
       self.state.logger.info(f'[{self.state.cycle}]: executing')
       patch = select_patch.select_patch_tbar_mode(self.state)
       self.patch_str=patch.tbar_case_info.location
       self.state.logger.info(f"Patch: {patch.tbar_case_info.location}")
-      #check critical branches
-      critical_branches_list = []
       self.state.logger.info(f"{patch.file_info.file_name}${patch.func_info.id}${patch.line_info.line_number}")
       pass_exists = False
       result = True
@@ -187,6 +177,7 @@ class TBarLoop():
           self.initialize()
 
         each_result=dict()
+        coverages:Dict[str,branch_coverage.BranchCoverage]=dict()
         for neg in self.state.d4j_negative_test:
           compilable, run_result,fail_time,cur_cov = self.run_test(patch, neg)
           self.state.test_time+=fail_time
@@ -202,15 +193,14 @@ class TBarLoop():
               break
           else:
             each_result[neg]=True
-            if neg in self.state.original_branch_cov and cur_cov is not None:
-              cov_diff=cur_cov.diff(self.state.original_branch_cov[neg])
-              for cov in cov_diff:
-                self.state.hq_patch_diff_coverage_set.add(cov)
-          
-          if is_compilable or self.state.ignore_compile_error:
-            if neg in self.state.original_branch_cov and cur_cov is not None:
-              cov_diff=cur_cov.diff(self.state.original_branch_cov[neg])
-              #result_handler.update_result_branch_coverage_tbar(self.state, patch, cov_diff)
+          if cur_cov is not None:
+            coverages[neg]=cur_cov
+
+        #add an entry that maps this patch to its branchess
+        if is_compilable:
+          self.state.visited_tbar_patch.append(patch.tbar_case_info.location)
+          self.state.patch_to_branches_map[patch.tbar_case_info.location] = []
+        result_handler.update_result_branch(self.state,patch,coverages,is_compilable,each_result,pass_result)
 
         if is_compilable or self.state.ignore_compile_error:
           result_handler.update_result_tbar(self.state, patch, pass_exists)
@@ -233,150 +223,20 @@ class TBarLoop():
         pass_time=simapr_result['pass_time']
         is_compilable=simapr_result['compilable']
         
+        coverages:Dict[str,branch_coverage.BranchCoverage]=dict()
+        if is_compilable:
+          for test in each_result.keys():
+            cov_file=os.path.join(self.state.branch_output,
+                                  f'{patch.tbar_case_info.location.replace("/","#")}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt')
+            cur_cov=branch_coverage.parse_cov(self.state.logger,cov_file)
+            coverages[test]=cur_cov
+
         #add an entry that maps this patch to its branchess
         if is_compilable:
           self.state.visited_tbar_patch.append(patch.tbar_case_info.location)
           self.state.patch_to_branches_map[patch.tbar_case_info.location] = []
-        
-        #count_no_pass=0 #counter for number of test passed
-        patch_ochiai=0.  
-        no_of_branch=0            
-        ourData = {}
-        interesting_plausible_data={}
-        interestingBranches = []
-        unchangedBranches = []
-        interestingPatch=False        
-        ochiaiDataPath = "/root/project/SimAPR/experiments/tbar/result/A_InterestingPlausible/" + self.state.d4j_buggy_project + ".json"
-        if os.path.exists(ochiaiDataPath):
-          with open(ochiaiDataPath, "r") as json_file:
-            interesting_plausible_data = json.load(json_file)
-        for test in each_result.keys():
-          interestingPath=False
-          cov_file=os.path.join(self.state.branch_output,f'{patch.tbar_case_info.location.replace("/","#")}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt')
-          if os.path.exists(cov_file) and is_compilable:
-            cur_cov=branch_coverage.parse_cov(self.state.logger,cov_file)
-                            
-            #initilize lists to increment alpha more accurately, since the patches can also change other f,m,l in the other files
-            fileList = []
-            methodList = []
-            lineList = []
-            if test in self.state.original_branch_cov and cur_cov is not None:
-              #get cov_diff
-              cov_diff=cur_cov.diff(self.state.original_branch_cov[test])
-              
-              #extract interesting branches
-              interestingBranches = [item[0] for item in cov_diff]
-              
-              #extract branches that do not have any changes in terms of count or appearance
-              cur_cov_set = set(cur_cov.branch_coverage.keys())
-              unchangedBranches = cur_cov_set.difference(set(x[0] for x in cov_diff))
-                
-              if each_result[test]:  # if interesting Path
-                self.state.logger.info(f'Day la interesting cov bao gom c_i: {interestingBranches}')
-                interestingPath=True
-                interestingPatch=True
-                # count_no_pass+=1
-                
-                #deal with branches that has some sort of changes in interesting Path                
-                for branch in interestingBranches:
-                  #for bar chart drawing
-                  if branch not in critical_branches_list:
-                    critical_branches_list.append(branch)
-                  #for bar charts drawing  
-                    
-                  if branch not in self.state.branch_map_ochiai:
-                    newBranch = BranchInfo(branch, 0,0,0,0)
-                    self.state.branch_map_ochiai[branch] = newBranch
-                    self.state.branch_map_ochiai[branch].update_ci(self.state.branch_map_ochiai[branch].c_i+1)
-                    if branch in cur_cov.branch_coverage:
-                      self.state.patch_to_branches_map[patch.tbar_case_info.location].append(self.state.branch_map_ochiai[branch])
-                    
-                    #store critical/interesting branches  
-                    if self.state.branch_map_ochiai[branch] not in self.state.critical_branches:
-                      self.state.critical_branches.append(self.state.branch_map_ochiai[branch])
-                      
-                  else: #branchInfo is already created
-                    self.state.branch_map_ochiai[branch].update_ci(self.state.branch_map_ochiai[branch].c_i+1)
-                    if branch in cur_cov.branch_coverage:
-                      self.state.patch_to_branches_map[patch.tbar_case_info.location].append(self.state.branch_map_ochiai[branch])
-                    
-                    #store critical/interesting branches  
-                    if self.state.branch_map_ochiai[branch] not in self.state.critical_branches:
-                      self.state.critical_branches.append(self.state.branch_map_ochiai[branch])
-                    
-                
-                #deal with branches that has no changes in interesting Path      
-                for branch in unchangedBranches:
-                  if branch not in self.state.branch_map_ochiai:
-                    newBranch = BranchInfo(branch, 0,0,0,0)
-                    self.state.branch_map_ochiai[branch] = newBranch
-                    self.state.branch_map_ochiai[branch].update_ci(self.state.branch_map_ochiai[branch].c_i+1)
-                    if branch in cur_cov.branch_coverage:
-                      self.state.patch_to_branches_map[patch.tbar_case_info.location].append(self.state.branch_map_ochiai[branch])
-                    
-                  else: #branchInfo is already created
-                    self.state.branch_map_ochiai[branch].update_ci(self.state.branch_map_ochiai[branch].c_i+1)
-                    if branch in cur_cov.branch_coverage:
-                      self.state.patch_to_branches_map[patch.tbar_case_info.location].append(self.state.branch_map_ochiai[branch])
-                                
-                #increment the times that other branches do not appear in an interesting patch                
-                for branchId, branch in self.state.branch_map_ochiai.items():
-                  if branchId not in interestingBranches and branchId not in unchangedBranches:
-                    self.state.branch_map_ochiai[branchId].update_ni(self.state.branch_map_ochiai[branchId].n_i+1)
-                
-                for cov in cov_diff:
-                  self.state.hq_patch_diff_coverage_set.add(cov)
-              if not interestingPath: 
-                for branch in interestingBranches:
-                  if branch not in self.state.branch_map_ochiai:
-                    newBranch = BranchInfo(branch, 0,0,0,0)
-                    self.state.branch_map_ochiai[branch] = newBranch
-                    self.state.branch_map_ochiai[branch].update_cu(self.state.branch_map_ochiai[branch].c_u+1)
-                    if branch in cur_cov.branch_coverage:
-                      self.state.patch_to_branches_map[patch.tbar_case_info.location].append(self.state.branch_map_ochiai[branch])
-                  else: #branchInfo is already created
-                    self.state.branch_map_ochiai[branch].update_cu(self.state.branch_map_ochiai[branch].c_u+1)
-                    if branch in cur_cov.branch_coverage:
-                      self.state.patch_to_branches_map[patch.tbar_case_info.location].append(self.state.branch_map_ochiai[branch])
-                    
-                for branch in unchangedBranches:
-                  if branch not in self.state.branch_map_ochiai:
-                    newBranch = BranchInfo(branch, 0,0,0,0)
-                    self.state.branch_map_ochiai[branch] = newBranch
-                    self.state.branch_map_ochiai[branch].update_cu(self.state.branch_map_ochiai[branch].c_u+1)
-                    if branch in cur_cov.branch_coverage:
-                      self.state.patch_to_branches_map[patch.tbar_case_info.location].append(self.state.branch_map_ochiai[branch])
-                  else: #branchInfo is already created
-                    self.state.branch_map_ochiai[branch].update_cu(self.state.branch_map_ochiai[branch].c_u+1)
-                    if branch in cur_cov.branch_coverage:
-                      self.state.patch_to_branches_map[patch.tbar_case_info.location].append(self.state.branch_map_ochiai[branch])
-                    
-              if is_compilable or self.state.ignore_compile_error:
-                  cov_diff=cur_cov.diff(self.state.original_branch_cov[test])
-                  result_handler.update_result_branch_coverage_tbar(self.state, patch, cov_diff, fileList, methodList, lineList)
-        #After finish checking 1 patch
-        for branch in critical_branches_list:
-          if interestingPatch and not pass_result:
-            self.state.branch_map_ochiai[branch].interesting_pass_count+=1 
-          if pass_result:
-            self.state.branch_map_ochiai[branch].plausible_pass_count = self.state.branch_map_ochiai[branch].plausible_pass_count + 1
-                  
-        #Over for loop for failed tests     
-        for patch_name in self.state.visited_tbar_patch:
-          ochiai_score = patch_ochiai_calculator(self.state, patch_name)
-          self.state.patch_to_ochiai_map[patch_name] = ochiai_score 
-      
-        if is_compilable:
-          patch.file_info.patches_template_type.append(patch.tbar_case_info.location)
-          patch.func_info.patches_template_type.append(patch.tbar_case_info.location)
-          patch.line_info.patches_template_type.append(patch.tbar_case_info.location)
-          patch.tbar_type_info.patches_template_type.append(patch.tbar_case_info.location)
-          patch.tbar_case_info.patches_template_type.append(patch.tbar_case_info.location)
-        
-        patch_interesting_plausible_info[patch.tbar_case_info.location] = {
-          "is_interesting": interestingPatch,
-          "is_plausible": pass_result
-        }
+
+        result_handler.update_result_branch(self.state,patch,coverages,is_compilable,each_result,pass_result)
 
         if is_compilable or self.state.ignore_compile_error:
           result_handler.update_result_tbar(self.state, patch, pass_exists)
@@ -387,39 +247,6 @@ class TBarLoop():
       result_handler.append_result(self.state, [patch], each_result, pass_result, is_compilable,fail_time,pass_time)
       result_handler.remove_patch_tbar(self.state, patch)
       
-    self.state.logger.info(f'FINISHED SIMAPR LOOP')
-    branch_list = []
-    int_count = []
-    plausible_count = []
-    ochiai_scores = []
-    for branch in self.state.critical_branches:
-      branch_list.append(str(branch.id))
-      int_count.append(branch.interesting_pass_count)
-      plausible_count.append(branch.plausible_pass_count)
-      ochiai_scores.append(branch.calculate_ochiai())
-      
-    max_value = max(*int_count, *plausible_count, *ochiai_scores)
-    ochiai_scores_easier_to_look = [num * max_value for num in ochiai_scores]
-    
-    bar_width = 0.25
-    indices = np.arange(len(branch_list))
-    
-    plt.bar(indices - bar_width, int_count, bar_width, label='Interesting')
-    plt.bar(indices, plausible_count, bar_width, label='Plausible')
-    plt.bar(indices + bar_width, ochiai_scores_easier_to_look, bar_width, label='Ochiai Score')
-    
-    plt.xlabel(f'Branches: {len(self.state.critical_branches)} out of {len(self.state.branch_map_ochiai)}')
-    plt.ylabel('Patches')
-    
-    plt.xticks(indices, branch_list, rotation=90)
-    plt.legend()
-    plt.tight_layout()  
-    
-    plt.savefig("/root/project/SimAPR/experiments/tbar/result/A_Plots/" + self.state.d4j_buggy_project + ".pdf", format='pdf')
-              
-    patch_interesting_plausible_info_path = "/root/project/SimAPR/experiments/tbar/result/A_InterestingPlausible/" + self.state.d4j_buggy_project + ".json"
-    with open(patch_interesting_plausible_info_path, "w") as json_file:
-        json.dump(patch_interesting_plausible_info, json_file, indent=4)
 class RecoderLoop(TBarLoop):
   def is_alive(self) -> bool:
     if len(self.state.file_info_map) == 0:
