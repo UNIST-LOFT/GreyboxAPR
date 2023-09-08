@@ -14,14 +14,13 @@ def run(project,seed,trial):
     for dir in cur_dirs[:-2]:
         new_cur_dir+=dir+'/'
 
-    print(f"Run {project}-genprog")
+    print(f"Run {project}-genprog-{trial}")
     result=subprocess.run(['python3',f'{new_cur_dir}/SimAPR/simapr.py','-o',f'result/{project}-genprog-{trial}','-m','genprog','--seed',f'{seed}',
                 '-k','template','-w',f'{new_cur_dir}/TBar/d4j/{project}','-t','180000','--use-simulation-mode',f'result/cache/{project}-cache.json',
-                '--instr-cp','../../../JPatchInst','--branch-output',f'result/branch/{project}',
                 '-T','18000', '--','python3',
                 f'{new_cur_dir}/SimAPR/script/d4j_run_test.py',f'{new_cur_dir}/TBar/buggy'])
     
-    print(f'{project} genprog finish with return code {result.returncode}')
+    print(f'{project} genprog-{trial} finish with return code {result.returncode}')
     exit(result.returncode)
 
 if __name__ == '__main__':
