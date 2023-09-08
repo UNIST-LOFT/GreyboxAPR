@@ -290,7 +290,10 @@ def update_result_branch(state:GlobalState,selected_patch:Union[TbarPatchInfo,Re
 
             state.branch_map_ochiai[branch].update_ci(state.branch_map_ochiai[branch].c_i+1)
             if branch in cur_cov.branch_coverage:
-              state.patch_to_branches_map[selected_patch.tbar_case_info.location].append(state.branch_map_ochiai[branch])
+              if state.tool_type==ToolType.TEMPLATE:
+                state.patch_to_branches_map[selected_patch.tbar_case_info.location].append(state.branch_map_ochiai[branch])
+              else:
+                state.patch_to_branches_map[selected_patch.recoder_case_info.to_str()].append(state.branch_map_ochiai[branch])
                       
           #deal with branches that has no changes in interesting Path      
           for branch in unchangedBranches:
@@ -300,7 +303,10 @@ def update_result_branch(state:GlobalState,selected_patch:Union[TbarPatchInfo,Re
             state.branch_map_ochiai[branch].update_ci(state.branch_map_ochiai[branch].c_i+1)
 
             if branch in cur_cov.branch_coverage:
-              state.patch_to_branches_map[selected_patch.tbar_case_info.location].append(state.branch_map_ochiai[branch])   
+              if state.tool_type==ToolType.TEMPLATE:
+                state.patch_to_branches_map[selected_patch.tbar_case_info.location].append(state.branch_map_ochiai[branch]) 
+              else:
+                state.patch_to_branches_map[selected_patch.recoder_case_info.to_str()].append(state.branch_map_ochiai[branch])  
                           
           #increment the times that other branches do not appear in an interesting patch                
           for branchId, branch in state.branch_map_ochiai.items():
@@ -318,7 +324,10 @@ def update_result_branch(state:GlobalState,selected_patch:Union[TbarPatchInfo,Re
 
             state.branch_map_ochiai[branch].update_cu(state.branch_map_ochiai[branch].c_u+1)
             if branch in cur_cov.branch_coverage:
-              state.patch_to_branches_map[selected_patch.tbar_case_info.location].append(state.branch_map_ochiai[branch])
+              if state.tool_type==ToolType.TEMPLATE:
+                state.patch_to_branches_map[selected_patch.tbar_case_info.location].append(state.branch_map_ochiai[branch])
+              else:
+                state.patch_to_branches_map[selected_patch.recoder_case_info.to_str()].append(state.branch_map_ochiai[branch])  
               
           for branch in unchangedBranches:
             if branch not in state.branch_map_ochiai:
@@ -327,11 +336,17 @@ def update_result_branch(state:GlobalState,selected_patch:Union[TbarPatchInfo,Re
 
             state.branch_map_ochiai[branch].update_cu(state.branch_map_ochiai[branch].c_u+1)
             if branch in cur_cov.branch_coverage:
-              state.patch_to_branches_map[selected_patch.tbar_case_info.location].append(state.branch_map_ochiai[branch])
+              if state.tool_type==ToolType.TEMPLATE:
+                state.patch_to_branches_map[selected_patch.tbar_case_info.location].append(state.branch_map_ochiai[branch])
+              else:
+                state.patch_to_branches_map[selected_patch.recoder_case_info.to_str()].append(state.branch_map_ochiai[branch])  
               
         if is_compilable or state.ignore_compile_error:
             cov_diff=cur_cov.diff(state.original_branch_cov[test])
-            update_result_branch_coverage_tbar(state, selected_patch, cov_diff)
+            if state.tool_type==ToolType.TEMPLATE:
+              update_result_branch_coverage_tbar(state, selected_patch, cov_diff)
+            else:
+              update_result_branch_coverage_recoder(state, selected_patch, cov_diff)
             
   #After finish checking 1 patch
   for branch in critical_branches_list:
@@ -346,9 +361,15 @@ def update_result_branch(state:GlobalState,selected_patch:Union[TbarPatchInfo,Re
     state.patch_to_ochiai_map[patch_name] = ochiai_score 
 
   if is_compilable:
-    selected_patch.file_info.patches_template_type.append(selected_patch.tbar_case_info.location)
-    selected_patch.func_info.patches_template_type.append(selected_patch.tbar_case_info.location)
-    selected_patch.line_info.patches_template_type.append(selected_patch.tbar_case_info.location)
-    selected_patch.tbar_type_info.patches_template_type.append(selected_patch.tbar_case_info.location)
-    selected_patch.tbar_case_info.patches_template_type.append(selected_patch.tbar_case_info.location)
+    if state.tool_type==ToolType.TEMPLATE:
+      selected_patch.file_info.patches_template_type.append(selected_patch.tbar_case_info.location)
+      selected_patch.func_info.patches_template_type.append(selected_patch.tbar_case_info.location)
+      selected_patch.line_info.patches_template_type.append(selected_patch.tbar_case_info.location)
+      selected_patch.tbar_type_info.patches_template_type.append(selected_patch.tbar_case_info.location)
+      selected_patch.tbar_case_info.patches_template_type.append(selected_patch.tbar_case_info.location)
+    else:
+      selected_patch.file_info.patches_template_type.append(selected_patch.recoder_case_info.to_str())
+      selected_patch.func_info.patches_template_type.append(selected_patch.recoder_case_info.to_str())
+      selected_patch.line_info.patches_template_type.append(selected_patch.recoder_case_info.to_str())
+      selected_patch.recoder_case_info.patches_template_type.append(selected_patch.recoder_case_info.to_str())
   

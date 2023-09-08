@@ -342,7 +342,7 @@ class EnvGenerator:
     if patch.file_info.class_name != "":
       new_env["SIMAPR_CLASS_NAME"] = patch.file_info.class_name
 
-    if state.instrumenter_classpath!='':
+    if state.mode==Mode.greybox:
       new_env['GREYBOX_BRANCH']='1'
       new_env['GREYBOX_RESULT']=f'/tmp/{state.d4j_buggy_project}-{test.replace("::","#")}.txt'
       new_env['GREYBOX_INSTR_ROOT']=state.instrumenter_classpath
@@ -364,7 +364,7 @@ class EnvGenerator:
     new_env["SIMAPR_TIMEOUT"] = str(state.timeout)
     new_env["SIMAPR_RECODER"] = "-"
 
-    if state.instrumenter_classpath!='':
+    if state.mode==Mode.greybox:
       new_env['GREYBOX_BRANCH']='1'
       new_env['GREYBOX_RESULT']=f'/tmp/{state.d4j_buggy_project}-{test.replace("::","#")}.txt'
       new_env['GREYBOX_INSTR_ROOT']=state.instrumenter_classpath
@@ -703,13 +703,21 @@ def append_java_cache_result(state:GlobalState,case:Union[TbarCaseInfo,RecoderCa
     pass_time: pass time (second)
   """
   id=case.location
-  if id not in state.simulation_data:
-    current=dict()
+  if id not in state.simulation_data or \
+            (state.mode==Mode.greybox and 'fail_time_branch' not in state.simulation_data[id]) or \
+            (state.mode!=Mode.greybox and 'fail_time' not in state.simulation_data[id]):
+    if id not in state.simulation_data:
+      current=dict()
+    else:
+      current=state.simulation_data[id]
     current['basic']=fail_result
     current['plausible']=pass_result
     current['pass_all_fail']=False not in fail_result.values()
     current['compilable']=compilable
-    current['fail_time']=fail_time
+    if state.mode==Mode.greybox:
+      current['fail_time_branch']=fail_time
+    else:
+      current['fail_time']=fail_time
     current['pass_time']=pass_time
 
     state.simulation_data[id]=current

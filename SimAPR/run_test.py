@@ -31,7 +31,7 @@ def run_fail_test_d4j(state: GlobalState, new_env: Dict[str, str]) -> Tuple[bool
   error_str = se.decode('utf-8').strip()
   if result_str == "":
     state.logger.info("Result: FAIL - output is empty")
-    # state.logger.debug("STDERR: " + error_str)
+    state.logger.debug("STDERR: " + error_str)
     return False, False, is_timeout
   state.logger.debug(result_str.replace("\n", " "))
 
@@ -55,6 +55,8 @@ def run_fail_test_d4j(state: GlobalState, new_env: Dict[str, str]) -> Tuple[bool
         compilable = False
         if ft=='INSTRUMENTATION_FAILED':
           state.logger.info("Instrumentation failed!")
+          state.logger.debug("STDERR: " + error_str)
+          raise RuntimeError("Instrumentation failed!")
         break
       failed_tests.add(ft)
       continue

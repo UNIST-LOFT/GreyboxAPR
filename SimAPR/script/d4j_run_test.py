@@ -80,7 +80,7 @@ def get_src_paths(project):
   else:
     raise Exception("Unknown project: "+project_name)
 
-def get_target_paths(project, buggy_dir):
+def get_target_paths(project):
   sep = "_"
   if "SIMAPR_RECODER" in os.environ:
     sep = os.environ["SIMAPR_RECODER"]
@@ -134,16 +134,16 @@ def get_target_paths(project, buggy_dir):
     return '/target/classes/', '/target/test-classes/'
   elif project_name == "JxPath":
     return '/target/classes/', '/target/test-classes/'
-  return run_d4j_export(buggy_dir)
+  raise Exception("Unknown project: "+project_name)
 
 def get_classpath(work_dir, buggy_project):
   # Todo for all defects4j projects
-  classpath, _ = get_target_paths(buggy_project, work_dir)
+  classpath, _ = get_target_paths(buggy_project)
   return work_dir + classpath
 
 def get_test_classpath(work_dir, buggy_project):
   # Todo for all defects4j projects
-  _, test_classpath = get_target_paths(buggy_project, work_dir)
+  _, test_classpath = get_target_paths(buggy_project)
   return work_dir + test_classpath
 
 def copyfile(original, target):
@@ -163,33 +163,15 @@ def instrument_patched_project(work_dir:str,buggy_project:str,buggy_path:str):
   instrumenter_root=os.environ['GREYBOX_INSTR_ROOT']
   classpath=f'{instrumenter_root}/build/libs/JPatchInst.jar'
 
-  src_path=work_dir+get_src_paths(buggy_project)[0]
-  orig_src_path=work_dir+'b'+get_src_paths(buggy_project)[0]
-
-  cmd=['java','-Xmx100G','-jar',classpath,orig_src_path,src_path,classpath]
-  if buggy_path is not None:
-    cmd.append(buggy_path.replace(buggy_project,f'{buggy_project}b'))
-    cmd.append(buggy_path)
-  instrumentation_result=subprocess.run(cmd,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+  src_path=work_dir+get_target_paths(buggy_project)[0]
+  orig_src_path=work_dir+'b'+get_target_paths(buggy_project)[0]
   
-  # Copy GlobalStates to source directory
-  # We copy the GlobalStates before the instrumentation is success for the later patches
-  if not os.path.exists(src_path+'/kr'):
-    os.makedirs(src_path+'/kr')
-  if not os.path.exists(src_path+'/kr/ac'):
-    os.makedirs(src_path+'/kr/ac')
-  if not os.path.exists(src_path+'/kr/ac/unist'):
-    os.makedirs(src_path+'/kr/ac/unist')
-  if not os.path.exists(src_path+'/kr/ac/unist/apr'):
-    os.makedirs(src_path+'/kr/ac/unist/apr')
-  if not os.path.exists(src_path+'/kr/ac/unist/apr/GlobalStates.java'):
-    copyfile(f'{instrumenter_root}/src/main/java/kr/ac/unist/apr/GlobalStates.java',src_path+'/kr/ac/unist/apr/GlobalStates.java')
-
+  cmd=['java','-Xmx100G','-jar',classpath,orig_src_path,src_path]
+  instrumentation_result=subprocess.run(cmd,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
   if instrumentation_result.returncode!=0:
     print(instrumentation_result.stdout.decode('utf-8'),file=sys.stderr)
     return False
   
-    
   return True
   
 def compile_project_updated(work_dir, buggy_project):
@@ -281,6 +263,21 @@ def test_patched_project(patch_location: str, buggy_location: str, work_dir: str
     deleteDirectory(get_classpath(work_dir, buggy_project))
     deleteDirectory(get_test_classpath(work_dir, buggy_project))
   try:
+    if os.environ['GREYBOX_BRANCH']=='1':
+      # Copy GlobalStates to source directory
+      # We copy the GlobalStates before the instrumentation is success for the later patches
+      src_path=work_dir+get_src_paths(buggy_project)[0]
+      if not os.path.exists(src_path+'/kr'):
+        os.makedirs(src_path+'/kr')
+      if not os.path.exists(src_path+'/kr/ac'):
+        os.makedirs(src_path+'/kr/ac')
+      if not os.path.exists(src_path+'/kr/ac/unist'):
+        os.makedirs(src_path+'/kr/ac/unist')
+      if not os.path.exists(src_path+'/kr/ac/unist/apr'):
+        os.makedirs(src_path+'/kr/ac/unist/apr')
+      if not os.path.exists(src_path+'/kr/ac/unist/apr/GlobalStates.java'):
+        copyfile(f'{os.environ["GREYBOX_INSTR_ROOT"]}/src/main/resources/kr/ac/unist/apr/GlobalStates.java',src_path+'/kr/ac/unist/apr/GlobalStates.java')
+
     if not compile_project_updated(work_dir, buggy_project):
       print("FAIL")
       print("---COMPILATION_FAILED")
@@ -316,6 +313,21 @@ def test_original_project(work_dir: str, test: Union[str, List[str]], buggy_proj
 
   deleteDirectory(get_classpath(work_dir, buggy_project))
   try:
+    if os.environ['GREYBOX_BRANCH']=='1':
+      # Copy GlobalStates to source directory
+      # We copy the GlobalStates before the instrumentation is success for the later patches
+      src_path=work_dir+get_src_paths(buggy_project)[0]
+      if not os.path.exists(src_path+'/kr'):
+        os.makedirs(src_path+'/kr')
+      if not os.path.exists(src_path+'/kr/ac'):
+        os.makedirs(src_path+'/kr/ac')
+      if not os.path.exists(src_path+'/kr/ac/unist'):
+        os.makedirs(src_path+'/kr/ac/unist')
+      if not os.path.exists(src_path+'/kr/ac/unist/apr'):
+        os.makedirs(src_path+'/kr/ac/unist/apr')
+      if not os.path.exists(src_path+'/kr/ac/unist/apr/GlobalStates.java'):
+        copyfile(f'{os.environ["GREYBOX_INSTR_ROOT"]}/src/main/resources/kr/ac/unist/apr/GlobalStates.java',src_path+'/kr/ac/unist/apr/GlobalStates.java')
+        
     if not compile_project_updated(work_dir, buggy_project):
       raise ValueError("Original is not compilable")
     
@@ -364,6 +376,12 @@ def main(argv: List[str]) -> None:
       pid=pid[:-3]
     _temp=subprocess.run(f"defects4j checkout -p {proj} -v {pid}b -w {buggy_dir}", stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     subprocess.run(f"defects4j checkout -p {proj} -v {pid}b -w {buggy_dir}b", stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+
+    if not compile_project_updated(f'{buggy_dir}b', buggy_project):
+      print("FAIL")
+      print("---COMPILATION_FAILED")
+      raise ValueError("Original is not compiled")
+    
   workdir = buggy_dir
   test = os.environ["SIMAPR_TEST"]
   if test == "ALL":
