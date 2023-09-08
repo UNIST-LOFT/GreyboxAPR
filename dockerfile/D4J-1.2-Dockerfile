@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM nvidia/cuda:12.1.1-base-ubuntu22.04
 
 MAINTAINER Youngjae Kim <kyj1411@unist.ac.kr>
 
@@ -20,7 +20,7 @@ RUN \
 				unzip \
 				cpanminus \
 				make \
-				nano python3-pip python3 screen htop maven psmisc
+				nano python3-pip python3 screen htop maven psmisc ant
 
 # Java version
 ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64
@@ -57,10 +57,11 @@ RUN sed -i 's/#force_color_prompt=yes/force_color_prompt=yes/g' /root/.bashrc
 
 # Clone and setup SimAPR
 WORKDIR /root
-RUN git clone https://FreddyYJ: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@github.com/FreddyYJ/SimAPR.git
+# COPY . /root/SimAPR
+RUN git clone https://github.com/UNIST-LOFT/SimAPR.git
 WORKDIR /root/SimAPR/Avatar
 RUN ./compile.sh
-WORKDIR /root/SimAPR/Fixminer
+WORKDIR /root/SimAPR/Fixminer 
 RUN ./compile.sh
 WORKDIR /root/SimAPR/kPar
 RUN ./compile.sh
@@ -88,24 +89,8 @@ WORKDIR /root/SimAPR/experiments/tbar
 RUN mkdir result
 RUN mkdir result/cache
 
-WORKDIR /root/SimAPR/experiments-orig/alpharepair
-RUN mkdir result
-RUN mkdir result/cache
-WORKDIR /root/SimAPR/experiments-orig/avatar
-RUN mkdir result
-RUN mkdir result/cache
-WORKDIR /root/SimAPR/experiments-orig/fixminer
-RUN mkdir result
-RUN mkdir result/cache
-WORKDIR /root/SimAPR/experiments-orig/kpar
-RUN mkdir result
-RUN mkdir result/cache
-WORKDIR /root/SimAPR/experiments-orig/recoder
-RUN mkdir result
-RUN mkdir result/cache
-WORKDIR /root/SimAPR/experiments-orig/tbar
-RUN mkdir result
-RUN mkdir result/cache
+WORKDIR /root/SimAPR/SimAPR
+RUN python3 -m pip install -r requirements.txt
 
 WORKDIR /root
 RUN update-alternatives --set java /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java
@@ -125,6 +110,11 @@ RUN conda env create -f data/env.yaml
 RUN wget https://www.dropbox.com/s/hu3lwdybaeoygzk/best_model.ckpt
 RUN mkdir checkpointSearch
 RUN mv best_model.ckpt checkpointSearch
+
+# Install DiffTGen and ODS
+WORKDIR /root/SimAPR/DiffTGen
+RUN ./compile.sh
+RUN python3 -m pip install xgboost scikit-learn imblearn matplotlib
 
 WORKDIR /root
 CMD ["/usr/sbin/sshd","-D"]

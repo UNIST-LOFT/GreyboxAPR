@@ -366,7 +366,6 @@ def select_patch_guide_algorithm(state: GlobalState,elements:dict,parent:PatchTr
           max_index=i
       scores.append(state.previous_score)
       
-        
       if max_index>=0:
         if state.mode==Mode.greybox:
           state.logger.debug(f'Try coverage with a: {selected[max_index].coverage_info.pass_count}, b: {selected[max_index].coverage_info.fail_count}')

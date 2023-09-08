@@ -1,85 +1,123 @@
 # SimAPR
-SimAPR is patch scheduling framework for patch searching problem.
-It supports sequential algorithm from original APR tools, SeAPR, GenProg family algoritm and Casino.
+SimAPR is a patch scheduling framework for the patch searching problem. It supports various patch-scheduling algorithm including
+
+- Casino, our own patch-scheduling algorithm described in [our ISSTA'23 paper](./paper.pdf)
+- The original algorithm of the six APR tools (AlphaRepair, Recoder, TBar, Avatar, FixMiner, and kPar)
+- SeAPR, an existing deterministic patch scheduling algorithm
+- Our implementation of the GenProg algorithm
 
 ## About this repository
-This repository contains implementation of SimAPR, modified APR tools to generate all patch candidates and scripts to run them easily. 
+This repository contains the implementation of SimAPR, modified APR tools to generate patch space, and scripts and tools to reproduce our experiments.
 
-Implementation of SimAPR is in [SimAPR](./SimAPR/). Detailed descriptions are also in this directory.
+To reproduce our experiments, please refer to [Detailed Instruction](./README_detailed.md).
 
-Our scripts are prepared in [experiments](./experiments/). Detailed descriptions include how to run the scripts are also in this directory.
+### Getting Started
+This section explains how to run SimAPR in a Docker container.
+We have already provided scripts to simplify the replication of our experiments.
+Please refer to the [Detailed Instruction](./README_detailed.md).
 
-We prepared 6 APR tools to run SimAPR: `TBar`, `Avatar`, `kPar` and `Fixminer` as template-based APR and `AlphaRepair` and `Recoder` as learning-based APR.
+- [SimAPR](#simapr)
+  - [About this repository](#about-this-repository)
+    - [Getting Started](#getting-started)
+    - [1. Pull docker image and create container](#1-pull-docker-image-and-create-container)
+    - [2. Generate patch spaces via running APR tools](#2-generate-patch-spaces-via-running-apr-tools)
+    - [3. Run SimAPR engine](#3-run-simapr-engine)
+    - [The outputs of SimAPR](#the-outputs-of-simapr)
+      - [simapr-finished.txt](#simapr-finishedtxt)
+      - [simapr-result.json](#simapr-resultjson)
+    - [About simulation mode](#about-simulation-mode)
+  - [Detailed Instruction](#detailed-instruction)
 
-## Environments & Setup
+In this section, we'll explain how to use the `TBar` and `Closure-62` benchmarks with SimAPR.
+If you want to run various APR tools and versions, make sure to change `tbar` and `TBar` to the appropriate APR tool, and `Closure_62` to the appropriate version.
 
-### Environment
-- Python >= 3.8
-- JDK 1.8
-- [Defects4j](https://github.com/rjust/defects4j) 1.2.0 or 2.0.0
-- Maven
-
-IMPORTANT: Defects4j should be installed in `/defects4j/` to use the scripts we already prepared. If you use Dockerfiles that we prepared, Defects4j is already installed in `/defects4j/`.
-
-Original Defects4j v1.2.0 supports JDK 1.7, but we run at JDK 1.8.
-
-### Preparing the patch space
-SimAPR takes as input the patch space to explore and the patch-scheduling algorithm to use. Regarding the patch space, SimAPR currently provides an option to use the patch space of one of the following six program repair tools:
-
-1. ```Tbar```
-2. ```Avatar```
-3. ```kPar```
-4. ```Fixminer```
-5. ```AlphaRepair```
-6. ```Recoder```
-
-To construct the patch space provided by one of the above tools, see the README file for the tool. For example, the README file of ```Tbar``` is available at [TBar/README.md](TBar/README.md). We also provide a Python script that automates patch-space preparation. See [experiments](./experiments/).
-
-### Seting up SimAPR
-SimAPR is implemented in Python3. SimAPR is in the [SimAPR](./SimAPR/) directory. To set up SimAPR, do the following:
-```
-$ cd SimAPR
-$ python3 -m pip install -r requirements.txt
+### 1. Pull docker image and create container
+To pill our docker image, run the following command:
+```bash
+$ docker pull kyj1411/simapr:0.1-1.2
 ```
 
-## How to reproduce our experiment
-All reproduction scripts and their descriptions are available in the [experiments](./experiments/) directory.
-
-## Running SimAPR
-The implementation of SimAPR is available in the [SimAPR](./SimAPR) directory. To run SimAPR, do the following:
-```
-$ cd SimAPR
-$ python3 simapr.py [options] -- {test_command}
-```
-More details are available in [Readme in SimAPR](./SimAPR/README.md) directory.
-
-### Running SimAPR via Docker
-To run SimAPR via Docker, install 
-- [docker](https://www.docker.com/)
-
-Plus, you should install the following to utilize GPU for learning-based tools.
-- [NVIDIA driver](https://www.nvidia.com/download/index.aspx)
-- [nvidia-docker](https://github.com/NVIDIA/nvidia-docker)
-
-Then, build the docker image
-```
-$ cd dockerfile
-$ docker build -t simapr:<1.2/2.0> -f D4J-<1.2/2.0>-Dockerfile .
+After that, create a container with the following command:
+```bash
+$ docker run -d --name simapr-1.2 -p 1001:22 kyj1411/simapr:0.1-1.2
 ```
 
-Next, create and run the docker container
-```
-$ docker run -d --name simapr-<1.2/2.0> -p 1001:22 [--gpus=all] simapr:<1.2/2.0>
-```
-Note that our container uses openssh-server. To use a container, openssh-client should be installed in host system.
-
-`--gpus` option is required for learning-based tools. If you don't want to use GPU, remove `--gpus=all` option.
-
-To use the container, do the following:
-```
+Next, access the container with the following command:
+```bash
 $ ssh -p 1001 root@localhost
 ```
+The password is `root`.
 
-## How to Add and Run a New Patch Scheduling Algorithm
+### 2. Generate patch spaces via running APR tools
+Before running SimAPR, you need to create patch spaces and patch candidates. To do that, run the following command:
+```
+# cd SimAPR/experiments/tbar
+# python3 tbar.py Closure_62
+```
 
-With SimAPR, a new patch-scheduling algorithm can be easily added and evaluated as described in [SimAPR](./SimAPR/README.md).
+This will take about 2-3 minutes.
+
+The generated patch space will be stored in ~/SimAPR/TBar/d4j/Closure_62, and the meta-information of the patch space will be stored in ~/SimAPR/TBar/d4j/Closure_62/switch-info.json.
+
+### 3. Run SimAPR engine
+After generating the patch space, run SimAPR by executing the following command:
+```
+# python3 ~/SimAPR/SimAPR/simapr.py -o ~/SimAPR/experiments/tbar/result/Closure_62-out -m <orig/casino/seapr/genprog> -k template -w ~/SimAPR/TBar/d4j/Closure_62 -t 180000 -T 600 -- python3 ~/SimAPR/SimAPR/script/d4j_run_test.py ~/SimAPR/TBar/buggy
+```
+
+SimAPR provides various scheduling algorithms: original, Casino, SeAPR and GenProg.
+'Original' algorithm follows the order generated by the original APR tool.
+Set `-m` option as appropriate scheduling algorithm.
+
+This command sets overall timeout as 10 minutes (It will take slightly more than 10 minutes).
+If you want to change timeout, set `-T` option in seconds.
+
+### The outputs of SimAPR
+The outputs of SimAPR are stored in `~/SimAPR/experiments/tbar/result/Closure_62-out`.
+This directory contains three files: `simapr-finished.txt`, `simapr-result.json` and `simapr-search.log`.
+#### simapr-finished.txt
+`simapr-finished.txt` is generated after SimAPR finishes.
+It contains overall time information.
+* `Running time`: The overall time.
+* `Select time` The time taken to select patch candidates. This time is an overhead for each scheduling algorithm.
+* `Test time`: The time taken to execute test cases for each patch candidate.
+
+Note that the `select time` for the original algorithm is 0 because the original algorithm does not use dynamic scheduling.
+
+#### simapr-result.json
+`simapr-result.json` contains the results of each patch candidate in JSON format.
+It is a JSON array that contains the results of each patch candidate.
+
+Each result contains the following information:
+* `execution`: Actual test execution. (More details will be described later)
+* `iteration`: The number of iterations. It increments with each result.
+* `time`: The overall time until this result in seconds.
+* `result`: True if the patch passes at least one failing test. False if the patch fails all failing tests.
+* `pass_result`: True if the patch passes all test cases (valid patch).
+* `pass_all_neg_test`: True if the patch passes all failing test cases.
+* `compilable`: True if the patch is compilable.
+* `total_searched`: The number of tried patch candidates. It may be the same as `iteration`.
+* `total_passed`: The number of patch candidates whose `result` is true.
+* `total_plausible`: The number of patch candidates whose `pass_result` is true (number of valid patches).
+* `config`: Patch ID.
+
+### About simulation mode
+SimAPR provides a simulation mode to reduce the running time.
+Cached results are kept in `experiments/tbar/result/cache/Closure_62-cache.json` in JSON format after SimAPR finishes.
+It is a JSON object where the patch ID serves as the key, and the test execution result serves as the value.
+
+Each cached result contains the following information:
+* `basic`: True if the patch passes at least one failing test. False if the patch fails all failing tests (Same as `result` in `simapr-result.json`).
+* `plausible`: True if the patch passes all test cases (valid patch) (Same as `pass_result` in `simapr-result.json`).
+* `pass_all_fail`: True if the patch passes all failing test cases (Same as `pass_all_neg_test` in `simapr-result.json`).
+* `compilable`: True if the patch is compilable (Same as `compilable` in `simapr-result.json`).
+* `fail_time`: The time taken to execute failing tests.
+* `pass_time`: The time taken to execute passing tests.
+
+Note that 'pass_time' is 0 if the patch fails the failing tests.
+
+SimAPR does not run test cases and instead uses the cached result if the chosen patch candidate has already been cached.
+As a result, the value of `execution` in `simapr-result.json` is not increased.
+
+## Detailed Instruction
+To reproduce our experiments, please refer to [README_detailed.md](./README_detailed.md).
