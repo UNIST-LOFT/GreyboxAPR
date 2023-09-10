@@ -180,7 +180,7 @@ class FuncInfo(LocationNode):
     super().__init__()
     self.parent = parent
     self.func_name = func_name
-    self.id = f"{self.func_name}:{self.begin}-{self.end}"
+    self.id = self.func_name
     self.line_info_map: Dict[uuid.UUID, LineInfo] = dict()
     self.func_rank: int = -1
 
