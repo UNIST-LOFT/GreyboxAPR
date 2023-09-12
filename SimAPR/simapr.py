@@ -709,7 +709,7 @@ def main(argv: list):
     if 'process PID not found' in str(e):
       state.logger.warning('SimAPR is interrupted by user')
     else:
-      state.logger.error(f'SimAPR throws exception: {e}')
+      state.logger.error(f'SimAPR throws exception: {e}',exc_info=True)
       simapr.save_result()
       raise e
   state.logger.info('SimAPR is finished')
