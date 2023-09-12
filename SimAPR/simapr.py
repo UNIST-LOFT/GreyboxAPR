@@ -19,7 +19,7 @@ def parse_args(argv: list) -> GlobalState:
               "use-pattern", "use-simulation-mode=",
               'seapr-mode=','top-fl=','ignore-compile-error',
               'finish-correct-patch','not-count-compile-fail','not-use-guide','not-use-epsilon',
-              'finish-top-method', 'prapr-mode']
+              'finish-top-method', 'prapr-mode','instr-cp=','branch-output=']
   opts, args = getopt.getopt(argv[1:], "ho:w:t:m:c:T:E:k:", longopts)
   state = GlobalState()
   state.original_args = argv
@@ -122,12 +122,26 @@ def parse_args(argv: list) -> GlobalState:
     elif o in ['--not-count-compile-fail']:
       state.count_compile_fail = False
 
+    # Greybox stuffs
+    elif o in ['--instr-cp']:
+      state.instrumenter_classpath=a
+    elif o in ['--branch-output']:
+      state.branch_output=a
+
   if not os.path.exists(state.out_dir):
     os.makedirs(state.out_dir)
+  if state.use_simulation_mode and state.branch_output=='' and not os.path.exists(os.path.join(state.out_dir,'branch')):
+    os.makedirs(os.path.join(state.out_dir,'branch'))
   state.tmp_dir = os.path.join(state.out_dir, 'tmp')
   if os.path.exists(state.tmp_dir):
     shutil.rmtree(state.tmp_dir)
   os.makedirs(state.tmp_dir)
+
+  if state.branch_output!='':
+    if not os.path.exists(state.branch_output):
+      os.makedirs(state.branch_output)
+  elif state.instrumenter_classpath!='':
+    state.branch_output=os.path.join(state.out_dir,'branch')
 
   return state
 
