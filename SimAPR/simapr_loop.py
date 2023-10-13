@@ -276,13 +276,13 @@ class RecoderLoop(TBarLoop):
       try:
         cur_cov=branch_coverage.parse_cov(self.state.logger,new_env['GREYBOX_RESULT'])
         #if self.state.use_simulation_mode:
-        shutil.copyfile(new_env['GREYBOX_RESULT'],os.path.join(self.state.branch_output,f'{patch.recoder_case_info.to_str()}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt'))
+        shutil.copyfile(new_env['GREYBOX_RESULT'],os.path.join(self.state.branch_output,f'{patch.recoder_case_info.location}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt'))
         os.remove(new_env['GREYBOX_RESULT'])
 
         if patch.recoder_case_info.location=='original':
           self.state.original_branch_cov[test]=cur_cov
       except OSError as e:
-        self.state.logger.warning(f"Greybox result not found for {patch.recoder_case_info.to_str()} {test}")
+        self.state.logger.warning(f"Greybox result not found for {patch.recoder_case_info.location} {test}")
 
     return compilable, run_result,run_time,cur_cov
   def run_test_positive(self, patch: RecoderPatchInfo) -> Tuple[bool,float]:
@@ -359,8 +359,8 @@ class RecoderLoop(TBarLoop):
           coverages[neg]=cur_cov
 
       if is_compilable:
-        self.state.visited_tbar_patch.append(patch.recoder_case_info.to_str())
-        self.state.patch_to_branches_map[patch.recoder_case_info.to_str()] = []
+        self.state.visited_tbar_patch.append(patch.recoder_case_info.location)
+        self.state.patch_to_branches_map[patch.recoder_case_info.location] = []
       if self.state.mode==Mode.greybox:
         result_handler.update_result_branch(self.state,patch,coverages,is_compilable,each_result,pass_result)
 
@@ -422,8 +422,8 @@ class RecoderLoop(TBarLoop):
 
         #add an entry that maps this patch to its branchess
         if is_compilable:
-          self.state.visited_tbar_patch.append(patch.recoder_case_info.to_str())
-          self.state.patch_to_branches_map[patch.recoder_case_info.to_str()] = []
+          self.state.visited_tbar_patch.append(patch.recoder_case_info.location)
+          self.state.patch_to_branches_map[patch.recoder_case_info.location] = []
         if self.state.mode==Mode.greybox:
           result_handler.update_result_branch(self.state,patch,coverages,is_compilable,each_result,pass_result)
 
@@ -447,15 +447,15 @@ class RecoderLoop(TBarLoop):
 
         #add an entry that maps this patch to its branchess
         if is_compilable:
-          self.state.visited_tbar_patch.append(patch.recoder_case_info.to_str())
-          self.state.patch_to_branches_map[patch.recoder_case_info.to_str()] = []
+          self.state.visited_tbar_patch.append(patch.recoder_case_info.location)
+          self.state.patch_to_branches_map[patch.recoder_case_info.location] = []
 
         if self.state.mode==Mode.greybox:
           coverages:Dict[str,branch_coverage.BranchCoverage]=dict()
           if is_compilable:
             for test in each_result.keys():
               cov_file=os.path.join(self.state.branch_output,
-                                    f'{patch.recoder_case_info.to_str()}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt')
+                                    f'{patch.recoder_case_info.location}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt')
               if os.path.exists(cov_file):
                 cur_cov=branch_coverage.parse_cov(self.state.logger,cov_file)
                 coverages[test]=cur_cov
