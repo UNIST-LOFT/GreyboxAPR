@@ -4,8 +4,6 @@ import subprocess
 
 
 def run(project,seed,trial):
-    if "_" in project:
-        project = project.replace("_", "-")
     cur_dir=os.getcwd()
     if not cur_dir.endswith('experiments/alpharepair'):
         print('Please run this script in experiments/alpharepair',file=sys.stderr)
