@@ -39,8 +39,13 @@ def plot_patches_ci_java(mode='tbar'):
                 if is_plausible:
                     casino_result[i].append(round((time)/60))
 
+<<<<<<< HEAD
                 # if time>3600:
                 #     break
+=======
+                if time>3600:
+                    break
+>>>>>>> eab0064c5f4b0226114ee3ce06b70575bcc6e5ff
 
     # w/o vertical
     for i in range(50):
@@ -65,8 +70,13 @@ def plot_patches_ci_java(mode='tbar'):
                 if is_plausible:
                     wo_vertical[i].append(round((time)/60))
 
+<<<<<<< HEAD
                 # if time>3600:
                 #     break
+=======
+                if time>3600:
+                    break
+>>>>>>> eab0064c5f4b0226114ee3ce06b70575bcc6e5ff
 
     # w/o horizontal
     for i in range(50):
@@ -91,8 +101,13 @@ def plot_patches_ci_java(mode='tbar'):
                 if is_plausible:
                     wo_horizontal[i].append(round((time)/60))
 
+<<<<<<< HEAD
                 # if time>3600:
                 #     break
+=======
+                if time>3600:
+                    break
+>>>>>>> eab0064c5f4b0226114ee3ce06b70575bcc6e5ff
 
     # Original
     for result in d4j.D4J_1_2_LIST:
@@ -116,8 +131,13 @@ def plot_patches_ci_java(mode='tbar'):
             if is_plausible:
                 orig_result.append(round((time)/60))
 
+<<<<<<< HEAD
             # if time>3600:
             #     break
+=======
+            if time>3600:
+                break
+>>>>>>> eab0064c5f4b0226114ee3ce06b70575bcc6e5ff
 
 plot_patches_ci_java('tbar')
 plot_patches_ci_java('avatar')

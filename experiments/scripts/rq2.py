@@ -13,7 +13,11 @@ seapr_result:List[Tuple(int,int)]=[]
 genprog_result:List[Tuple(int,int)]=[[] for _ in range(50)]
 
 def get_ranking_info_tbar(mode='tbar'):
+<<<<<<< HEAD
     with open(f'{mode}/difftgen.csv','r') as f:
+=======
+    with open(f'difftgen-{mode}.csv','r') as f:
+>>>>>>> eab0064c5f4b0226114ee3ce06b70575bcc6e5ff
         lines=f.readlines()
         correct=dict()
         for line in lines:

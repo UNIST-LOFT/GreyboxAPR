@@ -1,3 +1,5 @@
+import os
+import shutil
 import d4j_alpharepair
 import subprocess
 import multiprocessing as mp
