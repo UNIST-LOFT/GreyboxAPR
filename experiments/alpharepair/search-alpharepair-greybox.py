@@ -15,11 +15,11 @@ def run(project,seed,trial):
         new_cur_dir+=dir+'/'
 
     print(f"Run {project}-greybox-{trial}")
-    result=subprocess.run(['python3',f'{new_cur_dir}/SimAPR/simapr.py','-o',f'result/{project}-greybox-{trial}','-m','greybox','--seed',f'{seed}',
-                '-k','learning','-w',f'{new_cur_dir}/AlphaRepair/d4j/{project}','-t','180000','--use-simulation-mode',f'result/cache/{project}-cache.json',
-                '--instr-cp','../../../JPatchInst','--branch-output',f'result/branch/{project}',
-                '-T','18000', '--','python3',
-                f'{new_cur_dir}/SimAPR/script/d4j_run_test.py',f'{new_cur_dir}/AlphaRepair/buggy'],stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+    result=subprocess.run(['python3',f'{new_cur_dir}/SimAPR/simapr.py','-o',f'result/{project}-greybox-{trial}','-m','greybox',
+                           '--seed',f'{seed}','-k','learning','-w',f'{new_cur_dir}/AlphaRepair/d4j/{project}','-t','180000',
+                           '--use-simulation-mode',f'result/cache/{project}-cache.json','--instr-cp','../../../JPatchInst',
+                           '--branch-output',f'result/branch/{project}','-T','18000','--skip-valid',
+                           '--','python3',f'{new_cur_dir}/SimAPR/script/d4j_run_test.py',f'{new_cur_dir}/AlphaRepair/buggy'])
     
     print(result.stdout.decode('utf-8'))
     print(f'{project} greybox-{trial} finish with return code {result.returncode}')
