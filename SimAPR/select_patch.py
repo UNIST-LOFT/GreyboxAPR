@@ -240,7 +240,11 @@ def select_patch_guide_algorithm(state: GlobalState,elements:dict,parent:PatchTr
     for element_name in elements:
       info:PatchTreeNode = elements[element_name]
       selected.append(info)
-      p_b.append(info.positive_pf.select_value(PT.ALPHA_INIT,PT.BETA_INIT))
+      # Use vertical nav for the enabled edges
+      if info.children_basic_patches>0:
+        p_b.append(info.positive_pf.select_value(PT.ALPHA_INIT,PT.BETA_INIT))
+      else:
+        p_b.append(0.)
 
       if state.mode==Mode.casino:
         state.logger.debug(f'Basic: a: {info.pf.pass_count}, b: {info.pf.fail_count}')
@@ -267,16 +271,17 @@ def select_patch_guide_algorithm(state: GlobalState,elements:dict,parent:PatchTr
       cur_score=get_static_score(selected[max_index])
       prev_score=state.previous_score
       score_rate=min(cur_score/prev_score,1.) if prev_score!=0. else 0.
-      # if np.random.random()< (weighted_mean(PassFail.concave_up(freq),PassFail.log_func(bp_freq))*(score_rate*PT.FL_WEIGHT if score_rate!=1.0 else 1.0)):
-      state.logger.debug(f'Use guidance with basic patch: {PassFail.concave_up(freq)}, {PassFail.log_func(bp_freq)}, {cur_score}/{prev_score}')
+      # Acceptance probability
+      if np.random.random()< (weighted_mean(PassFail.concave_up(freq),PassFail.log_func(bp_freq))*(score_rate*PT.FL_WEIGHT if score_rate!=1.0 else 1.0)):
+        state.logger.debug(f'Use guidance: {PassFail.concave_up(freq)}, {PassFail.log_func(bp_freq)}, {cur_score}/{prev_score}')
 
-      state.select_time+=time.time()-start_time
-      return selected[max_index]
+        state.select_time+=time.time()-start_time
+        return selected[max_index]
+      else:
+        state.logger.debug(f'Do not use guidance: {PassFail.concave_up(freq)}, {PassFail.log_func(bp_freq)}, {cur_score}/{prev_score}')
+        state.select_time+=time.time()-start_time
+        return None
       
-    # if not is_decided:
-    #   state.logger.debug(f'Do not use guide, use original order!')   
-    #   state.select_time+=time.time()-start_time
-    #   return epsilon_select(state,parent),False
   else:
     # No guide in this layer, use top ranked patch
     state.logger.debug(f'No guided found in this layer, use original order!')
