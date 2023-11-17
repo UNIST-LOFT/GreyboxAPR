@@ -130,7 +130,7 @@ def epsilon_select(state:GlobalState,source:PatchTreeNode=None):
     Do epsilon search if there's no basic patch.
     source: File/Function/Line/TbarType info, or None if file selection
   """
-  top_fl_patches:List[TbarCaseInfo]=[] # All 'not searched' top scored patches
+  top_fl_patches:List[Union[TbarCaseInfo,RecoderCaseInfo]]=[] # All 'not searched' top scored patches
   top_all_patches=[] # All top scored patches, include searched or not searched
   cur_score=-100.
   start_time=time.time()
@@ -240,10 +240,7 @@ def select_patch_guide_algorithm(state: GlobalState,elements:dict,parent:PatchTr
     for element_name in elements:
       info:PatchTreeNode = elements[element_name]
       selected.append(info)
-      if info.children_basic_patches>0:
-        p_b.append(info.positive_pf.select_value(PT.ALPHA_INIT,PT.BETA_INIT))
-      else:
-        p_b.append(0.)
+      p_b.append(info.positive_pf.select_value(PT.ALPHA_INIT,PT.BETA_INIT))
 
       if state.mode==Mode.casino:
         state.logger.debug(f'Basic: a: {info.pf.pass_count}, b: {info.pf.fail_count}')
@@ -319,7 +316,10 @@ def select_patch_tbar_guided(state: GlobalState) -> TbarPatchInfo:
 
   selected_file_info:FileInfo = select_patch_guide_algorithm(state,state.file_info_map,None)
   if selected_file_info is None:
-    return epsilon_select(state,None)
+    selected_switch_info=epsilon_select(state,None)
+    result = TbarPatchInfo(selected_switch_info)
+    state.patch_ranking.remove(selected_switch_info.location)
+    return result
   
   for file_name in state.file_info_map:
     file_info=state.file_info_map[file_name]
@@ -349,7 +349,10 @@ def select_patch_tbar_guided(state: GlobalState) -> TbarPatchInfo:
   # Select function
   selected_func_info:FuncInfo = select_patch_guide_algorithm(state,selected_file_info.func_info_map,selected_file_info)
   if selected_func_info is None:
-    return epsilon_select(state,selected_file_info)
+    selected_switch_info=epsilon_select(state,selected_file_info)
+    result = TbarPatchInfo(selected_switch_info)
+    state.patch_ranking.remove(selected_switch_info.location)
+    return result
   
   for func_name in selected_file_info.func_info_map:
     func_info=selected_file_info.func_info_map[func_name]
@@ -380,7 +383,10 @@ def select_patch_tbar_guided(state: GlobalState) -> TbarPatchInfo:
   # Select line
   selected_line_info:LineInfo = select_patch_guide_algorithm(state,selected_func_info.line_info_map,selected_func_info)
   if selected_line_info is None:
-    return epsilon_select(state,selected_func_info)
+    selected_switch_info=epsilon_select(state,selected_func_info)
+    result = TbarPatchInfo(selected_switch_info)
+    state.patch_ranking.remove(selected_switch_info.location)
+    return result
   
   for line in selected_func_info.line_info_map:
     line_info=selected_func_info.line_info_map[line]
@@ -411,7 +417,10 @@ def select_patch_tbar_guided(state: GlobalState) -> TbarPatchInfo:
   # Select type
   selected_type_info:TbarTypeInfo = select_patch_guide_algorithm(state,selected_line_info.tbar_type_info_map,selected_line_info)
   if selected_type_info is None:
-    return epsilon_select(state,selected_line_info)
+    selected_switch_info=epsilon_select(state,selected_line_info)
+    result = TbarPatchInfo(selected_switch_info)
+    state.patch_ranking.remove(selected_switch_info.location)
+    return result
   
   for tbar_type in selected_line_info.tbar_type_info_map:
     type_info=selected_line_info.tbar_type_info_map[tbar_type]
@@ -641,7 +650,10 @@ def select_patch_recoder_guided(state: GlobalState) -> RecoderPatchInfo:
   
   selected_file_info:FileInfo = select_patch_guide_algorithm(state,state.file_info_map,None)
   if selected_file_info is None:
-    return epsilon_select(state,None)
+    selected_switch_info=epsilon_select(state,None)
+    result = RecoderPatchInfo(selected_switch_info)
+    state.patch_ranking.remove(selected_switch_info.location)
+    return result
   
   for file_name in state.file_info_map:
     file_info=state.file_info_map[file_name]
@@ -670,7 +682,10 @@ def select_patch_recoder_guided(state: GlobalState) -> RecoderPatchInfo:
 
   selected_func_info:FuncInfo = select_patch_guide_algorithm(state,selected_file_info.func_info_map,selected_file_info)
   if selected_func_info is None:
-    return epsilon_select(state,selected_file_info)
+    selected_switch_info=epsilon_select(state,selected_file_info)
+    result = RecoderPatchInfo(selected_switch_info)
+    state.patch_ranking.remove(selected_switch_info.location)
+    return result
   
   for func_name in selected_file_info.func_info_map:
     func_info=selected_file_info.func_info_map[func_name]
@@ -700,7 +715,10 @@ def select_patch_recoder_guided(state: GlobalState) -> RecoderPatchInfo:
   
   selected_line_info:LineInfo = select_patch_guide_algorithm(state,selected_func_info.line_info_map,selected_func_info)
   if selected_line_info is None:
-    return epsilon_select(state,selected_func_info)
+    selected_switch_info=epsilon_select(state,selected_func_info)
+    result = RecoderPatchInfo(selected_switch_info)
+    state.patch_ranking.remove(selected_switch_info.location)
+    return result
   
   for line in selected_func_info.line_info_map:
     line_info=selected_func_info.line_info_map[line]
