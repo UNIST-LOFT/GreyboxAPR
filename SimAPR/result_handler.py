@@ -249,127 +249,41 @@ def update_result_branch_coverage_recoder(state: GlobalState, selected_patch:Rec
     selected_patch.func_info.coverage_info.update(True, total_same,0)
     selected_patch.line_info.coverage_info.update(True, total_same,0)
     
-def update_result_branch(state:GlobalState,selected_patch:Union[TbarPatchInfo,RecoderPatchInfo],coverage:Dict[str,branch_coverage.BranchCoverage],
+def update_result_branch(state:GlobalState,selected_patch:Union[TbarPatchInfo,RecoderPatchInfo],branch_coverage:Dict[str,branch_coverage.BranchCoverage],
                          is_compilable:bool,each_result:Dict[str,bool],pass_result:bool):
-  critical_branches_list = []
-  #count_no_pass=0 #counter for number of test passed
-  interestingBranches = []
-  unchangedBranches = []
-  interestingPatch=False        
-  for test in each_result.keys():
-    interestingPath=False
-    if is_compilable and test in coverage:
-      cur_cov=coverage[test]
-      if test in state.original_branch_cov and cur_cov is not None:
-        #get cov_diff
-        cov_diff=cur_cov.diff(state.original_branch_cov[test])
-        
-        #extract interesting branches
-        interestingBranches = [item[0] for item in cov_diff]
-        
-        #extract branches that do not have any changes in terms of count or appearance
-        coverage_set = set(cur_cov.branch_coverage.keys())
-        unchangedBranches = coverage_set.difference(set(x[0] for x in cov_diff))
-          
-        if each_result[test]:  # if interesting Path
-          state.logger.info(f'Day la interesting cov bao gom c_i: {interestingBranches}')
-          interestingPath=True
-          interestingPatch=True
-          # count_no_pass+=1
-          
-          #deal with branches that has some sort of changes in interesting Path                
-          for branch in interestingBranches:
-            #for bar chart drawing
-            if branch not in critical_branches_list:
-              critical_branches_list.append(branch)
-            #for bar charts drawing  
-              
-            if branch not in state.branch_map_ochiai:
-              newBranch = BranchInfo(branch, 0,0,0,0)
-              state.branch_map_ochiai[branch] = newBranch
-
-            state.branch_map_ochiai[branch].update_ci(state.branch_map_ochiai[branch].c_i+1)
-            if branch in cur_cov.branch_coverage:
-              if state.tool_type==ToolType.TEMPLATE:
-                state.patch_to_branches_map[selected_patch.tbar_case_info.location].append(state.branch_map_ochiai[branch])
-              else:
-                state.patch_to_branches_map[selected_patch.recoder_case_info.location].append(state.branch_map_ochiai[branch])
-                      
-          #deal with branches that has no changes in interesting Path      
-          for branch in unchangedBranches:
-            if branch not in state.branch_map_ochiai:
-              newBranch = BranchInfo(branch, 0,0,0,0)
-              state.branch_map_ochiai[branch] = newBranch
-            state.branch_map_ochiai[branch].update_ci(state.branch_map_ochiai[branch].c_i+1)
-
-            if branch in cur_cov.branch_coverage:
-              if state.tool_type==ToolType.TEMPLATE:
-                state.patch_to_branches_map[selected_patch.tbar_case_info.location].append(state.branch_map_ochiai[branch]) 
-              else:
-                state.patch_to_branches_map[selected_patch.recoder_case_info.location].append(state.branch_map_ochiai[branch])  
-                          
-          #increment the times that other branches do not appear in an interesting patch                
-          for branchId, branch in state.branch_map_ochiai.items():
-            if branchId not in interestingBranches and branchId not in unchangedBranches:
-              state.branch_map_ochiai[branchId].update_ni(state.branch_map_ochiai[branchId].n_i+1)
-          
-          for cov in cov_diff:
-            state.hq_patch_diff_coverage_set.add(cov)
-
-        if not interestingPath: 
-          for branch in interestingBranches:
-            if branch not in state.branch_map_ochiai:
-              newBranch = BranchInfo(branch, 0,0,0,0)
-              state.branch_map_ochiai[branch] = newBranch
-
-            state.branch_map_ochiai[branch].update_cu(state.branch_map_ochiai[branch].c_u+1)
-            if branch in cur_cov.branch_coverage:
-              if state.tool_type==ToolType.TEMPLATE:
-                state.patch_to_branches_map[selected_patch.tbar_case_info.location].append(state.branch_map_ochiai[branch])
-              else:
-                state.patch_to_branches_map[selected_patch.recoder_case_info.location].append(state.branch_map_ochiai[branch])  
-              
-          for branch in unchangedBranches:
-            if branch not in state.branch_map_ochiai:
-              newBranch = BranchInfo(branch, 0,0,0,0)
-              state.branch_map_ochiai[branch] = newBranch
-
-            state.branch_map_ochiai[branch].update_cu(state.branch_map_ochiai[branch].c_u+1)
-            if branch in cur_cov.branch_coverage:
-              if state.tool_type==ToolType.TEMPLATE:
-                state.patch_to_branches_map[selected_patch.tbar_case_info.location].append(state.branch_map_ochiai[branch])
-              else:
-                state.patch_to_branches_map[selected_patch.recoder_case_info.location].append(state.branch_map_ochiai[branch])  
-              
-        if is_compilable or state.ignore_compile_error:
-            cov_diff=cur_cov.diff(state.original_branch_cov[test])
-            if state.tool_type==ToolType.TEMPLATE:
-              update_result_branch_coverage_tbar(state, selected_patch, cov_diff)
-            else:
-              update_result_branch_coverage_recoder(state, selected_patch, cov_diff)
-            
-  #After finish checking 1 patch
-  for branch in critical_branches_list:
-    if interestingPatch and not pass_result:
-      state.branch_map_ochiai[branch].interesting_pass_count+=1 
-    if pass_result:
-      state.branch_map_ochiai[branch].plausible_pass_count = state.branch_map_ochiai[branch].plausible_pass_count + 1
-            
-  #Over for loop for failed tests     
-  for patch_name in state.visited_tbar_patch:
-    ochiai_score = patch_ochiai_calculator(state, patch_name)
-    state.patch_to_ochiai_map[patch_name] = ochiai_score 
-
-  if is_compilable:
-    if state.tool_type==ToolType.TEMPLATE:
-      selected_patch.file_info.patches_template_type.append(selected_patch.tbar_case_info.location)
-      selected_patch.func_info.patches_template_type.append(selected_patch.tbar_case_info.location)
-      selected_patch.line_info.patches_template_type.append(selected_patch.tbar_case_info.location)
-      selected_patch.tbar_type_info.patches_template_type.append(selected_patch.tbar_case_info.location)
-      selected_patch.tbar_case_info.patches_template_type.append(selected_patch.tbar_case_info.location)
-    else:
-      selected_patch.file_info.patches_template_type.append(selected_patch.recoder_case_info.location)
-      selected_patch.func_info.patches_template_type.append(selected_patch.recoder_case_info.location)
-      selected_patch.line_info.patches_template_type.append(selected_patch.recoder_case_info.location)
-      selected_patch.recoder_case_info.patches_template_type.append(selected_patch.recoder_case_info.location)
+  """
+  This function is used for the GreyBox Approach of the Casino, to deal with the branch data of patched program runs.
   
+  This function does the jobs below.
+  - Finds critical branch.
+    - If the test for patched program is passed, the branches that has different count to that of buggy program is now critical branches
+  - Compare the counter of each branches between the buggy program and the patched one, and save the differences to each patch node.
+  - However, if the patch is not compilable (is_compilable == false), this function does nothing.
+  
+  This function is composed of following parts.
+  - A big loop for comparing the branches of the buggy program and the patched program to find out the critical branches and update the branch informations.
+    - blahblah
+    - blahblahblah
+  -
+
+  Args:
+      state (GlobalState): The global state. It is a object that saves every information of total run of SimAPR and is used just like a singleton.
+      selected_patch (Union[TbarPatchInfo,RecoderPatchInfo]): Patch information. It varies depending on the 
+      branch_coverage (Dict[str,branch_coverage.BranchCoverage]): branch
+      is_compilable (bool): whether the patched program is compilable.
+      each_result (Dict[str,bool]): The test results of each test on the patched program. Key(:str) is the name of a test, and value(:bool) is the result (true if the test is passedm otherwise false).
+      pass_result (bool): whether the all tests has passed. It has to be true when every value of 'each_result(:Dict[str,bool])' is true, otherwise it is false.
+  """
+  
+  if not is_compilable:
+    return
+  
+  if pass_result:
+    pass 
+  
+  for testName, originalBranchCoverage in state.original_branch_cov:
+    if state.tool_type==ToolType.TEMPLATE:
+      selected_patch.tbar_case_info.branches_counter_difference[testName]=branch_coverage[testName].diff(originalBranchCoverage)
+    elif state.tool_type==ToolType.LEARNING:
+      selected_patch.recoder_case_info.branches_counter_difference[testName]=branch_coverage[testName].diff(originalBranchCoverage)
+        

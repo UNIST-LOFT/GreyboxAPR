@@ -155,6 +155,7 @@ class PatchTreeNode:
     # greybox things
     self.coverage_info=PassFail()
     self.patches_template_type:List[str] = []
+    self.branches_counter_difference:Dict[str:Set[Tuple[int,int]]]=dict() # key: test name, value(branch counter difference): tuple[0]: branch, tuple[1]: counter difference on the branch between the patched program and the buggy one.
 
 class LocationNode(PatchTreeNode):
   def __init__(self):
