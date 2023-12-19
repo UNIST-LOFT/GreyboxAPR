@@ -256,15 +256,16 @@ def update_result_branch(state:GlobalState,selected_patch:Union[TbarPatchInfo,Re
   
   This function does the jobs below.
   - Finds critical branch.
-    - If the test for patched program is passed, the branches that has different count to that of buggy program is now critical branches
+    - For each test, if the test for patched program is passed, the branches that has different count to that of buggy program is now critical branches
   - Compare the counter of each branches between the buggy program and the patched one, and save the differences to each patch node.
+    - Critical branches are saved as state.critical_branches:Dict[str, Set[Tuple[int,int]]], where the tuple[0] is the branch index and tuple[1] is difference. 
+    - examples: 
+        for some branch[1] and test_A, if branch[1] is taken 5 time in patched version and 8 time in original buggy version, then (1, -3) becomes an element of critical_branches[test_A].
+        for some branch[0] and test_B, if branch[0] is taken 7 time in patched version and 0 time in original buggy version, then (0, 7) becomes an element of critical_branches[test_B].
   - However, if the patch is not compilable (is_compilable == false), this function does nothing.
   
   This function is composed of following parts.
-  - A big loop for comparing the branches of the buggy program and the patched program to find out the critical branches and update the branch informations.
-    - blahblah
-    - blahblahblah
-  -
+  - A loop for comparing the branches of the buggy program and the patched program to find out the critical branches and save the branch informations.
 
   Args:
       state (GlobalState): The global state. It is a object that saves every information of total run of SimAPR and is used just like a singleton.
@@ -278,12 +279,11 @@ def update_result_branch(state:GlobalState,selected_patch:Union[TbarPatchInfo,Re
   if not is_compilable:
     return
   
-  if pass_result:
-    pass 
-  
-  for testName, originalBranchCoverage in state.original_branch_cov:
-    if state.tool_type==ToolType.TEMPLATE:
-      selected_patch.tbar_case_info.branches_counter_difference[testName]=branch_coverage[testName].diff(originalBranchCoverage)
-    elif state.tool_type==ToolType.LEARNING:
-      selected_patch.recoder_case_info.branches_counter_difference[testName]=branch_coverage[testName].diff(originalBranchCoverage)
+  for testName in state.original_branch_cov:
+    if each_result[testName]:
+      if testName in state.critical_branches:
+        state.critical_branches[testName]+=branch_coverage[testName].diff(state.original_branch_cov[testName]) # TODO: optimize
+      else:
+        state.critical_branches[testName]=branch_coverage[testName].diff(state.original_branch_cov[testName]) # TODO: optimize
+        
         
