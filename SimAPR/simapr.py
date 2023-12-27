@@ -701,7 +701,6 @@ def main(argv: list):
   - parse the command line arguments
   - read info ~~~
   - run the loop ~~~
-  .
 
   Args:
       argv (list): list of arguments, which will be handled by the function "arse_args(argv: list) -> GlobalState"
