@@ -13,6 +13,22 @@ from core import *
 from simapr_loop import TBarLoop, RecoderLoop, PraPRLoop
 
 def parse_args(argv: list) -> GlobalState:
+  """
+  This function parses the list of command-line arguments, 
+  and the parsing result is stored in the 'state' variable, which is a GlobalState object.
+  
+  At the latter part of the function, it creates the directory if the required directory doesn't exists.
+  Additionally, it remove and re-create the 'tmp' direcrory.
+
+  Args:
+      argv (list): A list that is the same as sys.args
+
+  Raises:
+      ValueError: 
+
+  Returns:
+      GlobalState: returns a instance of GlobalState, which is used as a singloton object.
+  """
   longopts = ["help", "outdir=", "workdir=", "timeout=", "time-limit=", "cycle-limit=",
               "mode=", 'skip-valid', 'params=', "no-exp-alpha",'tool-type=',
               "no-pass-test", "use-full-validation",'seed=','--correct-patch',
@@ -146,6 +162,15 @@ def parse_args(argv: list) -> GlobalState:
   return state
 
 def set_logger(state: GlobalState) -> logging.Logger:
+  """
+  initialize and return the logger.
+
+  Args:
+      state (GlobalState): _description_
+
+  Returns:
+      logging.Logger: _description_
+  """
   logger = logging.getLogger('simapr')
   logger.setLevel(logging.DEBUG)
   fh = logging.FileHandler(os.path.join(state.out_dir, 'simapr-search.log'))
@@ -293,6 +318,16 @@ def read_info_recoder(state: GlobalState) -> None:
           state.simulation_data[key] = data
             
 def read_info_tbar(state: GlobalState) -> None:
+  """
+  read the file and build the patch tree.
+  the result is stored in the 'state'.
+
+  Args:
+      state (GlobalState): _description_
+
+  Raises:
+      ValueError: _description_
+  """
   with open(os.path.join(state.work_dir, 'switch-info.json'), 'r') as f:
     info = json.load(f)
     # Read test informations (which tests to run, which of them are failing test or passing test)
@@ -633,6 +668,15 @@ def read_info_prapr(state: GlobalState) -> None:
           state.simulation_data[key] = data
 
 def copy_previous_results(state: GlobalState) -> None:
+  """
+  Create a new '~~ search.log' and '~~ result.json' files with newest prefix.
+  The new file contains the all content of previous file.
+  
+  Removes 'simapr-finished.txt'
+
+  Args:
+      state (GlobalState): 
+  """
   result_log = os.path.join(state.out_dir, "simapr-search.log")
   result_json = os.path.join(state.out_dir, "simapr-result.json")
   prefix = 0
@@ -652,8 +696,20 @@ def copy_previous_results(state: GlobalState) -> None:
     os.remove(os.path.join(state.out_dir, "simapr-finished.txt"))
 
 def main(argv: list):
+  """
+  This function is divided into three main parts.
+  - parse the command line arguments
+  - read info ~~~
+  - run the loop ~~~
+
+  Args:
+      argv (list): list of arguments, which will be handled by the function "arse_args(argv: list) -> GlobalState"
+
+  Raises:
+      e: _description_
+  """
   sys.setrecursionlimit(2002) # Reset recursion limit, for preventing RecursionError
-  state = parse_args(argv)
+  state = parse_args(argv) # returns the GlobalState instance, and it is used as a singleton. i.e. It is instantiated only once throughout the entire execution.
   copy_previous_results(state)
   state.logger = set_logger(state)
   if state.tool_type==ToolType.TEMPLATE:

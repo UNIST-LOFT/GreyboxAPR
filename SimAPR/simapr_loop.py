@@ -14,7 +14,9 @@ class TBarLoop():
     self.is_initialized:bool=False
 
   def _is_method_over(self) -> bool:
-    """Check the ranks of every remaining methods are over then 30"""
+    """
+    Check the ranks of every remaining methods are over then 30
+    """
     if not self.state.finish_top_method: return False
     
     min_method_rank=10000 # Some large rank
