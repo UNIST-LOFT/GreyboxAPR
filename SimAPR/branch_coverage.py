@@ -4,7 +4,7 @@ from typing import Dict, Set, Tuple
 
 class BranchCoverage:
     def __init__(self):
-        self.branch_coverage:Dict[int,int]=dict()
+        self.branch_coverage:Dict[int,int]=dict() # key: branch index, value: branch count
 
     def increment(self, line:int):
         if line in self.branch_coverage:

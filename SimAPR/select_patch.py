@@ -76,7 +76,7 @@ def epsilon_select(state:GlobalState,source:PatchTreeNode=None):
     state.logger.debug(f'Use epsilon greedy method, epsilon: {epsilon}')
 
     # Choose random element in candidates
-    index=np.random.randint(0,len(top_fl_patches))
+    index=np.random.randint(0,len(top_fl_patches))# TODO: the target of GreyBox approach
     state.select_time+=time.time()-start_time
     return top_fl_patches[index]
   else:

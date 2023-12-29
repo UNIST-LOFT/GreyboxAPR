@@ -46,6 +46,7 @@ class PassFail:
   def __init__(self, p: float = 0., f: float = 0.) -> None:
     self.pass_count = p
     self.fail_count = f
+    
   def __exp_alpha(self, exp_alpha:bool) -> float:
     if exp_alpha:
       if self.pass_count==0:
@@ -54,23 +55,30 @@ class PassFail:
         return min(1024.,self.pass_count)
     else:
       return 1.
+    
   def beta_mode(self, alpha: float, beta: float) -> float:
     if alpha+beta==2.0:
       return 1.0
     return (alpha - 1.0) / (alpha + beta - 2.0)
+  
   def update(self, result: bool, n: float,b_n:float=1.0, exp_alpha: bool = False) -> None:
     if result:
       self.pass_count += n * self.__exp_alpha(exp_alpha)
     else:
       self.fail_count+=b_n
+      
   def update_with_pf(self, other,b_n:float=1.0) -> None:
     self.pass_count += other.pass_count
+    
   def expect_probability(self,additional_score:float=0) -> float:
     return self.beta_mode(self.pass_count + 1.5+additional_score, self.fail_count + 2.0)
+  
   def select_value(self,a_init:float=1.0,b_init:float=1.0) -> float: # select a value randomly from the beta distribution
     return np.random.beta(self.pass_count + a_init, self.fail_count + b_init)
+  
   def copy(self) -> 'PassFail':
     return PassFail(self.pass_count, self.fail_count)
+  
   @staticmethod
   def normalize(x: List[float]) -> List[float]:
     npx = np.array(x)
@@ -82,12 +90,14 @@ class PassFail:
     else:
       x_norm = (npx - x_min) / x_diff
     return x_norm.tolist()
+  
   @staticmethod
   def softmax(x: List[float]) -> List[float]:
     npx = np.array(x)
     y = np.exp(npx)
     f_x = y / np.sum(y)
     return f_x.tolist()
+  
   @staticmethod
   def argmax(x: List[float]) -> int:
     m = max(x)
@@ -96,12 +106,14 @@ class PassFail:
       if x[i] == m:
         tmp.append(i)
     return np.random.choice(tmp)
+  
   @staticmethod
   def select_value_normal(x: List[float], sigma: float) -> List[float]:
     for i in range(len(x)):
       val = x[i]
       x[i] = np.random.normal(val, sigma)
     return x
+  
   @staticmethod
   def select_by_probability(probability: List[float]) -> int:   # pf_list: list of PassFail
     total = 0
@@ -116,25 +128,57 @@ class PassFail:
       if rand <= 0:
         return i
     return 0
+  
   @staticmethod
   def concave_up_exp(x: float, base: float = math.e) -> float:
     return (np.power(base, x) - 1) / (base - 1)
+  
   @staticmethod
   def concave_up(x: float, base: float = math.e) -> float:
     # unique function
     return x * x
+  
   @staticmethod
   def concave_down(x: float, base: float = math.e) -> float:
     atzero = PassFail.concave_up(0, base)
     return 2 * ((1 - atzero) * x + atzero) - PassFail.concave_up(x, base)
-  @staticmethod
+  
   # fail function
+  @staticmethod
   def log_func(x: float, half: float = 51) -> float:
     a=half
     if a-x<=0:
       return 0.
     else:
       return max(np.log(a - x) / np.log(a), 0.)
+
+class CriticalBranchUpDown:
+  """
+  used for GreyBox approach
+  Stored in each PatchTreeNode.
+  saves and handle the data that ~~~~
+
+  Returns:
+      _type_: _description_
+  """
+  def __init__(self, up: float = 0., down: float = 0.) -> None:
+    
+    """
+    TODO: need more specific word for up score, down score in inner dict
+    A dictionary records which branch counts change during each test.
+    outer dictionary: 
+     - key: test name
+     - value: branch data (inner dictionary)
+    inner dictionary:
+      - key: branch index
+      - value: tuple. [0]: up score, [1]: down score
+    """
+    self.dict:Dict[str,Dict[int, tuple(float,float)]]=dict()
+    
+  def update():
+    pass
+    
+  
 
 class PatchTreeNode:
   def __init__(self):
@@ -155,6 +199,7 @@ class PatchTreeNode:
     # greybox things
     self.coverage_info=PassFail()
     self.patches_template_type:List[str] = []
+    self.critical_branch_up_down=CriticalBranchUpDown()
 
 class LocationNode(PatchTreeNode):
   def __init__(self):
@@ -324,6 +369,18 @@ class EnvGenerator:
     pass
   @staticmethod
   def get_new_env_tbar(state: 'GlobalState', patch: 'TbarPatchInfo', test: str) -> Dict[str, str]:
+    """
+    TODO: need more description
+    generates new dictionary of environment variables
+
+    Args:
+        state (GlobalState): _description_
+        patch (TbarPatchInfo): _description_
+        test (str): _description_
+
+    Returns:
+        Dict[str, str]: _description_
+    """
     new_env = os.environ.copy()
     new_env["SIMAPR_UUID"] = str(state.uuid)
     new_env["SIMAPR_TEST"] = str(test)
@@ -389,12 +446,29 @@ class TbarPatchInfo:
     self.line_info.pf.update(result, n,b_n, exp_alpha)
     self.func_info.pf.update(result, n,b_n,exp_alpha)
     self.file_info.pf.update(result, n,b_n, exp_alpha)
+    
   def update_result_positive(self, result: bool, n: float, b_n:float,exp_alpha: bool) -> None:
     self.tbar_case_info.positive_pf.update(result, n,b_n, exp_alpha)
     self.tbar_type_info.positive_pf.update(result, n,b_n, exp_alpha)
     self.line_info.positive_pf.update(result, n,b_n, exp_alpha)
     self.func_info.positive_pf.update(result, n,b_n, exp_alpha)
     self.file_info.positive_pf.update(result, n,b_n, exp_alpha)
+    
+  def update_branch_result(self) -> None:
+    """
+    Used for the GreyBox Approach.
+    
+    This function updates the CriticalBranchUpDown in every node in path to the patch
+
+    Args:
+      TODO
+    """
+    self.tbar_case_info.critical_branch_up_down.update()
+    self.tbar_type_info.critical_branch_up_down.update()
+    self.line_info.critical_branch_up_down.update()
+    self.func_info.critical_branch_up_down.update()
+    self.file_info.critical_branch_up_down.update()
+    
   def remove_patch(self, state: 'GlobalState') -> None:
     if self.tbar_case_info.location not in self.tbar_type_info.tbar_case_info_map:
       state.logger.critical(f"{self.tbar_case_info.location} not in {self.tbar_type_info.tbar_case_info_map}")
@@ -438,12 +512,16 @@ class TbarPatchInfo:
     conf = dict()
     conf["location"] = self.tbar_case_info.location
     return conf
+  
   def to_str(self) -> str:
     return f"{self.tbar_case_info.location}"
+  
   def __str__(self) -> str:
     return self.to_str()
+  
   def to_str_sw_cs(self) -> str:
     return self.to_str()
+  
   @staticmethod
   def list_to_str(selected_patch: list) -> str:
     result = list()
@@ -577,7 +655,7 @@ class Result:
 class GlobalState:
   logger: logging.Logger
   original_args: List[str]
-  args: List[str]
+  args: List[str] # The arguments passed when the program is executed.
   work_dir: str
   out_dir: str
   def __init__(self) -> None:
@@ -619,7 +697,7 @@ class GlobalState:
     self.total_searched_patch=0
     self.total_passed_patch=0
     self.total_plausible_patch=0
-    self.iteration=0
+    self.iteration=0 # To count how many times it has been repeated. It increments by 1 each time a big loop in simapr.run() iterates.
     self.use_partial_validation = True
     self.tool_type=ToolType.TEMPLATE
     self.use_exp_alpha = True
@@ -627,7 +705,7 @@ class GlobalState:
     self.patch_ranking:List[str] = list()
     self.finish_at_correct_patch=False
     self.func_list: List[FuncInfo] = list()
-    self.count_compile_fail=True
+    self.count_compile_fail=True # If False, state.iteration doesn't increases when the patch is not compilable.
     self.finish_top_method=False  # Finish if every patches in top-30 methods are searched. Should turn on for default SeAPR
 
     self.seapr_layer:SeAPRMode=SeAPRMode.FUNCTION

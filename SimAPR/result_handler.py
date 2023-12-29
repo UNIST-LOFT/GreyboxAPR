@@ -54,7 +54,15 @@ def append_result(state: GlobalState, selected_patch: List[Union[TbarPatchInfo,R
     save_result(state)
 
 def update_result_tbar(state: GlobalState, selected_patch: TbarPatchInfo, result: bool) -> None:
-  selected_patch.update_result(result, PT.ALPHA_INCREASE, PT.BETA_INCREASE,state.use_exp_alpha)
+  """
+  TODO: need more description
+
+  Args:
+      state (GlobalState): _description_
+      selected_patch (TbarPatchInfo): _description_
+      result (bool): True if the test is passed
+  """
+  selected_patch.update_result(result, PT.ALPHA_INCREASE, PT.BETA_INCREASE, state.use_exp_alpha)
   if result:
     state.total_basic_patch += 1
     selected_patch.tbar_type_info.children_basic_patches+=1
@@ -253,6 +261,7 @@ def update_result_branch(state:GlobalState,selected_patch:Union[TbarPatchInfo,Re
                          is_compilable:bool,each_result:Dict[str,bool],pass_result:bool):
   """
   This function is used for the GreyBox Approach of the Casino, to deal with the branch data of patched program runs.
+  This function basically handle the every result that has to be done for the GreyBox approach. 
   
   This function does the jobs below.
   - Finds critical branch.
@@ -285,5 +294,8 @@ def update_result_branch(state:GlobalState,selected_patch:Union[TbarPatchInfo,Re
         state.critical_branches[testName]+=branch_coverage[testName].diff(state.original_branch_cov[testName]) # TODO: optimize
       else:
         state.critical_branches[testName]=branch_coverage[testName].diff(state.original_branch_cov[testName]) # TODO: optimize
+    
+  # in what condition?
+  selected_patch.update_branch_result()
         
         

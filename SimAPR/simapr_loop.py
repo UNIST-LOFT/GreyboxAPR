@@ -40,9 +40,22 @@ class TBarLoop():
     elif self._is_method_over():
       self.state.is_alive=False
     return self.state.is_alive
+  
   def save_result(self) -> None:
     result_handler.save_result(self.state)
+    
   def run_test(self, patch: TbarPatchInfo, test: str) -> Tuple[bool, bool,float,branch_coverage.BranchCoverage]:
+    """
+    TODO: need more description
+    _summary_
+
+    Args:
+        patch (TbarPatchInfo): _description_
+        test (str): _description_
+
+    Returns:
+        Tuple[bool, bool,float,branch_coverage.BranchCoverage]: _description_
+    """
     new_env=EnvGenerator.get_new_env_tbar(self.state, patch, test)
     start_time=time.time()
     compilable, run_result, is_timeout = run_test.run_fail_test_d4j(self.state, new_env)
@@ -63,11 +76,13 @@ class TBarLoop():
         self.state.logger.warning(f"Greybox result not found for {patch.tbar_case_info.location} {test}")
         
     return compilable, run_result, run_time, cur_cov
+  
   def run_test_positive(self, patch: TbarPatchInfo) -> Tuple[bool,float]:
     start_time=time.time()
     run_result = run_test.run_pass_test_d4j(self.state, EnvGenerator.get_new_env_tbar(self.state, patch, ""))
     run_time=time.time()-start_time
     return run_result,run_time
+  
   def initialize(self) -> None:
     self.is_initialized = True
     self.state.logger.info("Initializing...")
@@ -101,6 +116,7 @@ class TBarLoop():
             continue
           self.state.logger.warning(f"FAIL at {ft}!!!!")
           self.state.d4j_failed_passing_tests.add(ft)
+          
   def run(self) -> None:
     self.initialize()
     if self.state.use_simulation_mode:
@@ -120,7 +136,7 @@ class TBarLoop():
       each_result=dict()
       is_compilable = True
       pass_time=0
-      coverages:Dict[str,branch_coverage.BranchCoverage]=dict()
+      coverages:Dict[str,branch_coverage.BranchCoverage]=dict() # key: test name, value: branch coverage(contains a dict that shows how many times each branch has been taken.)
       for neg in self.state.d4j_negative_test:
         compilable, run_result,fail_time,cur_cov = self.run_test(patch, neg)
         if not compilable:
@@ -140,10 +156,11 @@ class TBarLoop():
           coverages[neg]=cur_cov
         self.state.test_time+=fail_time
         
-      #add an entry that maps this patch to its branchess
+      #add an entry that maps this patch to its branches
       if is_compilable:
         self.state.visited_tbar_patch.append(patch.tbar_case_info.location)
         self.state.patch_to_branches_map[patch.tbar_case_info.location] = []
+        
       if self.state.mode==Mode.greybox:
         result_handler.update_result_branch(self.state,patch,coverages,is_compilable,each_result,pass_result)
 
