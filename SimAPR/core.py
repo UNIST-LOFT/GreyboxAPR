@@ -152,31 +152,55 @@ class PassFail:
     else:
       return max(np.log(a - x) / np.log(a), 0.)
 
+class CriticalBranches:
+  def __init__(self):
+    self.upDownDict:Dict[int, CriticalBranches]=dict()
+    
+  def update(self):
+    pass
+    
+  def select_value(self):
+    pass
+  
+
 class CriticalBranchUpDown:
   """
   used for GreyBox approach
-  Stored in each PatchTreeNode.
-  saves and handle the data that ~~~~
+  multiple of instances are stored in CriticalBranches as the value of the dictionary, with the branch indexes as a key.
+  saves and handle the data that are related to the fitness score of one branch
 
   Returns:
       _type_: _description_
   """
-  def __init__(self, up: float = 0., down: float = 0.) -> None:
-    
+  def __init__(self, branchUpInit: float = 0., branchDownInit: float = 0.) -> None:
+    """_summary_
+
+    Args:
+        branchUpInit (float, optional): _description_. Defaults to 0..
+        branchDownInit (float, optional): _description_. Defaults to 0..
     """
-    TODO: need more specific word for up score, down score in inner dict
-    A dictionary records which branch counts change during each test.
-    outer dictionary: 
-     - key: test name
-     - value: branch data (inner dictionary)
-    inner dictionary:
-      - key: branch index
-      - value: tuple. [0]: up score, [1]: down score
-    """
-    self.dict:Dict[str,Dict[int, tuple(float,float)]]=dict()
+    self.branchUpInit=branchUpInit # a constant value. saves the initial value of the branchUpScore.
+    self.branchUpScore=branchUpInit # it will be increase with some kinds of value (increasing amount depends on the update method)
+    self.branchDownInit=branchDownInit # a constant value. saves the initial value of the branchDownScore.
+    self.branchDownScore=branchDownInit # it will be increase with some kinds of value (increasing amount depends on the update method)
     
-  def update():
+  def update(self):
     pass
+
+  def select_value(self,isUp:bool) -> float: # select a value randomly from the beta distribution
+    """
+    select a value randomly from the beta distribution
+
+    Args:
+        isUp (bool): true if the branch count increases in patched one then the buggy one, otherwise false.
+
+    Returns:
+        float: _description_
+    """
+    if isUp:
+      return np.random.beta(self.branchUpScore, self.branchUpInit)
+    else:
+      return np.random.beta(self.branchDownScore, self.branchDownInit)
     
   
 
@@ -185,10 +209,10 @@ class PatchTreeNode:
     self.parent=None
     self.pf = PassFail()
     self.positive_pf = PassFail()
-    self.total_case_info: int = 0
-    self.case_update_count: int = 0
-    self.update_count: int = 0
-    self.children_basic_patches:int=0
+    self.total_case_info: int = 0 # the number of cases that the node itself originally had. It increases only when reading the file and building the patch tree, and never decreases.
+    self.case_update_count: int = 0 # increases with 1 each time a patch under the node itself is removed.
+    self.update_count: int = 0 # never used??
+    self.children_basic_patches:int=0 # the number of patches that passed
     self.children_plausible_patches:int=0
     self.consecutive_fail_count:int=0
     self.consecutive_fail_plausible_count:int=0
@@ -431,6 +455,12 @@ class EnvGenerator:
     return new_env
 
 class TbarPatchInfo:
+  """
+  This class has methods related to a TbarCaseInfo, which is given in __init__ as an argument.
+  The instance can do the following jobs.
+  - update the data(such as the beta distributions(== PassFail)) in each nodes in the path from root to the patch
+  - remove the patch from the
+  """
   def __init__(self, tbar_case_info: TbarCaseInfo) -> None:
     self.tbar_case_info = tbar_case_info
     self.tbar_type_info = tbar_case_info.parent
@@ -470,11 +500,22 @@ class TbarPatchInfo:
     self.file_info.critical_branch_up_down.update()
     
   def remove_patch(self, state: 'GlobalState') -> None:
+    """
+    This funciton is called only at the end of each loop iteration. i.e. when the selecting patch, running tests, update the results have end.
+    This function removes self.tbar_case_info from the self.tbar_type_info.tbar_case_info_map, and handle all the additional jobs needed to remove it.
+    - ex) When self.tbar_type_info.tbar_case_info_map is empty after removing self.tbar_case_info, then remove the self.tbar_type_info.tbar_case_info_map from the self.line_info.tbar_type_info_map
+
+    Args:
+        state (GlobalState): _description_
+    """
     if self.tbar_case_info.location not in self.tbar_type_info.tbar_case_info_map:
       state.logger.critical(f"{self.tbar_case_info.location} not in {self.tbar_type_info.tbar_case_info_map}")
+      
     del self.tbar_type_info.tbar_case_info_map[self.tbar_case_info.location]
+    
     if len(self.tbar_type_info.tbar_case_info_map) == 0:
       del self.line_info.tbar_type_info_map[self.tbar_type_info.mutation]
+      
     if len(self.line_info.tbar_type_info_map) == 0:
       score = self.line_info.fl_score
       self.func_info.fl_score_list.remove(score)
@@ -489,11 +530,14 @@ class TbarPatchInfo:
       self.file_info.remain_lines_by_score[self.line_info.fl_score].remove(self.line_info)
       if len(self.file_info.remain_lines_by_score[self.line_info.fl_score])==0:
         self.file_info.remain_lines_by_score.pop(self.line_info.fl_score)
+        
     if len(self.func_info.line_info_map) == 0:
       del self.file_info.func_info_map[self.func_info.id]
       state.func_list.remove(self.func_info)
+      
     if len(self.file_info.func_info_map) == 0:
       del state.file_info_map[self.file_info.file_name]
+      
     self.tbar_case_info.case_update_count += 1
     self.tbar_type_info.case_update_count += 1
     self.tbar_type_info.remain_patches_by_score[self.line_info.fl_score].remove(self.tbar_case_info)
@@ -504,8 +548,10 @@ class TbarPatchInfo:
     self.file_info.case_update_count += 1
     self.file_info.remain_patches_by_score[self.line_info.fl_score].remove(self.tbar_case_info)
     state.java_remain_patch_ranking[self.line_info.fl_score].remove(self.tbar_case_info)
+    
     if len(state.java_remain_patch_ranking[self.line_info.fl_score])==0:
       state.java_remain_patch_ranking.pop(self.line_info.fl_score)
+      
     self.func_info.searched_patches_by_score[self.line_info.fl_score]+=1
 
   def to_json_object(self) -> dict:
@@ -720,7 +766,7 @@ class GlobalState:
 
     self.not_use_guided_search=False  # Use only epsilon-greedy search
     self.not_use_epsilon_search=False  # Use only guided search and original
-    self.test_time=0.  # Total compile and test time
+    self.test_time=0.  # Sum of total compile and test time
     self.select_time=0.  # Total select time
     self.total_methods=0  # Total methods
 

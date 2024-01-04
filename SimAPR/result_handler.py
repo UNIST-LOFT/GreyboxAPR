@@ -60,7 +60,7 @@ def update_result_tbar(state: GlobalState, selected_patch: TbarPatchInfo, result
   Args:
       state (GlobalState): _description_
       selected_patch (TbarPatchInfo): _description_
-      result (bool): True if the test is passed
+      result (bool): True if the test is passed, but there is 
   """
   selected_patch.update_result(result, PT.ALPHA_INCREASE, PT.BETA_INCREASE, state.use_exp_alpha)
   if result:
@@ -265,7 +265,7 @@ def update_result_branch(state:GlobalState,selected_patch:Union[TbarPatchInfo,Re
   
   This function does the jobs below.
   - Finds critical branch.
-    - For each test, if the test for patched program is passed, the branches that has different count to that of buggy program is now critical branches
+    - For each failing test, if the test for patched program is passed, the branches that has different count to that of buggy program is now critical branches
   - Compare the counter of each branches between the buggy program and the patched one, and save the differences to each patch node.
     - Critical branches are saved as state.critical_branches:Dict[str, Set[Tuple[int,int]]], where the tuple[0] is the branch index and tuple[1] is difference. 
     - examples: 

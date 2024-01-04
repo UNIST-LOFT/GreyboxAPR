@@ -118,18 +118,28 @@ class TBarLoop():
           self.state.d4j_failed_passing_tests.add(ft)
           
   def run(self) -> None:
+    """
+    Run the loop.
+    """
+    
     self.initialize()
+    
     if self.state.use_simulation_mode:
       self.run_sim()
       return
+    
     self.state.start_time = time.time()
     self.state.cycle = 0
+    
     while self.is_alive():
+      
       self.state.logger.info(f'[{self.state.cycle}]: executing')
+      
       patch = select_patch.select_patch_tbar_mode(self.state)
       self.patch_str=patch.tbar_case_info.location
       self.state.logger.info(f"Patch: {patch.tbar_case_info.location}")
       self.state.logger.info(f"{patch.file_info.file_name}${patch.func_info.id}${patch.line_info.line_number}")
+      
       pass_exists = False
       result = True
       pass_result = False
@@ -137,12 +147,16 @@ class TBarLoop():
       is_compilable = True
       pass_time=0
       coverages:Dict[str,branch_coverage.BranchCoverage]=dict() # key: test name, value: branch coverage(contains a dict that shows how many times each branch has been taken.)
+      
       for neg in self.state.d4j_negative_test:
         compilable, run_result,fail_time,cur_cov = self.run_test(patch, neg)
+        
         if not compilable:
           is_compilable = False
+          
         if run_result:
           pass_exists = True
+          
         if not run_result:
           result = False
           each_result[neg]=False
@@ -154,6 +168,7 @@ class TBarLoop():
 
         if cur_cov is not None:
           coverages[neg]=cur_cov
+          
         self.state.test_time+=fail_time
         
       #add an entry that maps this patch to its branches
@@ -162,6 +177,8 @@ class TBarLoop():
         self.state.patch_to_branches_map[patch.tbar_case_info.location] = []
         
       if self.state.mode==Mode.greybox:
+        # TODO: wait a minute... pass result is ALWAYS False?? what is going on?
+        # well never mind. the function below doesn't even use the pass_result.
         result_handler.update_result_branch(self.state,patch,coverages,is_compilable,each_result,pass_result)
 
       if is_compilable or self.state.ignore_compile_error:

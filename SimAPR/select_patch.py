@@ -37,6 +37,10 @@ def get_static_score(element):
 
 def epsilon_select(state:GlobalState,source:PatchTreeNode=None):
   """
+  Here is the main logic of the horizontal navigation(= epsilon search)
+  
+  
+  previous description:
     Do epsilon search if there's no basic patch.
     source: File/Function/Line/TbarType info, or None if file selection
   """
@@ -151,6 +155,16 @@ def select_patch_guide_algorithm(state: GlobalState,elements:dict,parent:PatchTr
     return None
 
 def select_patch_tbar_mode(state: GlobalState) -> TbarPatchInfo:
+  """
+  Select a patch in appropriate way and return the patch.
+  The default method for selecting is select_patch_tbar_guided(state).
+
+  Args:
+      state (GlobalState): _description_
+
+  Returns:
+      TbarPatchInfo: _description_
+  """
   if state.mode == Mode.orig:
     return select_patch_tbar(state)
   elif state.mode==Mode.genprog:
@@ -168,7 +182,15 @@ def select_patch_tbar(state: GlobalState) -> TbarPatchInfo:
 
 def select_patch_tbar_guided(state: GlobalState) -> TbarPatchInfo:
   """
-  Select a patch for Tbar.
+  Here is the main logic of the vertical navigation.
+  It traverses the patch tree from the root, selecting file, function, line, type?, and patch.
+  During the traversing, It occationally switch to the horizontal navigation.
+
+  Args:
+      state (GlobalState): _description_
+
+  Returns:
+      TbarPatchInfo: _description_
   """
   p_fl = list() # fault localization
   p_frequency = list() # frequency of basic patches from total basic patches

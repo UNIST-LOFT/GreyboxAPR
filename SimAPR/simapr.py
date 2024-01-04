@@ -319,8 +319,8 @@ def read_info_recoder(state: GlobalState) -> None:
             
 def read_info_tbar(state: GlobalState) -> None:
   """
-  read the file and build the patch tree.
-  the result is stored in the 'state'.
+  read the file and build the patch tree for vertical navigation.
+  The function returns nothing. However, the result is stored in the 'state'.
 
   Args:
       state (GlobalState): _description_
