@@ -151,16 +151,6 @@ class PassFail:
       return 0.
     else:
       return max(np.log(a - x) / np.log(a), 0.)
-
-class CriticalBranches:
-  def __init__(self):
-    self.upDownDict:Dict[int, CriticalBranches]=dict()
-    
-  def update(self):
-    pass
-    
-  def select_value(self):
-    pass
   
 
 class CriticalBranchUpDown:
@@ -184,12 +174,26 @@ class CriticalBranchUpDown:
     self.branchDownInit=branchDownInit # a constant value. saves the initial value of the branchDownScore.
     self.branchDownScore=branchDownInit # it will be increase with some kinds of value (increasing amount depends on the update method)
     
-  def update(self):
-    pass
+  def update(self, branch_difference:int):
+    """
+    Compare the original_branch_count and the patched_branch_count to update the scores.
+    - if original_branch_count > patched_branch_count then self.branchDownScore increases.
+    - if original_branch_count < patched_branch_count then self.branchUpScore increases.
+    - the amount of increasement can be modified in this source code.
+
+    Args:
+        original_branch_count (int): _description_
+        patched_branch_count (int): _description_
+    """
+    if branch_difference<0:
+      self.branchDownScore+=1 # increase the score with some value.
+    elif branch_difference>0:
+      self.branchUpScore+=1 # increase the score with some value.
 
   def select_value(self,isUp:bool) -> float: # select a value randomly from the beta distribution
     """
-    select a value randomly from the beta distribution
+    select a value randomly from the beta distribution.
+    The distribution for selecting varies depending on the 'isUp'.
 
     Args:
         isUp (bool): true if the branch count increases in patched one then the buggy one, otherwise false.
@@ -203,6 +207,23 @@ class CriticalBranchUpDown:
       return np.random.beta(self.branchDownScore, self.branchDownInit)
     
   
+class CriticalBranchesUpDownManager:
+  """
+  This class has a dictionary that saves the branch indexes as key and CriticalBranchUpDown as value.
+  It helps you to call CriticalBranchUpDown with an specific index when calling 'update' and 'select_value'.
+  this class also can be used when there are some jobs that have to deal with multiple of CriticalBranchUpDown.
+  
+  This class will be instanciated when initiaing the GlobalState and it is used for the ~~~...
+  Also it is instantiated in each PatchTreeNode. it is for ~~~
+  """
+  def __init__(self):
+    self.upDownDict:Dict[int, CriticalBranchUpDown]=dict()
+    
+  def update(self, branch_index:int, branch_difference:int):
+    self.upDownDict[branch_index].update(branch_difference)
+    
+  def select_value(self, branch_index:int, isUp:bool):
+    self.upDownDict[branch_index].select_value(isUp)
 
 class PatchTreeNode:
   def __init__(self):
@@ -223,7 +244,7 @@ class PatchTreeNode:
     # greybox things
     self.coverage_info=PassFail()
     self.patches_template_type:List[str] = []
-    self.critical_branch_up_down=CriticalBranchUpDown()
+    self.critical_branch_up_down_manager:CriticalBranchesUpDownManager=CriticalBranchesUpDownManager()
 
 class LocationNode(PatchTreeNode):
   def __init__(self):
@@ -484,20 +505,21 @@ class TbarPatchInfo:
     self.func_info.positive_pf.update(result, n,b_n, exp_alpha)
     self.file_info.positive_pf.update(result, n,b_n, exp_alpha)
     
-  def update_branch_result(self) -> None:
+  def update_branch_result(self, branch_index:int, branch_difference:int) -> None:
     """
     Used for the GreyBox Approach.
     
     This function updates the CriticalBranchUpDown in every node in path to the patch
 
     Args:
-      TODO
+        branch_index (int): _description_
+        branch_difference (int): _description_
     """
-    self.tbar_case_info.critical_branch_up_down.update()
-    self.tbar_type_info.critical_branch_up_down.update()
-    self.line_info.critical_branch_up_down.update()
-    self.func_info.critical_branch_up_down.update()
-    self.file_info.critical_branch_up_down.update()
+    self.tbar_case_info.critical_branch_up_down_manager.update(branch_index, branch_difference)
+    self.tbar_type_info.critical_branch_up_down_manager.update(branch_index, branch_difference)
+    self.line_info.critical_branch_up_down_manager.update(branch_index, branch_difference)
+    self.func_info.critical_branch_up_down_manager.update(branch_index, branch_difference)
+    self.file_info.critical_branch_up_down_manager.update(branch_index, branch_difference)
     
   def remove_patch(self, state: 'GlobalState') -> None:
     """
@@ -785,8 +807,11 @@ class GlobalState:
     self.min_ochiai=0. #to maintain the min ochiai score to use when Patches(e) is empty 
     self.visited_tbar_patch:List[str] = list() 
     self.patch_to_branches_map:Dict[str, List[BranchInfo]] = dict() 
-    self.critical_branches:Dict[str, list[Tuple[int,int]]] = dict()
     self.patch_to_ochiai_map:Dict[str, float] = dict() 
+    
+    # 2nd vertical search things in greybox-APR
+    # self.critical_branches:Dict[str, list[Tuple[int,int]]] = dict() #saves every single data of critical branches. key: test name, value: list of tuple (branch index, branch count difference)
+    self.critical_branch_up_down_manager = CriticalBranchesUpDownManager() # It is for the saving the branch count difference regardless of test cases.
     
 def patch_ochiai_calculator(state:GlobalState, str):
   valid_branches=0

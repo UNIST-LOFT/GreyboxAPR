@@ -260,13 +260,14 @@ def update_result_branch_coverage_recoder(state: GlobalState, selected_patch:Rec
 def update_result_branch(state:GlobalState,selected_patch:Union[TbarPatchInfo,RecoderPatchInfo],branch_coverage:Dict[str,branch_coverage.BranchCoverage],
                          is_compilable:bool,each_result:Dict[str,bool],pass_result:bool):
   """
-  This function is used for the GreyBox Approach of the Casino, to deal with the branch data of patched program runs.
-  This function basically handle the every result that has to be done for the GreyBox approach. 
+  This function is used for the GreyBox Approach of the Casino.
+  It deals with the branch data of patched program runs when wach test has end.
+  This function basically handle the every patch testing result that has to be done for the GreyBox approach. 
   
   This function does the jobs below.
   - Finds critical branch.
     - For each failing test, if the test for patched program is passed, the branches that has different count to that of buggy program is now critical branches
-  - Compare the counter of each branches between the buggy program and the patched one, and save the differences to each patch node.
+  - Compare the count of each branches between the buggy(=original) program and the patched one, and update the branch data in GlobalState and each PatchTreeNode that is ancester of patch.
     - Critical branches are saved as state.critical_branches:Dict[str, Set[Tuple[int,int]]], where the tuple[0] is the branch index and tuple[1] is difference. 
     - examples: 
         for some branch[1] and test_A, if branch[1] is taken 5 time in patched version and 8 time in original buggy version, then (1, -3) becomes an element of critical_branches[test_A].
@@ -290,12 +291,22 @@ def update_result_branch(state:GlobalState,selected_patch:Union[TbarPatchInfo,Re
   
   for testName in state.original_branch_cov:
     if each_result[testName]:
+      branch_difference_list: list[Tuple[int,int]] = branch_coverage[testName].diff(state.original_branch_cov[testName]) # list of (branch index, branch count difference)
+      
+      """ # commented out because state.critical_branches is never used whereas it may take huge amount of memory 
       if testName in state.critical_branches:
-        state.critical_branches[testName]+=branch_coverage[testName].diff(state.original_branch_cov[testName]) # TODO: optimize
+        state.critical_branches[testName]+=branch_difference_list # TODO: optimize
       else:
-        state.critical_branches[testName]=branch_coverage[testName].diff(state.original_branch_cov[testName]) # TODO: optimize
-    
-  # in what condition?
-  selected_patch.update_branch_result()
+        state.critical_branches[testName]=branch_difference_list # TODO: optimize
+      """
+      
+      for branch_tuple in branch_difference:
+        branch_index:int=branch_tuple[0]
+        branch_difference=branch_difference_list[branch_index]
+        
+        #update the critical branch data in GlobalState
+        state.critical_branch_up_down_manager.update(branch_index, branch_difference)
+        #update the critical branch data in each PatchTreeNode which are the ancestor of the selected_patch
+        selected_patch.update_branch_result(branch_index, branch_difference)
         
         

@@ -34,6 +34,11 @@ def get_static_score(element):
   elif type(element) == RecoderCaseInfo:
     return element.prob
   else: raise ValueError(f'Unknown element type {type(element)}')
+  
+def second_vertical_search(state:GlobalState, source:PatchTreeNode):
+  # Select a random branch. maybe with some 가중치?
+  # vertical traversal with the selected branch.
+  pass
 
 def epsilon_select(state:GlobalState,source:PatchTreeNode=None):
   """
