@@ -224,6 +224,23 @@ class CriticalBranchesUpDownManager:
     
   def select_value(self, branch_index:int, isUp:bool):
     self.upDownDict[branch_index].select_value(isUp)
+  
+  def get_isUp(self, branch_index:int):
+    """
+    TODO: more description
+    IMPORTANT: it return False when up score == down score
+
+    Args:
+        branch_index (int): _description_
+
+    Returns:
+        _type_: _description_
+    """
+    the_branch=self.upDownDict[branch_index]
+    if the_branch.branchUpScore>the_branch.branchDownScore:
+      return True
+    else:
+      return False
 
 class PatchTreeNode:
   def __init__(self):

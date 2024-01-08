@@ -37,8 +37,31 @@ def get_static_score(element):
   
 def second_vertical_search(state:GlobalState, source:PatchTreeNode):
   # Select a random branch. maybe with some 가중치?
-  # vertical traversal with the selected branch.
-  pass
+  selected_branch:int = 0 #TODO
+  isUp:bool=state.critical_branch_up_down_manager.get_isUp(selected_branch)
+  # vertical traversal with the selected branch by calling recursion.
+  return second_vertical_search()
+  
+def second_vertical_search_recursion(isUp:bool, source:PatchTreeNode):
+  """
+  A recursive method.
+
+  Args:
+      isUp (bool): _description_
+      source (PatchTreeNode): _description_
+  """
+  node_type=type(source)
+  if node_type==FileInfo:
+    pass
+  elif node_type==FuncInfo:
+    pass
+  elif node_type==LineInfo:
+    pass
+  elif node_type==TbarTypeInfo: #Only for Tbar
+    pass
+  elif node_type==TbarCaseInfo: #Only for Tbar
+    pass
+  
 
 def epsilon_select(state:GlobalState,source:PatchTreeNode=None):
   """
@@ -97,7 +120,7 @@ def epsilon_select(state:GlobalState,source:PatchTreeNode=None):
 def select_patch_guide_algorithm(state: GlobalState,elements:dict,parent:PatchTreeNode=None):
   start_time=time.time()
 
-  for element in elements:
+  for element in elements: # TODO: ...? wierd code
     element_type=type(elements[element])
   selected:List[PatchTreeNode]=[]
   p_b=[]
