@@ -162,7 +162,7 @@ class CriticalBranchUpDown:
   Returns:
       _type_: _description_
   """
-  def __init__(self, branchUpInit: float = 0., branchDownInit: float = 0.) -> None:
+  def __init__(self, branchUpInit: float = 1., branchDownInit: float = 1.) -> None:
     """_summary_
 
     Args:
@@ -220,10 +220,15 @@ class CriticalBranchesUpDownManager:
     self.upDownDict:Dict[int, CriticalBranchUpDown]=dict()
     
   def update(self, branch_index:int, branch_difference:int):
+    if branch_index not in self.upDownDict:
+      self.upDownDict[branch_index]=CriticalBranchUpDown()
     self.upDownDict[branch_index].update(branch_difference)
+      
     
-  def select_value(self, branch_index:int, isUp:bool):
-    self.upDownDict[branch_index].select_value(isUp)
+  def select_value(self, branch_index:int, isUp:bool)->float:
+    if branch_index not in self.upDownDict:
+      self.upDownDict[branch_index]=CriticalBranchUpDown()
+    return self.upDownDict[branch_index].select_value(isUp)
   
   def get_isUp(self, branch_index:int):
     """
@@ -827,7 +832,7 @@ class GlobalState:
     self.patch_to_ochiai_map:Dict[str, float] = dict() 
     
     # 2nd vertical search things in greybox-APR
-    # self.critical_branches:Dict[str, list[Tuple[int,int]]] = dict() #saves every single data of critical branches. key: test name, value: list of tuple (branch index, branch count difference)
+    self.critical_branches:list[Tuple[int,int]] = [] #saves every single data of critical branches. list of tuple (branch index, branch count difference)
     self.critical_branch_up_down_manager = CriticalBranchesUpDownManager() # It is for the saving the branch count difference regardless of test cases.
     
 def patch_ochiai_calculator(state:GlobalState, str):

@@ -293,16 +293,17 @@ def update_result_branch(state:GlobalState,selected_patch:Union[TbarPatchInfo,Re
     if each_result[testName]:
       branch_difference_list: list[Tuple[int,int]] = branch_coverage[testName].diff(state.original_branch_cov[testName]) # list of (branch index, branch count difference)
       
-      """ # commented out because state.critical_branches is never used whereas it may take huge amount of memory 
+      state.critical_branches+=branch_difference_list
+      """
       if testName in state.critical_branches:
         state.critical_branches[testName]+=branch_difference_list # TODO: optimize
       else:
         state.critical_branches[testName]=branch_difference_list # TODO: optimize
       """
       
-      for branch_tuple in branch_difference:
+      for branch_tuple in branch_difference_list:
         branch_index:int=branch_tuple[0]
-        branch_difference=branch_difference_list[branch_index]
+        branch_difference=branch_tuple[1]
         
         #update the critical branch data in GlobalState
         state.critical_branch_up_down_manager.update(branch_index, branch_difference)
