@@ -289,7 +289,7 @@ def update_result_branch(state:GlobalState,selected_patch:Union[TbarPatchInfo,Re
   if not is_compilable:
     return
   
-  for testName in state.original_branch_cov:
+  for testName in state.d4j_negative_test:
     if each_result[testName] and testName in branch_coverage:
       branch_difference_list: list[Tuple[int,int]] = branch_coverage[testName].diff(state.original_branch_cov[testName]) # list of (branch index, branch count difference)
       

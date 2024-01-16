@@ -73,7 +73,7 @@ class TBarLoop():
         if patch.tbar_case_info.location=='original':
           self.state.original_branch_cov[test]=cur_cov
       except OSError as e:
-        self.state.logger.warning(f"Greybox result not found for {patch.tbar_case_info.location} {test}")
+        self.state.logger.warning(f"Greybox result not found for {patch.tbar_case_info.location} {test}. expected location: {new_env['GREYBOX_RESULT']}")
         
     return compilable, run_result, run_time, cur_cov
   
@@ -248,7 +248,7 @@ class TBarLoop():
         if is_compilable or self.state.count_compile_fail:
           self.state.iteration += 1
 
-      else:
+      else: # use cached results
         simapr_result = self.state.simulation_data[key]
         each_result=simapr_result['basic']
         pass_exists = True in each_result.values()

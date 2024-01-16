@@ -144,10 +144,19 @@ def parse_args(argv: list) -> GlobalState:
     elif o in ['--branch-output']:
       state.branch_output=a
 
+  # make output directory if not exists
   if not os.path.exists(state.out_dir):
     os.makedirs(state.out_dir)
-  if state.use_simulation_mode and state.branch_output=='' and not os.path.exists(os.path.join(state.out_dir,'branch')):
-    os.makedirs(os.path.join(state.out_dir,'branch'))
+    
+  # make branch output directory if not exists. if the branch output directory is not given in arguments, it makes default branch output directory.
+  if state.use_simulation_mode:
+    if state.branch_output=='':
+      if not os.path.exists(os.path.join(state.out_dir,'branch')):
+        os.makedirs(os.path.join(state.out_dir,'branch'))
+    elif not os.path.exists(state.branch_output):
+      os.makedirs(state.branch_output)
+  
+  # make tmp directory. if the tmp directory already exsists, remove and make it again.
   state.tmp_dir = os.path.join(state.out_dir, 'tmp')
   if os.path.exists(state.tmp_dir):
     shutil.rmtree(state.tmp_dir)
