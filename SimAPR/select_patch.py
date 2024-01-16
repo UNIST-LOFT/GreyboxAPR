@@ -50,7 +50,7 @@ def second_vertical_search(state:GlobalState, source:PatchTreeNode):
   # Select a random branch. maybe with some 가중치?
   selected_branch:int = random.choice(state.critical_branches)[0]
   isUp:bool=state.critical_branch_up_down_manager.get_isUp(selected_branch)
-  state.logger.debug(f"selected branch: {selected_branch}, isUp: {isUp}")
+  state.logger.info(f"beginning vertical search. selected branch: {selected_branch}, isUp: {isUp}")
   # vertical traversal with the selected branch by calling recursion.
   return second_vertical_search_recursion(state, isUp, source, selected_branch)
   
@@ -137,6 +137,8 @@ def epsilon_select(state:GlobalState,source:PatchTreeNode=None):
       state.logger.debug(f"Use second vertical search, epsilon: {epsilon}'")
       return second_vertical_search(state, source)
     # Perform random search in epsilon probability
+    else:
+      state.logger.debug(f'is critical_branch empty: {len(state.critical_branches)==0}, is source none: {source is None}')
     state.logger.debug(f'Use epsilon greedy method, epsilon: {epsilon}')
 
     # Choose random element in candidates

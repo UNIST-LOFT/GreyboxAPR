@@ -288,9 +288,10 @@ def update_result_branch(state:GlobalState,selected_patch:Union[TbarPatchInfo,Re
   
   if not is_compilable:
     return
-  
-  for testName in state.d4j_negative_test:
-    if each_result[testName] and testName in branch_coverage:
+  state.logger.debug(f"update_result_branch is called, d4j_negative_test length: {len(state.d4j_negative_test)}")
+  for testName in state.d4j_negative_test.copy():
+    if testName in each_result and each_result[testName] and testName in branch_coverage:
+      state.logger.debug(f"update_result_branch updating successfully")
       branch_difference_list: list[Tuple[int,int]] = branch_coverage[testName].diff(state.original_branch_cov[testName]) # list of (branch index, branch count difference)
       
       state.critical_branches+=branch_difference_list
@@ -309,5 +310,7 @@ def update_result_branch(state:GlobalState,selected_patch:Union[TbarPatchInfo,Re
         state.critical_branch_up_down_manager.update(branch_index, branch_difference)
         #update the critical branch data in each PatchTreeNode which are the ancestor of the selected_patch
         selected_patch.update_branch_result(branch_index, branch_difference)
+    else:
+      state.logger.debug(f"testName in each_result: {testName in each_result}, each_result[testName]: {each_result[testName]}, testName in branch_coverage: {testName in branch_coverage}")
         
         
