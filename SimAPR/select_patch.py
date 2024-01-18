@@ -190,7 +190,7 @@ def select_patch_guide_algorithm(state: GlobalState,elements:dict,parent:PatchTr
       else:
         p_b.append(0.)
 
-      if state.mode==Mode.casino:
+      if state.mode==Mode.casino or state.mode == Mode.greybox:
         state.logger.debug(f'Basic: a: {info.pf.pass_count}, b: {info.pf.fail_count}')
       else:
         state.logger.debug(f'Branch Coverage: a: {info.coverage_info.pass_count}, b: {info.coverage_info.fail_count}')
