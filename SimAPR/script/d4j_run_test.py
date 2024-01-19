@@ -105,7 +105,7 @@ def get_target_paths(project):
   elif project_name == "Closure":
     return "/build/classes/", "/build/test/"
   elif project_name == "Mockito":
-    if 11 <= bug_id or 18 <= bug_id <= 21:
+    if 11 >= bug_id or 18 <= bug_id <= 21:
       return "/build/classes/main/", "/build/classes/test/"
     return "/target/classes/", "/target/test-classes/"
   
