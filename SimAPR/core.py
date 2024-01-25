@@ -209,6 +209,9 @@ class CriticalBranchUpDown:
   
 class CriticalBranchesUpDownManager:
   """
+  This class is used not only for the critical branch data but also for the branch difference data of each node in the patch tree 
+  although the name of the class is still "CriticalBranchUpDownManager"
+  
   This class has a dictionary that saves the branch indexes as key and CriticalBranchUpDown as value.
   It helps you to call CriticalBranchUpDown with an specific index when calling 'update' and 'select_value'.
   this class also can be used when there are some jobs that have to deal with multiple of CriticalBranchUpDown.
@@ -223,7 +226,9 @@ class CriticalBranchesUpDownManager:
     if branch_index not in self.upDownDict:
       self.upDownDict[branch_index]=CriticalBranchUpDown()
     self.upDownDict[branch_index].update(branch_difference)
-      
+  
+  def is_empty(self):
+    return not bool(self.upDownDict)
     
   def select_value(self, branch_index:int, isUp:bool)->float:
     if branch_index not in self.upDownDict:
@@ -832,7 +837,7 @@ class GlobalState:
     self.patch_to_ochiai_map:Dict[str, float] = dict() 
     
     # 2nd vertical search things in greybox-APR
-    self.critical_branches:list[Tuple[int,int]] = [] #saves every single data of critical branches. list of tuple (branch index, branch count difference)
+    # self.critical_branches:list[Tuple[int,int]] = [] #saves every single data of critical branches. list of tuple (branch index, branch count difference)
     self.critical_branch_up_down_manager = CriticalBranchesUpDownManager() # It is for the saving the branch count difference regardless of test cases.
     
 def patch_ochiai_calculator(state:GlobalState, str):

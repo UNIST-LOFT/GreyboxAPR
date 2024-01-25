@@ -48,7 +48,7 @@ def second_vertical_search(state:GlobalState, source:PatchTreeNode):
       _type_: _description_
   """
   # Select a random branch. maybe with some 가중치?
-  selected_branch:int = random.choice(state.critical_branches)[0]
+  selected_branch:int = random.choice(list(state.critical_branch_up_down_manager.upDownDict.keys()))
   isUp:bool=state.critical_branch_up_down_manager.get_isUp(selected_branch)
   state.logger.info(f"beginning vertical search. selected branch: {selected_branch}, isUp: {isUp}")
   # vertical traversal with the selected branch by calling recursion.
@@ -86,7 +86,7 @@ def second_vertical_search_recursion(state:GlobalState, isUp:bool, source:PatchT
     randomly_selected_values.append(child.critical_branch_up_down_manager.select_value(selected_branch, isUp))
     state.logger.debug(f"appending to randomly_selected_values: {randomly_selected_values}")    
   
-  max_index = randomly_selected_values.index(max(randomly_selected_values)) # TODO: buggy
+  max_index = randomly_selected_values.index(max(randomly_selected_values)) # TODO: buggy... maybe not?
   new_source = list(children_map.values())[max_index]
   
   return second_vertical_search_recursion(state, isUp, new_source, selected_branch)
@@ -103,7 +103,7 @@ def epsilon_select(state:GlobalState,source:PatchTreeNode=None):
   """
   top_fl_patches:List[Union[TbarCaseInfo,RecoderCaseInfo]]=[] # All 'not searched' top scored patches
   top_all_patches=[] # All top scored patches, include searched or not searched
-  cur_score=-100.
+  cur_score=-100. # the value -100 means that this variable is not initialized yet.
   start_time=time.time()
   # Get all top fl patches
   if source is None:
@@ -133,12 +133,12 @@ def epsilon_select(state:GlobalState,source:PatchTreeNode=None):
   is_epsilon_greedy=np.random.random()<epsilon and not state.not_use_epsilon_search
 
   if is_epsilon_greedy:
-    if state.mode == Mode.greybox and state.critical_branches and source is not None:
+    if state.mode == Mode.greybox and not state.critical_branch_up_down_manager.is_empty() and source is not None:
       state.logger.debug(f"Use second vertical search, epsilon: {epsilon}'")
       return second_vertical_search(state, source)
     # Perform random search in epsilon probability
     else:
-      state.logger.debug(f'is critical_branch empty: {len(state.critical_branches)==0}, is source none: {source is None}')
+      state.logger.debug(f'is critical_branch empty: {state.critical_branch_up_down_manager.is_empty()}, is source none: {source is None}')
     state.logger.debug(f'Use epsilon greedy method, epsilon: {epsilon}')
 
     # Choose random element in candidates

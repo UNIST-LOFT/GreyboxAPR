@@ -28,16 +28,22 @@ class TBarLoop():
 
   def is_alive(self) -> bool:
     if len(self.state.file_info_map) == 0:
+      self.state.logger.info("finish because of len(self.state.file_info_map) == 0")
       self.state.is_alive = False
     if self.state.cycle_limit > 0 and self.state.iteration >= self.state.cycle_limit:
+      self.state.logger.info("finish because of cycle limit")
       self.state.is_alive = False
     elif self.state.time_limit > 0 and (self.state.select_time+self.state.test_time) > self.state.time_limit:
+      self.state.logger.info("finish because of time limit")
       self.state.is_alive = False
     elif len(self.state.patch_ranking) == 0:
+      self.state.logger.info("finish because of len(self.state.patch_ranking) == 0")
       self.state.is_alive = False
     elif self.state.finish_at_correct_patch and self.patch_str in self.state.correct_patch_str:
+      self.state.logger.info("finish because of self.state.finish_at_correct_patch and self.patch_str in self.state.correct_patch_str")
       self.state.is_alive = False
     elif self._is_method_over():
+      self.state.logger.info("finish because of self._is_method_over()")
       self.state.is_alive=False
     return self.state.is_alive
   

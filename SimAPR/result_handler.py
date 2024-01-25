@@ -288,29 +288,32 @@ def update_result_branch(state:GlobalState,selected_patch:Union[TbarPatchInfo,Re
   
   if not is_compilable:
     return
+  
   state.logger.debug(f"update_result_branch is called, d4j_negative_test length: {len(state.d4j_negative_test)}")
+  
   for testName in state.d4j_negative_test.copy():
-    if testName in each_result and each_result[testName] and testName in branch_coverage:
+    if testName in each_result and testName in branch_coverage and testName in state.original_branch_cov:
+      # update branch difference
       state.logger.debug(f"update_result_branch updating successfully")
       branch_difference_list: list[Tuple[int,int]] = branch_coverage[testName].diff(state.original_branch_cov[testName]) # list of (branch index, branch count difference)
-      
-      state.critical_branches+=branch_difference_list
-      """
-      if testName in state.critical_branches:
-        state.critical_branches[testName]+=branch_difference_list # TODO: optimize
-      else:
-        state.critical_branches[testName]=branch_difference_list # TODO: optimize
-      """
       
       for branch_tuple in branch_difference_list:
         branch_index:int=branch_tuple[0]
         branch_difference=branch_tuple[1]
         
         #update the critical branch data in GlobalState
-        state.critical_branch_up_down_manager.update(branch_index, branch_difference)
-        #update the critical branch data in each PatchTreeNode which are the ancestor of the selected_patch
+        if each_result[testName]:
+          state.critical_branch_up_down_manager.update(branch_index, branch_difference)
+        #update the branch difference data in each PatchTreeNode which are the ancestor of the selected_patch
         selected_patch.update_branch_result(branch_index, branch_difference)
+        
+      """
+      #update if critical branch
+      if each_result[testName]:
+        state.critical_branches+=branch_difference_list
+        """
+        
     else:
-      state.logger.debug(f"testName in each_result: {testName in each_result}, each_result[testName]: {each_result[testName]}, testName in branch_coverage: {testName in branch_coverage}")
+      state.logger.debug(f"testName in each_result: {testName in each_result}, each_result[testName]: {each_result[testName]}, testName in branch_coverage: {testName in branch_coverage}, testName in state.original_branch_cov: {testName in state.original_branch_cov}")
         
         
