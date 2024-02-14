@@ -66,12 +66,12 @@ def second_vertical_search_recursion(state:GlobalState, isUp:bool, source:PatchT
   if isinstance(source, FileInfo):
     children_map = source.func_info_map
     if state.use_fl_score_in_greybox:
-      children_map = filter_children_list_by_fl_score(state, new_source, children_map)
+      children_map = filter_children_list_by_fl_score(state, source, children_map)
     state.logger.debug(f"second vertical traversing on file level. func_info_map len: {len(children_map)}, isUp: {isUp}, selected_branch: {selected_branch}")
   elif isinstance(source, FuncInfo):
     children_map = source.line_info_map
     if state.use_fl_score_in_greybox:
-      children_map = filter_children_list_by_fl_score(state, new_source, children_map)
+      children_map = filter_children_list_by_fl_score(state, source, children_map)
     state.logger.debug(f"second vertical traversing on func level. line_info_map len: {len(children_map)}, isUp: {isUp}, selected_branch: {selected_branch}")
     """
     # use fl-score in second vertical search
