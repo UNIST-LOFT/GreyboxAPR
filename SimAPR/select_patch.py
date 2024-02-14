@@ -116,7 +116,7 @@ def filter_children_list_by_fl_score(state:GlobalState, source:PatchTreeNode, gi
 
   state.logger.debug(f"filtering the childern list. highest_fl_score: {highest_fl_score}")
 
-  new_map = filter(lambda patchNode: highest_fl_score in list(patchNode.remain_lines_by_score.keys()), given_map)
+  new_map = dict(filter(lambda patchNode: highest_fl_score in list(patchNode.remain_lines_by_score.keys()), given_map))
   
   return new_map
 
