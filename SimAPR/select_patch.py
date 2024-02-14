@@ -111,13 +111,18 @@ def second_vertical_search_recursion(state:GlobalState, isUp:bool, source:PatchT
 def filter_children_list_by_fl_score(state:GlobalState, source:PatchTreeNode, given_map):
   """
   filters the children map of PatchTreeNode to get Nodes with Highest fl score.
+  source should be the upper than line level of the patch tree node.
   """
   highest_fl_score = max(list(source.remain_lines_by_score.keys()))
 
   state.logger.debug(f"filtering the childern list. highest_fl_score: {highest_fl_score}")
-
-  new_map = dict(filter(lambda patchNode: highest_fl_score in list(patchNode[1].remain_lines_by_score.keys()), given_map.items()))
+  if isinstance(source, FuncInfo):
+    new_map = dict(filter(lambda patchNode: highest_fl_score == patchNode[1].fl_score, given_map.items()))
+  else:
+    new_map = dict(filter(lambda patchNode: highest_fl_score in list(patchNode[1].remain_lines_by_score.keys()), given_map.items()))
+  state.logger.debug(f"filtered map: {new_map}")
   
+
   return new_map
 
 def epsilon_select(state:GlobalState,source:PatchTreeNode=None):
