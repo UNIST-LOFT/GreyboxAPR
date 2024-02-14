@@ -65,11 +65,15 @@ def second_vertical_search_recursion(state:GlobalState, isUp:bool, source:PatchT
   state.logger.debug(f"during second vertical search. source: {source}")
   if isinstance(source, FileInfo):
     children_map = source.func_info_map
+    if state.use_fl_score_in_greybox:
+      children_map = filter_children_list_by_fl_score(state, new_source, children_map)
     state.logger.debug(f"second vertical traversing on file level. func_info_map len: {len(children_map)}, isUp: {isUp}, selected_branch: {selected_branch}")
   elif isinstance(source, FuncInfo):
     children_map = source.line_info_map
+    if state.use_fl_score_in_greybox:
+      children_map = filter_children_list_by_fl_score(state, new_source, children_map)
     state.logger.debug(f"second vertical traversing on func level. line_info_map len: {len(children_map)}, isUp: {isUp}, selected_branch: {selected_branch}")
-    
+    """
     # use fl-score in second vertical search
     if state.use_fl_score_in_greybox:
       state.logger.debug(f"select the line with the highest fl_score")
@@ -80,7 +84,7 @@ def second_vertical_search_recursion(state:GlobalState, isUp:bool, source:PatchT
           highest_fl_score = child.fl_score
           highest_line = child
           
-      return second_vertical_search_recursion(state, isUp, highest_line, selected_branch)
+      return second_vertical_search_recursion(state, isUp, highest_line, selected_branch)"""
   elif isinstance(source, LineInfo):
     children_map = source.tbar_type_info_map
     state.logger.debug(f"second vertical traversing on line level. type_info_map len: {len(children_map)}, isUp: {isUp}, selected_branch: {selected_branch}")
@@ -93,6 +97,7 @@ def second_vertical_search_recursion(state:GlobalState, isUp:bool, source:PatchT
   elif source == None:
     epsilon_select(state) #epsilon select function handles the case that source is none.
   
+
   randomly_selected_values = []
   for child in children_map.values():
     randomly_selected_values.append(child.critical_branch_up_down_manager.select_value(selected_branch, isUp))
@@ -103,6 +108,17 @@ def second_vertical_search_recursion(state:GlobalState, isUp:bool, source:PatchT
   
   return second_vertical_search_recursion(state, isUp, new_source, selected_branch)
   
+def filter_children_list_by_fl_score(state:GlobalState, source:PatchTreeNode, given_map):
+  """
+  filters the children map of PatchTreeNode to get Nodes with Highest fl score.
+  """
+  highest_fl_score = max(list(source.remain_lines_by_score.keys()))
+
+  state.logger.debug(f"filtering the childern list. highest_fl_score: {highest_fl_score}")
+
+  new_map = filter(lambda patchNode: highest_fl_score in list(patchNode.remain_lines_by_score.keys()), given_map)
+  
+  return new_map
 
 def epsilon_select(state:GlobalState,source:PatchTreeNode=None):
   """
