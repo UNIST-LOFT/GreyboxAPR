@@ -7,6 +7,20 @@ import pandas as pd
 
 import os
 
+def get_fl_folders():
+    directory_path = 'experiments/yechan/tbar/result'
+
+    # 디렉토리 내의 폴더 목록 가져오기
+    folder_list = [folder for folder in os.listdir(directory_path+"_with_fl") if os.path.isdir(os.path.join(directory_path+"_with_fl", folder))]
+
+    # 특정 패턴으로 끝나는 폴더들만 선택
+    pattern = '-greybox-10-out'
+    filtered_folders = [folder[:-len(pattern)] for folder in folder_list if folder.endswith(pattern) and os.path.exists(os.path.join(directory_path+"_with_fl", folder,"simapr-finished.txt")) and os.path.exists(os.path.join(directory_path, folder[:-len(pattern)]+'-orig-out',"simapr-finished.txt"))]
+    
+    print("modes_with_fl: ", filtered_folders)
+    
+    return filtered_folders
+
 # 디렉토리 경로 설정
 directory_path = 'experiments/yechan/tbar/result'
 
@@ -15,18 +29,19 @@ folder_list = [folder for folder in os.listdir(directory_path) if os.path.isdir(
 
 # 특정 패턴으로 끝나는 폴더들만 선택
 pattern = '-orig-out'
-filtered_folders = [folder[:-len(pattern)] for folder in folder_list if folder.endswith(pattern)]
+filtered_folders = [folder[:-len(pattern)] for folder in folder_list if folder.endswith(pattern) and os.path.exists(os.path.join(directory_path, folder,"simapr-finished.txt"))]
 
 # 결과 출력
-print(filtered_folders)
-
-D4J_1_2_LIST = ['Math_9', 'Math_49', 'Math_23', 'Math_25', 'Time_11', 'Math_10', 'Math_22', 'Math_21', 'Math_16', 'Math_3', 'Math_24', 'Math_26', 'Math_17', 'Lang_53', 'Chart_15', 'Math_5', 'Math_15', 'Math_1', 'Math_30', 'Closure_115', 'Math_2', 'Math_8', 'Math_7', 'Chart_1', 'Math_4',  'Math_19', 'Math_11']#filtered_folders # ["Math_49", "Lang_53", "Chart_15", "Closure_115", "Chart_1"] # 
+print("modes: ", filtered_folders)
+#filtered_folders.remove("Math_28")
+D4J_1_2_LIST = get_fl_folders() #filtered_folders
 
 def plot_patches_ci_java(mode='tbar'):
     global D4J_1_2_LIST
     orig_result:List[int]=[]
     casino_result:List[List[int]]=[]
     greybox_result:List[List[int]]=[]
+    greybox_with_fl_result:List[List[int]]=[]
     
     x_len = 3000
     file_number_per_mode = 10
@@ -56,6 +71,33 @@ def plot_patches_ci_java(mode='tbar'):
 
                 if is_plausible:
                     greybox_result[-1].append(iteration)
+
+                # if time>3600:
+                #     break
+             
+    # Greybox with fl
+    for i in range(1, file_number_per_mode+1):
+        greybox_with_fl_result.append([])
+        for result in D4J_1_2_LIST:
+            if dl:
+                result = result.replace('_', '-')
+            try:
+                result_file=open(f'experiments/yechan/{mode}/result_with_fl/{result}-greybox-{i}-out/simapr-result.json','r')
+            except:
+                continue
+            root=json.load(result_file)
+            result_file.close()
+
+            prev_time=0.
+            for res in root:
+                is_hq=res['result']
+                is_plausible=res['pass_result']
+                iteration=res['iteration']
+                time=res['time']
+                loc=res['config'][0]['location']
+
+                if is_plausible:
+                    greybox_with_fl_result[-1].append(iteration)
 
                 # if time>3600:
                 #     break
@@ -161,6 +203,34 @@ def plot_patches_ci_java(mode='tbar'):
             
     guided_df=pd.DataFrame({'Iteration':guided_x,'Number of valid patches':guided_y})
     seaborn.lineplot(data=guided_df,x='Iteration',y='Number of valid patches',color='g',label='Greybox')
+    #for i in range(5):
+        #print(f'{i*60}: {np.std(temp_[i])}')
+    
+    # Greybox with fl
+    guided_list:List[List[int]]=[]
+    guided_x=[]
+    guided_y=[]
+    temp_=[[],[],[],[],[]]
+    for j in range(file_number_per_mode):
+        print(f"print by Greybox fl {j}")
+        cur_result=sorted(greybox_with_fl_result[j])
+        guided_list.append([0])
+        for i in range(0,x_len):
+            if i in cur_result:
+                guided_list[-1].append(guided_list[-1][-1]+cur_result.count(i)) #cumulative
+                guided_x.append(i)
+                guided_y.append(guided_list[-1][-1])
+            else:
+                guided_list[-1].append(guided_list[-1][-1])
+                guided_x.append(i)
+                guided_y.append(guided_list[-1][-1])
+            
+            
+            if i%1000==1:
+                print(i,":",guided_y[-1])
+            
+    guided_df=pd.DataFrame({'Iteration':guided_x,'Number of valid patches':guided_y})
+    seaborn.lineplot(data=guided_df,x='Iteration',y='Number of valid patches',color='#CC00CC',label='Greybox_fl')
     #for i in range(5):
         #print(f'{i*60}: {np.std(temp_[i])}')
 

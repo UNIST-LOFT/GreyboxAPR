@@ -65,16 +65,28 @@ def second_vertical_search_recursion(state:GlobalState, isUp:bool, source:PatchT
   state.logger.debug(f"during second vertical search. source: {source}")
   if isinstance(source, FileInfo):
     children_map = source.func_info_map
-    state.logger.debug(f"second vertical traversing on file level. func_info_map: {children_map}, isUp: {isUp}, selected_branch: {selected_branch}")
+    state.logger.debug(f"second vertical traversing on file level. func_info_map len: {len(children_map)}, isUp: {isUp}, selected_branch: {selected_branch}")
   elif isinstance(source, FuncInfo):
     children_map = source.line_info_map
-    state.logger.debug(f"second vertical traversing on func level. line_info_map: {children_map}, isUp: {isUp}, selected_branch: {selected_branch}")
+    state.logger.debug(f"second vertical traversing on func level. line_info_map len: {len(children_map)}, isUp: {isUp}, selected_branch: {selected_branch}")
+    
+    # use fl-score in second vertical search
+    if state.use_fl_score_in_greybox:
+      state.logger.debug(f"select the line with the highest fl_score")
+      highest_fl_score = -1
+      highest_line = None
+      for child in children_map.values():
+        if child.fl_score > highest_fl_score:
+          highest_fl_score = child.fl_score
+          highest_line = child
+          
+      return second_vertical_search_recursion(state, isUp, highest_line, selected_branch)
   elif isinstance(source, LineInfo):
     children_map = source.tbar_type_info_map
-    state.logger.debug(f"second vertical traversing on line level. type_info_map: {children_map}, isUp: {isUp}, selected_branch: {selected_branch}")
+    state.logger.debug(f"second vertical traversing on line level. type_info_map len: {len(children_map)}, isUp: {isUp}, selected_branch: {selected_branch}")
   elif isinstance(source, TbarTypeInfo): #Only for Tbar
     children_map = source.tbar_case_info_map
-    state.logger.debug(f"second vertical traversing on type level. case_info_map: {children_map}, isUp: {isUp}, selected_branch: {selected_branch}")
+    state.logger.debug(f"second vertical traversing on type level. case_info_map len: {len(children_map)}, isUp: {isUp}, selected_branch: {selected_branch}")
   elif isinstance(source, TbarCaseInfo): #Only for Tbar
     state.logger.debug(f"second vertical search done. isUp: {isUp}, selected_branch: {selected_branch}")
     return source
@@ -189,11 +201,12 @@ def select_patch_guide_algorithm(state: GlobalState,elements:dict,parent:PatchTr
         p_b.append(info.positive_pf.select_value(PT.ALPHA_INIT,PT.BETA_INIT))
       else:
         p_b.append(0.)
-
+      """
       if state.mode==Mode.casino or state.mode == Mode.greybox:
         state.logger.debug(f'Basic: a: {info.pf.pass_count}, b: {info.pf.fail_count}')
       else:
         state.logger.debug(f'Branch Coverage: a: {info.coverage_info.pass_count}, b: {info.coverage_info.fail_count}')
+      """
 
     max_score=0.
     max_index=-1

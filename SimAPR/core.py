@@ -838,6 +838,7 @@ class GlobalState:
     
     # 2nd vertical search things in greybox-APR
     # self.critical_branches:list[Tuple[int,int]] = [] #saves every single data of critical branches. list of tuple (branch index, branch count difference)
+    self.use_fl_score_in_greybox = False
     self.critical_branch_up_down_manager = CriticalBranchesUpDownManager() # It is for the saving the branch count difference regardless of test cases.
     
 def patch_ochiai_calculator(state:GlobalState, str):

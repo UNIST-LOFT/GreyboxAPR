@@ -10,12 +10,12 @@ def run(project):
    for i in range(1, file_number_per_mode+1):
       print(f'Run {project}-greybox-{i}')
       seed=i
-      result=subprocess.run(["python3", "SimAPR/simapr.py", "-o", f"experiments/yechan/tbar/result/{project}-greybox-{seed}-out", "--cycle-limit", "3000", "-m", "greybox", "--instr-cp", "/root/project/JPatchInst", "--branch-output", f"experiments/tbar/result/branch/{project}t", "-w", f"/root/project/SimAPR/TBar/d4j/{project}", "-t", "420000", "--seed", f"{seed}", "--use-simulation-mode", f"/root/project/SimAPR/experiments/tbar/result/cache/{project}-cache.json", "-k", "template", "--skip-valid", "--", "python3", "/root/project/SimAPR/SimAPR/script/d4j_run_test.py", "/root/project/SimAPR/TBar/buggy"],
+      result=subprocess.run(["python3", "SimAPR/simapr.py", "-o", f"experiments/yechan/tbar/result_with_fl/{project}-greybox-{seed}-out", "--cycle-limit", "3000", "-m", "greybox", "--instr-cp", "/root/project/JPatchInst", "--branch-output", f"experiments/tbar/result/branch/{project}t", "-w", f"/root/project/SimAPR/TBar/d4j/{project}", "-t", "420000", "--seed", f"{seed}", "--use-simulation-mode", f"/root/project/SimAPR/experiments/tbar/result/cache/{project}-cache.json", "-k", "template", "--skip-valid", "--use-fl-score-in-greybox", "--", "python3", "/root/project/SimAPR/SimAPR/script/d4j_run_test.py", "/root/project/SimAPR/TBar/buggy"],
                             stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
       with open(f'experiments/yechan/result/{project}-greybox-{i}.log','w+') as f:
          f.write(result.stdout.decode("utf-8"))
       print(f'Finish {project}-greybox-{i} with returncode {result.returncode}')
-
+   """
    #run casino 10 times
    for i in range(1, file_number_per_mode+1):
       print(f'Run {project}-casino-{i}')
@@ -32,6 +32,7 @@ def run(project):
    with open(f'experiments/yechan/result/{project}-orig.log','w+') as f:
       f.write(result.stdout.decode("utf-8"))
    print(f'Finish {project}-orig with returncode {result.returncode}')
+   """
    
 
 from sys import argv
