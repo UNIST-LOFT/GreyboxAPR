@@ -230,7 +230,7 @@ def plot_patches_ci_java(mode='tbar'):
                 print(i,":",guided_y[-1])
             
     guided_df=pd.DataFrame({'Iteration':guided_x,'Number of valid patches':guided_y})
-    seaborn.lineplot(data=guided_df,x='Iteration',y='Number of valid patches',color='#CC00CC',label='Greybox_fl')
+    seaborn.lineplot(data=guided_df,x='Iteration',y='Number of valid patches',color='#CC00CC',label='Greybox_wt')
     #for i in range(5):
         #print(f'{i*60}: {np.std(temp_[i])}')
 
