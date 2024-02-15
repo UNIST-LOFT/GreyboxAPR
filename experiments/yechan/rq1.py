@@ -11,13 +11,13 @@ def get_fl_folders():
     directory_path = 'experiments/yechan/tbar/result'
 
     # 디렉토리 내의 폴더 목록 가져오기
-    folder_list = [folder for folder in os.listdir(directory_path+"_with_fl") if os.path.isdir(os.path.join(directory_path+"_with_fl", folder))]
+    folder_list = [folder for folder in os.listdir(directory_path+"_with_weight") if os.path.isdir(os.path.join(directory_path+"_with_weight", folder))]
 
-    # 특정 패턴으로 끝나는 폴더들만 선택
+    # 특정 패턴으로 끝나는 폴더들만 선택 = result_with_weight에서 greybox-10 이 끝나있고, result에서 orig가 끝나있어야 함.
     pattern = '-greybox-10-out'
-    filtered_folders = [folder[:-len(pattern)] for folder in folder_list if folder.endswith(pattern) and os.path.exists(os.path.join(directory_path+"_with_fl", folder,"simapr-finished.txt")) and os.path.exists(os.path.join(directory_path, folder[:-len(pattern)]+'-orig-out',"simapr-finished.txt"))]
+    filtered_folders = [folder[:-len(pattern)] for folder in folder_list if folder.endswith(pattern) and os.path.exists(os.path.join(directory_path+"_with_weight", folder,"simapr-finished.txt")) and os.path.exists(os.path.join(directory_path, folder[:-len(pattern)]+'-orig-out',"simapr-finished.txt"))]
     
-    print("modes_with_fl: ", filtered_folders)
+    print("modes_with_weight: ", filtered_folders)
     
     return filtered_folders
 
@@ -41,7 +41,7 @@ def plot_patches_ci_java(mode='tbar'):
     orig_result:List[int]=[]
     casino_result:List[List[int]]=[]
     greybox_result:List[List[int]]=[]
-    greybox_with_fl_result:List[List[int]]=[]
+    greybox_with_weight_result:List[List[int]]=[]
     
     x_len = 3000
     file_number_per_mode = 10
@@ -77,12 +77,12 @@ def plot_patches_ci_java(mode='tbar'):
              
     # Greybox with fl
     for i in range(1, file_number_per_mode+1):
-        greybox_with_fl_result.append([])
+        greybox_with_weight_result.append([])
         for result in D4J_1_2_LIST:
             if dl:
                 result = result.replace('_', '-')
             try:
-                result_file=open(f'experiments/yechan/{mode}/result_with_fl/{result}-greybox-{i}-out/simapr-result.json','r')
+                result_file=open(f'experiments/yechan/{mode}/result_with_weight/{result}-greybox-{i}-out/simapr-result.json','r')
             except:
                 continue
             root=json.load(result_file)
@@ -97,7 +97,7 @@ def plot_patches_ci_java(mode='tbar'):
                 loc=res['config'][0]['location']
 
                 if is_plausible:
-                    greybox_with_fl_result[-1].append(iteration)
+                    greybox_with_weight_result[-1].append(iteration)
 
                 # if time>3600:
                 #     break
@@ -213,7 +213,7 @@ def plot_patches_ci_java(mode='tbar'):
     temp_=[[],[],[],[],[]]
     for j in range(file_number_per_mode):
         print(f"print by Greybox fl {j}")
-        cur_result=sorted(greybox_with_fl_result[j])
+        cur_result=sorted(greybox_with_weight_result[j])
         guided_list.append([0])
         for i in range(0,x_len):
             if i in cur_result:

@@ -35,7 +35,8 @@ def parse_args(argv: list) -> GlobalState:
               "use-pattern", "use-simulation-mode=",
               'seapr-mode=','top-fl=','ignore-compile-error',
               'finish-correct-patch','not-count-compile-fail','not-use-guide','not-use-epsilon',
-              'finish-top-method', 'prapr-mode','instr-cp=','branch-output=', 'use-fl-score-in-greybox']
+              'finish-top-method', 'prapr-mode','instr-cp=','branch-output=', 'use-fl-score-in-greybox',
+              'weight-critical-branch']
   opts, args = getopt.getopt(argv[1:], "ho:w:t:m:c:T:E:k:", longopts)
   state = GlobalState()
   state.original_args = argv
@@ -145,6 +146,8 @@ def parse_args(argv: list) -> GlobalState:
       state.branch_output=a
     elif o in ['--use-fl-score-in-greybox']:
       state.use_fl_score_in_greybox=True
+    elif o in ['weight-critical-branch']:
+      state.weight_critical_branch=True
 
   # make output directory if not exists
   if not os.path.exists(state.out_dir):

@@ -48,7 +48,11 @@ def second_vertical_search(state:GlobalState, source:PatchTreeNode):
       _type_: _description_
   """
   # Select a random branch. maybe with some 가중치?
-  selected_branch:int = random.choice(list(state.critical_branch_up_down_manager.upDownDict.keys()))
+  if state.weight_critical_branch:
+    weight = list(map(lambda a: max(a.branchUpScore, a.branchDownScore), state.critical_branch_up_down_manager.upDownDict.values()))
+    selected_branch:int = random.choices(list(state.critical_branch_up_down_manager.upDownDict.keys()), weights=weight)[0]
+  else:
+    selected_branch:int = random.choice(list(state.critical_branch_up_down_manager.upDownDict.keys()))
   isUp:bool=state.critical_branch_up_down_manager.get_isUp(selected_branch)
   state.logger.info(f"beginning vertical search. selected branch: {selected_branch}, isUp: {isUp}")
   # vertical traversal with the selected branch by calling recursion.
