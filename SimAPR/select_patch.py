@@ -90,12 +90,19 @@ def second_vertical_search_recursion(state:GlobalState, isUp:bool, source:PatchT
           
       return second_vertical_search_recursion(state, isUp, highest_line, selected_branch)"""
   elif isinstance(source, LineInfo):
-    children_map = source.tbar_type_info_map
-    state.logger.debug(f"second vertical traversing on line level. type_info_map len: {len(children_map)}, isUp: {isUp}, selected_branch: {selected_branch}")
+    if state.tool_type == ToolType.TEMPLATE:
+      children_map = source.tbar_type_info_map
+      state.logger.debug(f"second vertical traversing on line level. type_info_map len: {len(children_map)}, isUp: {isUp}, selected_branch: {selected_branch}")
+    elif state.tool_type == ToolType.LEARNING:
+      children_map = source.recoder_case_info_map
+      state.logger.debug(f"second vertical traversing on line level. recoder_case_info_map len: {len(children_map)}, isUp: {isUp}, selected_branch: {selected_branch}")
   elif isinstance(source, TbarTypeInfo): #Only for Tbar
     children_map = source.tbar_case_info_map
     state.logger.debug(f"second vertical traversing on type level. case_info_map len: {len(children_map)}, isUp: {isUp}, selected_branch: {selected_branch}")
   elif isinstance(source, TbarCaseInfo): #Only for Tbar
+    state.logger.debug(f"second vertical search done. isUp: {isUp}, selected_branch: {selected_branch}")
+    return source
+  elif isinstance(source, RecoderCaseInfo): #Only for Recorder
     state.logger.debug(f"second vertical search done. isUp: {isUp}, selected_branch: {selected_branch}")
     return source
   elif source == None:
