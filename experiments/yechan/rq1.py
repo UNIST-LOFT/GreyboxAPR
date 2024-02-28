@@ -11,29 +11,17 @@ def get_fl_folders():
     directory_path = 'experiments/yechan/tbar/result'
 
     # 디렉토리 내의 폴더 목록 가져오기
-    folder_list = [folder for folder in os.listdir(directory_path+"_with_weight") if os.path.isdir(os.path.join(directory_path+"_with_weight", folder))]
+    folder_list = [folder for folder in os.listdir(directory_path) if os.path.isdir(os.path.join(directory_path, folder))]
 
     # 특정 패턴으로 끝나는 폴더들만 선택 = result_with_weight에서 greybox-10 이 끝나있고, result에서 orig가 끝나있어야 함.
     pattern = '-greybox-10-out'
-    filtered_folders = [folder[:-len(pattern)] for folder in folder_list if folder.endswith(pattern) and os.path.exists(os.path.join(directory_path+"_with_weight", folder,"simapr-finished.txt")) and os.path.exists(os.path.join(directory_path, folder[:-len(pattern)]+'-orig-out',"simapr-finished.txt"))]
+    filtered_folders = [folder[:-len(pattern)] for folder in folder_list if folder.endswith(pattern) and os.path.exists(os.path.join(directory_path, folder,"simapr-finished.txt"))]# and os.path.exists(os.path.join(directory_path, folder[:-len(pattern)]+'-orig-out',"simapr-finished.txt"))]
     
-    print("modes_with_weight: ", filtered_folders)
+    print("modes: ", filtered_folders)
     
     return filtered_folders
 
-# 디렉토리 경로 설정
-directory_path = 'experiments/yechan/tbar/result'
 
-# 디렉토리 내의 폴더 목록 가져오기
-folder_list = [folder for folder in os.listdir(directory_path) if os.path.isdir(os.path.join(directory_path, folder))]
-
-# 특정 패턴으로 끝나는 폴더들만 선택
-pattern = '-orig-out'
-filtered_folders = [folder[:-len(pattern)] for folder in folder_list if folder.endswith(pattern) and os.path.exists(os.path.join(directory_path, folder,"simapr-finished.txt"))]
-
-# 결과 출력
-print("modes: ", filtered_folders)
-#filtered_folders.remove("Math_28")
 D4J_1_2_LIST = get_fl_folders() #filtered_folders
 
 def plot_patches_ci_java(mode='tbar'):
@@ -74,7 +62,7 @@ def plot_patches_ci_java(mode='tbar'):
 
                 # if time>3600:
                 #     break
-             
+    """    
     # Greybox with fl
     for i in range(1, file_number_per_mode+1):
         greybox_with_weight_result.append([])
@@ -101,15 +89,15 @@ def plot_patches_ci_java(mode='tbar'):
 
                 # if time>3600:
                 #     break
-
+    """
     # Casino
-    for i in range(1, file_number_per_mode+1):
+    for i in range(0, file_number_per_mode):
         casino_result.append([])
         for result in D4J_1_2_LIST:
             if dl:
                 result = result.replace('_', '-')
             try:
-                result_file=open(f'experiments/yechan/{mode}/result/{result}-casino-{i}-out/simapr-result.json','r')
+                result_file=open(f'experiments/{mode}/result/{result}-casino-{i}/simapr-result.json','r')
             except:
                 continue
             root=json.load(result_file)
@@ -135,7 +123,7 @@ def plot_patches_ci_java(mode='tbar'):
         if dl:
             result = result.replace('_', '-')
         try:
-            result_file=open(f'experiments/yechan/{mode}/result/{result}-orig-out/simapr-result.json','r')
+            result_file=open(f'experiments/{mode}/result/{result}-orig/simapr-result.json','r')
         except:
             continue
         root=json.load(result_file)
@@ -205,7 +193,7 @@ def plot_patches_ci_java(mode='tbar'):
     seaborn.lineplot(data=guided_df,x='Iteration',y='Number of valid patches',color='g',label='Greybox')
     #for i in range(5):
         #print(f'{i*60}: {np.std(temp_[i])}')
-    
+    """
     # Greybox with fl
     guided_list:List[List[int]]=[]
     guided_x=[]
@@ -233,7 +221,7 @@ def plot_patches_ci_java(mode='tbar'):
     seaborn.lineplot(data=guided_df,x='Iteration',y='Number of valid patches',color='#CC00CC',label='Greybox_wt')
     #for i in range(5):
         #print(f'{i*60}: {np.std(temp_[i])}')
-
+    """
     # Casino
     guided_list:List[List[int]]=[]
     guided_x=[]
