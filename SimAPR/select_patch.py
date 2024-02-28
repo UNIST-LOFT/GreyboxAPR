@@ -200,7 +200,7 @@ def select_patch_guide_algorithm(state: GlobalState,elements:dict,parent:PatchTr
   one step of vertical traversal.
   This function selects a child node of the 'parent' in the patch tree.
   - select a random value from the each child node. (the values are temporarily stored in 'p_b'in this function)
-  - select the child node with the highst value.
+  - select the child node with the highest value.
   And return the selected child node.
 
   Args:
@@ -662,7 +662,8 @@ def select_patch_recoder_guided(state: GlobalState) -> RecoderPatchInfo:
   # frequency of basic patches from total searched patches in subtree
   p_bp_frequency = list()
 
-  if state.total_basic_patch == 0 or state.not_use_guided_search:
+  if  (state.mode==Mode.casino and state.total_basic_patch==0) or \
+    (state.mode==Mode.greybox and state.total_basic_patch==0) or state.total_basic_patch == 0 or state.not_use_guided_search:
     selected_switch_info = epsilon_select(state)
     state.patch_ranking.remove(selected_switch_info.location)
     result = RecoderPatchInfo(selected_switch_info)
