@@ -474,6 +474,7 @@ class EnvGenerator:
       new_env['GREYBOX_BRANCH']='0'
       new_env['CLASSPATH']=state.instrumenter_classpath
     return new_env
+  
   @staticmethod
   def get_new_env_recoder(state: 'GlobalState', patch: 'RecoderPatchInfo', test: str) -> Dict[str, str]:
     new_env = os.environ.copy()
@@ -495,6 +496,7 @@ class EnvGenerator:
       new_env['GREYBOX_BRANCH']='0'
       new_env['CLASSPATH']=state.instrumenter_classpath
     return new_env
+  
   @staticmethod
   def get_new_env_d4j_positive_tests(state: 'GlobalState', tests: List[str], new_env: Dict[str, str]) -> Dict[str, str]:
     new_env["SIMAPR_TEST"] = "ALL"
@@ -625,6 +627,7 @@ class TbarPatchInfo:
     return ",".join(result)
   
 class RecoderPatchInfo:
+
   def __init__(self, recoder_case_info: RecoderCaseInfo) -> None:
     self.recoder_case_info = recoder_case_info
     self.line_info = self.recoder_case_info.parent
@@ -632,16 +635,34 @@ class RecoderPatchInfo:
     self.file_info = self.func_info.parent
     self.out_dist = -1.0
     self.out_diff = False
+
   def update_result(self, result: bool, n: float, b_n:float,exp_alpha: bool) -> None:
     self.recoder_case_info.pf.update(result, n,b_n, exp_alpha)
     self.line_info.pf.update(result, n,b_n, exp_alpha)
     self.func_info.pf.update(result, n,b_n, exp_alpha)
     self.file_info.pf.update(result, n,b_n, exp_alpha)
+
   def update_result_positive(self, result: bool, n: float, b_n:float,exp_alpha: bool) -> None:
     self.recoder_case_info.positive_pf.update(result, n,b_n, exp_alpha)
     self.line_info.positive_pf.update(result, n,b_n, exp_alpha)
     self.func_info.positive_pf.update(result, n,b_n, exp_alpha)
     self.file_info.positive_pf.update(result, n,b_n, exp_alpha)
+
+  def update_branch_result(self, branch_index:int, branch_difference:int) -> None:
+    """
+    Used for the GreyBox Approach.
+    
+    This function updates the CriticalBranchUpDown in every node in path to the patch
+
+    Args:
+        branch_index (int): _description_
+        branch_difference (int): _description_
+    """
+    self.recoder_case_info.critical_branch_up_down_manager.update(branch_index, branch_difference)
+    self.line_info.critical_branch_up_down_manager.update(branch_index, branch_difference)
+    self.func_info.critical_branch_up_down_manager.update(branch_index, branch_difference)
+    self.file_info.critical_branch_up_down_manager.update(branch_index, branch_difference)
+
   def remove_patch(self, state: 'GlobalState') -> None:
     if self.recoder_case_info.location not in self.line_info.recoder_case_info_map:
       state.logger.critical(f"{self.recoder_case_info.location} not in {self.line_info.recoder_case_info_map}")
@@ -684,18 +705,23 @@ class RecoderPatchInfo:
     if len(state.java_remain_patch_ranking[self.line_info.fl_score])==0:
       state.java_remain_patch_ranking.pop(self.line_info.fl_score)
     self.func_info.searched_patches_by_score[fl_score] += 1
+
   def to_json_object(self) -> dict:
     conf = dict()
     conf["location"] = self.recoder_case_info.location
     conf["id"] = self.line_info.line_id
     conf["case_id"] = self.recoder_case_info.case_id
     return conf
+  
   def to_str(self) -> str:
     return f"{self.recoder_case_info.location}"
+  
   def __str__(self) -> str:
     return self.to_str()
+  
   def to_str_sw_cs(self) -> str:
     return self.to_str()
+  
   @staticmethod
   def list_to_str(selected_patch: list) -> str:
     result = list()

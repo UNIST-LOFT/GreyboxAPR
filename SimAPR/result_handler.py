@@ -261,7 +261,7 @@ def update_result_branch(state:GlobalState,selected_patch:Union[TbarPatchInfo,Re
                          is_compilable:bool,each_result:Dict[str,bool],pass_result:bool):
   """
   This function is used for the GreyBox Approach of the Casino.
-  It deals with the branch data of patched program runs when wach test has end.
+  It deals with the branch data of patched program runs when each test has end.
   This function basically handle the every patch testing result that has to be done for the GreyBox approach. 
   
   This function does the jobs below.
