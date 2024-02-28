@@ -474,6 +474,7 @@ class EnvGenerator:
       new_env['GREYBOX_BRANCH']='0'
       new_env['CLASSPATH']=state.instrumenter_classpath
     return new_env
+  
   @staticmethod
   def get_new_env_recoder(state: 'GlobalState', patch: 'RecoderPatchInfo', test: str) -> Dict[str, str]:
     new_env = os.environ.copy()
@@ -495,6 +496,7 @@ class EnvGenerator:
       new_env['GREYBOX_BRANCH']='0'
       new_env['CLASSPATH']=state.instrumenter_classpath
     return new_env
+  
   @staticmethod
   def get_new_env_d4j_positive_tests(state: 'GlobalState', tests: List[str], new_env: Dict[str, str]) -> Dict[str, str]:
     new_env["SIMAPR_TEST"] = "ALL"
@@ -646,7 +648,7 @@ class RecoderPatchInfo:
     self.func_info.positive_pf.update(result, n,b_n, exp_alpha)
     self.file_info.positive_pf.update(result, n,b_n, exp_alpha)
 
-def update_branch_result(self, branch_index:int, branch_difference:int) -> None:
+  def update_branch_result(self, branch_index:int, branch_difference:int) -> None:
     """
     Used for the GreyBox Approach.
     
