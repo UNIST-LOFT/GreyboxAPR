@@ -324,7 +324,8 @@ class RecoderLoop(TBarLoop):
         if patch.recoder_case_info.location=='original':
           self.state.original_branch_cov[test]=cur_cov
       except OSError as e:
-        self.state.logger.warning(f"Greybox result not found for {patch.recoder_case_info.location} {test}")
+        self.state.logger.error(e)
+        self.state.logger.warning(f"Greybox result not found for {patch.recoder_case_info.location} {test}. expected location: {new_env['GREYBOX_RESULT']}")
 
     return compilable, run_result,run_time,cur_cov
   def run_test_positive(self, patch: RecoderPatchInfo) -> Tuple[bool,float]:

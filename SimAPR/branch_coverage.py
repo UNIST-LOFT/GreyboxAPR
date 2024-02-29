@@ -32,6 +32,7 @@ def parse_cov(logger:Logger, cov_file: str):
     :return: branch coverage vector
     """
     cov=BranchCoverage()
+    logger.info(f"i want to open {cov_file}")
     with open(cov_file, 'r') as f:
         for line in f:
             try:
