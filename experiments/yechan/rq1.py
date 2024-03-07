@@ -8,7 +8,7 @@ import pandas as pd
 import os
 
 def get_fl_folders():
-    directory_path = 'experiments/yechan/tbar/result'
+    directory_path = 'experiments/yechan/alphaRepair/result'
 
     # 디렉토리 내의 폴더 목록 가져오기
     folder_list = [folder for folder in os.listdir(directory_path) if os.path.isdir(os.path.join(directory_path, folder))]
@@ -24,7 +24,7 @@ def get_fl_folders():
 
 D4J_1_2_LIST = get_fl_folders() #filtered_folders
 
-def plot_patches_ci_java(mode='tbar'):
+def plot_patches_ci_java(mode='alphaRepair'):
     global D4J_1_2_LIST
     orig_result:List[int]=[]
     casino_result:List[List[int]]=[]
@@ -149,12 +149,12 @@ def plot_patches_ci_java(mode='tbar'):
     print(mode)
 
     # Original tool
-    if mode=='tbar': name='TBar'
+    if mode=='alphaRepair': name='alphaRepair'
     elif mode=='fixminer': name='Fixminer'
     elif mode=='kpar': name='kPar'
     elif mode=='avatar': name='Avatar'
     elif mode=='recoder': name='Recoder'
-    elif mode=='alpharepair': name='AlphaRepair'
+    elif mode=='alpharepair': name='alphaRepair'
 
     # Original
     results=sorted(orig_result)
@@ -261,4 +261,4 @@ def plot_patches_ci_java(mode='tbar'):
 
 
 
-plot_patches_ci_java('tbar')
+plot_patches_ci_java('alphaRepair')
