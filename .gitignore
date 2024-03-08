@@ -11,4 +11,4 @@
 **/*.pdf
 **/*.log
 **/experiments/scripts
-**/search.py
+search.py

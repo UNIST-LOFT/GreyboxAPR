@@ -507,6 +507,27 @@ class RecoderLoop(TBarLoop):
               if os.path.exists(cov_file):
                 cur_cov=branch_coverage.parse_cov(self.state.logger,cov_file)
                 coverages[test]=cur_cov
+              else: # if there is no branch data in cache, run the test again
+                self.state.logger.warning(f"There is no branch file while using cache. expected location: {cov_file}")
+                is_compilable =True
+                for neg in self.state.d4j_negative_test:
+                  compilable, run_result,fail_time,cur_cov = self.run_test(patch, neg)
+                  self.state.test_time+=fail_time
+                  if not compilable:
+                    is_compilable = False
+                  if run_result:
+                    pass_exists = True
+                  if not run_result:
+                    result = False
+                    each_result[neg]=False
+                    if self.state.use_partial_validation and self.state.instrumenter_classpath!='' and \
+                      self.state.mode==Mode.seapr:
+                      break
+                  else:
+                    each_result[neg]=True
+
+                  if cur_cov is not None:
+                    coverages[neg]=cur_cov
           result_handler.update_result_branch(self.state,patch,coverages,is_compilable,each_result,pass_result)
 
         if is_compilable or self.state.ignore_compile_error:

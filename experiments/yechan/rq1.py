@@ -15,7 +15,7 @@ def get_fl_folders():
 
     # 특정 패턴으로 끝나는 폴더들만 선택 = result_with_weight에서 greybox-10 이 끝나있고, result에서 orig가 끝나있어야 함.
     pattern = '-greybox-10-out'
-    filtered_folders = [folder[:-len(pattern)] for folder in folder_list if folder.endswith(pattern) and os.path.exists(os.path.join(directory_path, folder,"simapr-finished.txt"))]# and os.path.exists(os.path.join(directory_path, folder[:-len(pattern)]+'-orig-out',"simapr-finished.txt"))]
+    filtered_folders = [folder[:-len(pattern)] for folder in folder_list if folder.endswith(pattern) and os.path.exists(os.path.join(directory_path, folder,"simapr-finished.txt")) and os.path.exists(os.path.join(directory_path, folder[:-len(pattern)]+'-orig-out',"simapr-finished.txt"))]
     
     print("modes: ", filtered_folders)
     
@@ -91,13 +91,13 @@ def plot_patches_ci_java(mode='alphaRepair'):
                 #     break
     """
     # Casino
-    for i in range(0, file_number_per_mode):
+    for i in range(1, file_number_per_mode+1):
         casino_result.append([])
         for result in D4J_1_2_LIST:
             if dl:
                 result = result.replace('_', '-')
             try:
-                result_file=open(f'experiments/{mode}/result/{result}-casino-{i}/simapr-result.json','r')
+                result_file=open(f'experiments/yechan/{mode}/result/{result}-casino-{i}-out/simapr-result.json','r')
             except:
                 continue
             root=json.load(result_file)
@@ -123,7 +123,7 @@ def plot_patches_ci_java(mode='alphaRepair'):
         if dl:
             result = result.replace('_', '-')
         try:
-            result_file=open(f'experiments/{mode}/result/{result}-orig/simapr-result.json','r')
+            result_file=open(f'experiments/yechan/{mode}/result/{result}-orig-out/simapr-result.json','r')
         except:
             continue
         root=json.load(result_file)
