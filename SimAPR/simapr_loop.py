@@ -63,7 +63,7 @@ class TBarLoop():
         Tuple[bool, bool,float,branch_coverage.BranchCoverage]: _description_
     """
     new_env=EnvGenerator.get_new_env_tbar(self.state, patch, test)
-    if state.mode == Mode.greybox:
+    if self.state.mode == Mode.greybox:
       greybox_target_branches = list(self.state.critical_branch_up_down_manager.upDownDict.keys())
       greybox_target_branches_str = ""
       if not greybox_target_branches:
