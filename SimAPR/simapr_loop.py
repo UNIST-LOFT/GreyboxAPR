@@ -63,7 +63,7 @@ class TBarLoop():
         Tuple[bool, bool,float,branch_coverage.BranchCoverage]: _description_
     """
     new_env=EnvGenerator.get_new_env_tbar(self.state, patch, test)
-    if self.state.mode == Mode.greybox:
+    if self.state.mode == Mode.greybox and self.state.optimized_instrumentation:
       greybox_target_branches = list(self.state.critical_branch_up_down_manager.upDownDict.keys())
       greybox_target_branches_str = ""
       if not greybox_target_branches:
@@ -321,6 +321,15 @@ class RecoderLoop(TBarLoop):
   
   def run_test(self, patch: RecoderPatchInfo, test: str) -> Tuple[bool, bool, float, branch_coverage.BranchCoverage]:
     new_env=EnvGenerator.get_new_env_recoder(self.state, patch, test)
+    if self.state.mode == Mode.greybox and self.state.optimized_instrumentation:
+      greybox_target_branches = list(self.state.critical_branch_up_down_manager.upDownDict.keys())
+      greybox_target_branches_str = ""
+      if not greybox_target_branches:
+        # when the list is empty
+        greybox_target_branches_str = "-1"
+      else:
+        greybox_target_branches_str = ";".join(greybox_target_branches)
+      new_env.update({"GREYBOX_TARGET_BRANCHES":greybox_target_branches_str})
     start_time=time.time()
     compilable, run_result, is_timeout = run_test.run_fail_test_d4j(self.state, new_env)
     run_time=time.time() - start_time
