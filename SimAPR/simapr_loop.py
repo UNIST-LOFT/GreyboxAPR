@@ -62,6 +62,7 @@ class TBarLoop():
     Returns:
         Tuple[bool, bool,float,branch_coverage.BranchCoverage]: _description_
     """
+    have_to_find_branch_data = True if not self.state.optimized_instrumentation else False
     new_env=EnvGenerator.get_new_env_tbar(self.state, patch, test)
     if self.state.mode == Mode.greybox and self.state.optimized_instrumentation:
       greybox_target_branches = list(self.state.critical_branch_up_down_manager.upDownDict.keys())
@@ -70,17 +71,29 @@ class TBarLoop():
         # when the list is empty
         greybox_target_branches_str = "-1"
       else:
+        have_to_find_branch_data = True
         greybox_target_branches_str = ";".join(greybox_target_branches)
       new_env.update({"GREYBOX_TARGET_BRANCHES":greybox_target_branches_str})
+      self.state.logger.info(f"GREYBOX_TARGET_BRANCHES:{new_env['GREYBOX_TARGET_BRANCHES']}")
     start_time=time.time()
     compilable, run_result, is_timeout = run_test.run_fail_test_d4j(self.state, new_env)
+    
+    if self.state.mode == Mode.greybox and self.state.optimized_instrumentation and run_result:
+      have_to_find_branch_data = True
+      self.state.logger.info("Test passed. Running the test again with full instrumentation.")
+      new_env["GREYBOX_TARGET_BRANCHES"] = ""
+      compilable, run_result, is_timeout = run_test.run_fail_test_d4j(self.state, new_env)
+      if not run_result:
+        self.state.logger.warning("the result has changed after instrumentation")
+    
     run_time=time.time()-start_time
 
     cur_cov=None
-    if self.state.mode==Mode.greybox and self.state.instrumenter_classpath!='' and compilable:
+    if self.state.mode==Mode.greybox and self.state.instrumenter_classpath!='' and compilable and have_to_find_branch_data:
       try:
         cur_cov=branch_coverage.parse_cov(self.state.logger,new_env['GREYBOX_RESULT'])
         dest_file_name = os.path.join(self.state.branch_output,f'{patch.tbar_case_info.location.replace("/","#")}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt')
+        self.state.logger.info(f"branch dest: {dest_file_name}")
         os.makedirs(os.path.dirname(dest_file_name), exist_ok=True)
         shutil.copyfile(new_env['GREYBOX_RESULT'],dest_file_name)
         # if self.state.use_simulation_mode:
@@ -182,9 +195,11 @@ class TBarLoop():
               self.state.instrumenter_classpath=='': 
             break
         else:
+          self.state.logger.debug(f"each result neg name: {neg}")
           each_result[neg]=True
 
         if cur_cov is not None:
+          self.state.logger.debug(f"coverages neg name: {neg}")
           coverages[neg]=cur_cov
           
         self.state.test_time+=fail_time
@@ -195,8 +210,16 @@ class TBarLoop():
         self.state.patch_to_branches_map[patch.tbar_case_info.location] = []
         
       if self.state.mode==Mode.greybox:
-        # TODO: wait a minute... pass result is ALWAYS False?? what is going on?
-        # well never mind. the function below doesn't even use the pass_result.
+        # if self.state.optimized_instrumentation:
+        #   if pass_exists or self.state.critical_branch_up_down_manager.upDownDict:
+        #     self.state.logger.info("result handler is called")
+        #     result_handler.update_result_branch(self.state,patch,coverages,is_compilable,each_result,pass_result)
+        #   else:
+        #     self.state.logger.info(f"what the hell{pass_exists}, {self.state.critical_branch_up_down_manager.upDownDict}")
+        # else:
+          # TODO: wait a minute... pass result is ALWAYS False?? what is going on?
+          # well never mind. the function below doesn't even use the pass_result.
+        self.state.logger.debug("result handler is called")
         result_handler.update_result_branch(self.state,patch,coverages,is_compilable,each_result,pass_result)
 
       if is_compilable or self.state.ignore_compile_error:

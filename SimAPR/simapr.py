@@ -148,8 +148,9 @@ def parse_args(argv: list) -> GlobalState:
       state.use_fl_score_in_greybox=True
     elif o in ['weight-critical-branch']:
       state.weight_critical_branch=True
-    elif o in ['optimized-instrumentation']:
-      state.optimized_instrumentation == True
+    elif o in ['--optimized-instrumentation']:
+      # with this option, you should not use the simulation mode
+      state.optimized_instrumentation = True
 
   # make output directory if not exists
   if not os.path.exists(state.out_dir):
