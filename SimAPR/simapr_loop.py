@@ -63,6 +63,15 @@ class TBarLoop():
         Tuple[bool, bool,float,branch_coverage.BranchCoverage]: _description_
     """
     new_env=EnvGenerator.get_new_env_tbar(self.state, patch, test)
+    if state.mode == Mode.greybox:
+      greybox_target_branches = list(self.state.critical_branch_up_down_manager.upDownDict.keys())
+      greybox_target_branches_str = ""
+      if not greybox_target_branches:
+        # when the list is empty
+        greybox_target_branches_str = "-1"
+      else:
+        greybox_target_branches_str = ";".join(greybox_target_branches)
+      new_env.update({"GREYBOX_TARGET_BRANCHES":greybox_target_branches_str})
     start_time=time.time()
     compilable, run_result, is_timeout = run_test.run_fail_test_d4j(self.state, new_env)
     run_time=time.time()-start_time
@@ -87,7 +96,8 @@ class TBarLoop():
   
   def run_test_positive(self, patch: TbarPatchInfo) -> Tuple[bool,float]:
     start_time=time.time()
-    run_result = run_test.run_pass_test_d4j(self.state, EnvGenerator.get_new_env_tbar(self.state, patch, ""))
+    new_env = EnvGenerator.get_new_env_tbar(self.state, patch, "")
+    run_result = run_test.run_pass_test_d4j(self.state, new_env)
     run_time=time.time()-start_time
     return run_result,run_time
   
