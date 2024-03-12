@@ -46,7 +46,7 @@ WORKDIR /defects4j
 RUN git checkout v1.2.0
 RUN cpanm --installdeps .
 RUN ./init.sh
-RUN sed -i 's|<include name="org/jfree/**"/>|<!-- <include name="org/jfree/**"/> -->|g' /defects4j/framework/projects/Chart/Chart.build.xml
+RUN sed -i 's|<include name="org/jfree/\*\*"/>|<!-- <include name="org/jfree/\*\*"/> -->|g' /defects4j/framework/projects/Chart/Chart.build.xml
 
 # ----------- Step 3. Add Defects4J's executables to PATH: ------
 ENV PATH="/defects4j/framework/bin:${PATH}"  
