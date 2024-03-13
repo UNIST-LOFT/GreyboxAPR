@@ -71,6 +71,9 @@ class TBarLoop():
         for id in greybox_target_branches:
           greybox_target_branches_str+=f"{id},"
         greybox_target_branches_str=greybox_target_branches_str[:-1]
+      else:
+        self.state.logger.debug("There is no critical branches found. Therefore skipping instrumentation")
+        new_env["GREYBOX_BRANCH"] = "0"
       new_env["GREYBOX_TARGET_BRANCHES"]=greybox_target_branches_str
       self.state.logger.debug(f"GREYBOX_TARGET_BRANCHES:{new_env['GREYBOX_TARGET_BRANCHES']}")
     start_time=time.time()
