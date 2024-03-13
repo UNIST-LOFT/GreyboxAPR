@@ -867,6 +867,7 @@ class GlobalState:
     self.use_fl_score_in_greybox = False
     self.weight_critical_branch = False
     self.critical_branch_up_down_manager = CriticalBranchesUpDownManager() # It is for the saving the branch count difference regardless of test cases.
+    self.optimized_instrumentation = False
     
 def patch_ochiai_calculator(state:GlobalState, str):
   valid_branches=0
