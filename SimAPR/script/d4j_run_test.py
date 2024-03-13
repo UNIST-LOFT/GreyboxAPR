@@ -161,12 +161,17 @@ def deleteDirectory(dir):
 
 def instrument_patched_project(work_dir:str,buggy_project:str,buggy_path:str):
   instrumenter_root=os.environ['GREYBOX_INSTR_ROOT']
+  specified_branch_ids=os.environ["GREYBOX_TARGET_BRANCHES"]
   classpath=f'{instrumenter_root}/build/libs/JPatchInst.jar'
 
   src_path=work_dir+get_target_paths(buggy_project)[0]
   orig_src_path=work_dir+'b'+get_target_paths(buggy_project)[0]
   
-  cmd=['java','-Xmx100G','-jar',classpath,orig_src_path,src_path]
+  cmd=['java','-Xmx100G','-jar',classpath]
+  if specified_branch_ids!='':
+    cmd+=['-i',specified_branch_ids]
+  cmd+=[orig_src_path,src_path]
+
   instrumentation_result=subprocess.run(cmd,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
   if instrumentation_result.returncode!=0:
     print(instrumentation_result.stdout.decode('utf-8'),file=sys.stderr)
