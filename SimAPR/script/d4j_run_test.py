@@ -161,7 +161,10 @@ def deleteDirectory(dir):
 
 def instrument_patched_project(work_dir:str,buggy_project:str,buggy_path:str):
   instrumenter_root=os.environ['GREYBOX_INSTR_ROOT']
-  specified_branch_ids=os.environ["GREYBOX_TARGET_BRANCHES"]
+  if 'GREYBOX_TARGET_BRANCHES' not in os.environ:
+    specified_branch_ids=''
+  else:
+    specified_branch_ids=os.environ["GREYBOX_TARGET_BRANCHES"]
   classpath=f'{instrumenter_root}/build/libs/JPatchInst.jar'
 
   src_path=work_dir+get_target_paths(buggy_project)[0]
@@ -176,7 +179,34 @@ def instrument_patched_project(work_dir:str,buggy_project:str,buggy_path:str):
   if instrumentation_result.returncode!=0:
     print(instrumentation_result.stdout.decode('utf-8'),file=sys.stderr)
     return False
-  
+
+  if buggy_project.startswith('Mockito'):
+    src_path=work_dir+'/buildSrc/build/classes/main'
+    orig_src_path=work_dir+'b'+'/buildSrc/build/classes/main'
+    
+    cmd=['java','-Xmx100G','-jar',classpath]
+    if specified_branch_ids!='':
+      cmd+=['-i',specified_branch_ids]
+    cmd+=[orig_src_path,src_path]
+
+    instrumentation_result=subprocess.run(cmd,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+    if instrumentation_result.returncode!=0:
+      print(instrumentation_result.stdout.decode('utf-8'),file=sys.stderr)
+      return False
+
+    src_path=work_dir+'/subprojects/testing/build/classes/main'
+    orig_src_path=work_dir+'b'+'/buildSrc/build/classes/main'
+    
+    cmd=['java','-Xmx100G','-jar',classpath]
+    if specified_branch_ids!='':
+      cmd+=['-i',specified_branch_ids]
+    cmd+=[orig_src_path,src_path]
+
+    instrumentation_result=subprocess.run(cmd,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+    if instrumentation_result.returncode!=0:
+      print(instrumentation_result.stdout.decode('utf-8'),file=sys.stderr)
+      return False
+
   return True
   
 def compile_project_updated(work_dir, buggy_project):
@@ -283,6 +313,31 @@ def test_patched_project(patch_location: str, buggy_location: str, work_dir: str
       if not os.path.exists(src_path+'/kr/ac/unist/apr/GlobalStates.java'):
         copyfile(f'{os.environ["GREYBOX_INSTR_ROOT"]}/src/main/resources/kr/ac/unist/apr/GlobalStates.java',src_path+'/kr/ac/unist/apr/GlobalStates.java')
 
+      if buggy_project.startswith('Mockito'):
+        src_path=work_dir+'buildSrc/src/main/groovy'
+        if not os.path.exists(src_path+'/kr'):
+          os.makedirs(src_path+'/kr')
+        if not os.path.exists(src_path+'/kr/ac'):
+          os.makedirs(src_path+'/kr/ac')
+        if not os.path.exists(src_path+'/kr/ac/unist'):
+          os.makedirs(src_path+'/kr/ac/unist')
+        if not os.path.exists(src_path+'/kr/ac/unist/apr'):
+          os.makedirs(src_path+'/kr/ac/unist/apr')
+        if not os.path.exists(src_path+'/kr/ac/unist/apr/GlobalStates.java'):
+          copyfile(f'{os.environ["GREYBOX_INSTR_ROOT"]}/src/main/resources/kr/ac/unist/apr/GlobalStates.java',src_path+'/kr/ac/unist/apr/GlobalStates.java')
+
+        src_path=work_dir+'subprojects/testing/src/main/java'
+        if not os.path.exists(src_path+'/kr'):
+          os.makedirs(src_path+'/kr')
+        if not os.path.exists(src_path+'/kr/ac'):
+          os.makedirs(src_path+'/kr/ac')
+        if not os.path.exists(src_path+'/kr/ac/unist'):
+          os.makedirs(src_path+'/kr/ac/unist')
+        if not os.path.exists(src_path+'/kr/ac/unist/apr'):
+          os.makedirs(src_path+'/kr/ac/unist/apr')
+        if not os.path.exists(src_path+'/kr/ac/unist/apr/GlobalStates.java'):
+          copyfile(f'{os.environ["GREYBOX_INSTR_ROOT"]}/src/main/resources/kr/ac/unist/apr/GlobalStates.java',src_path+'/kr/ac/unist/apr/GlobalStates.java')
+
     if not compile_project_updated(work_dir, buggy_project):
       print("FAIL")
       print("---COMPILATION_FAILED")
@@ -335,6 +390,31 @@ def test_original_project(work_dir: str, test: Union[str, List[str]], buggy_proj
         os.makedirs(src_path+'/kr/ac/unist/apr')
       if not os.path.exists(src_path+'/kr/ac/unist/apr/GlobalStates.java'):
         copyfile(f'{os.environ["GREYBOX_INSTR_ROOT"]}/src/main/resources/kr/ac/unist/apr/GlobalStates.java',src_path+'/kr/ac/unist/apr/GlobalStates.java')
+
+      if buggy_project.startswith('Mockito'):
+        src_path=work_dir+'buildSrc/src/main/groovy'
+        if not os.path.exists(src_path+'/kr'):
+          os.makedirs(src_path+'/kr')
+        if not os.path.exists(src_path+'/kr/ac'):
+          os.makedirs(src_path+'/kr/ac')
+        if not os.path.exists(src_path+'/kr/ac/unist'):
+          os.makedirs(src_path+'/kr/ac/unist')
+        if not os.path.exists(src_path+'/kr/ac/unist/apr'):
+          os.makedirs(src_path+'/kr/ac/unist/apr')
+        if not os.path.exists(src_path+'/kr/ac/unist/apr/GlobalStates.java'):
+          copyfile(f'{os.environ["GREYBOX_INSTR_ROOT"]}/src/main/resources/kr/ac/unist/apr/GlobalStates.java',src_path+'/kr/ac/unist/apr/GlobalStates.java')
+
+        src_path=work_dir+'subprojects/testing/src/main/java'
+        if not os.path.exists(src_path+'/kr'):
+          os.makedirs(src_path+'/kr')
+        if not os.path.exists(src_path+'/kr/ac'):
+          os.makedirs(src_path+'/kr/ac')
+        if not os.path.exists(src_path+'/kr/ac/unist'):
+          os.makedirs(src_path+'/kr/ac/unist')
+        if not os.path.exists(src_path+'/kr/ac/unist/apr'):
+          os.makedirs(src_path+'/kr/ac/unist/apr')
+        if not os.path.exists(src_path+'/kr/ac/unist/apr/GlobalStates.java'):
+          copyfile(f'{os.environ["GREYBOX_INSTR_ROOT"]}/src/main/resources/kr/ac/unist/apr/GlobalStates.java',src_path+'/kr/ac/unist/apr/GlobalStates.java')
         
     if not compile_project_updated(work_dir, buggy_project):
       raise ValueError("Original is not compilable")
