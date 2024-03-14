@@ -97,8 +97,6 @@ class TBarLoop():
         self.state.logger.info(f"branch dest: {dest_file_name}")
         os.makedirs(os.path.dirname(dest_file_name), exist_ok=True)
         shutil.copyfile(new_env['GREYBOX_RESULT'],dest_file_name)
-        # if self.state.use_simulation_mode:
-        #   shutil.copyfile(new_env['GREYBOX_RESULT'],os.path.join(self.state.branch_output,f'{patch.tbar_case_info.location.replace("/","#")}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt'))
         os.remove(new_env['GREYBOX_RESULT'])
         
         if patch.tbar_case_info.location=='original':
@@ -371,7 +369,6 @@ class RecoderLoop(TBarLoop):
     if self.state.mode==Mode.greybox and self.state.instrumenter_classpath!='' and compilable and have_to_find_branch_data:
       try:
         cur_cov=branch_coverage.parse_cov(self.state.logger,new_env['GREYBOX_RESULT'])
-        #if self.state.use_simulation_mode:
         self.state.logger.info("everything is fine")
         dest_file_name = os.path.join(self.state.branch_output,f'{patch.recoder_case_info.location}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt')
         os.makedirs(os.path.dirname(dest_file_name), exist_ok=True)
