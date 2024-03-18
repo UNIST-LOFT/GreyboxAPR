@@ -342,6 +342,7 @@ class RecoderLoop(TBarLoop):
     return self.state.is_alive
   
   def run_test(self, patch: RecoderPatchInfo, test: str) -> Tuple[bool, bool, float, branch_coverage.BranchCoverage]:
+    have_to_find_branch_data = True if not self.state.optimized_instrumentation else False
     new_env=EnvGenerator.get_new_env_recoder(self.state, patch, test)
     if self.state.mode == Mode.greybox and self.state.optimized_instrumentation:
       greybox_target_branches = list(self.state.critical_branch_up_down_manager.upDownDict.keys())
@@ -350,11 +351,14 @@ class RecoderLoop(TBarLoop):
         for id in greybox_target_branches:
           greybox_target_branches_str+=f"{id},"
         greybox_target_branches_str=greybox_target_branches_str[:-1]
+      else:
+        self.state.logger.debug("There is no critical branches found. Therefore skipping instrumentation")
+        new_env["GREYBOX_BRANCH"] = "0"
       new_env["GREYBOX_TARGET_BRANCHES"]=greybox_target_branches_str
       self.state.logger.debug(f"GREYBOX_TARGET_BRANCHES:{new_env['GREYBOX_TARGET_BRANCHES']}")
     start_time=time.time()
     compilable, run_result, is_timeout = run_test.run_fail_test_d4j(self.state, new_env)
-
+    
     if self.state.mode == Mode.greybox and self.state.optimized_instrumentation and run_result:
       have_to_find_branch_data = True
       self.state.logger.info("Test passed. Running the test again with full instrumentation.")
