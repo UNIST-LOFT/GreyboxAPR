@@ -278,7 +278,7 @@ def test_patched_project(patch_location: str, buggy_location: str, work_dir: str
       # Copy GlobalStates to source directory
       # We copy the GlobalStates before the instrumentation is success for the later patches
       src_path=work_dir+get_src_paths(buggy_project)[0]
-      shutil.copytree(f'{os.environ["GREYBOX_INSTR_ROOT"]}/src/main/resources/kr',src_path+'/kr')
+      shutil.copytree(f'{os.environ["GREYBOX_INSTR_ROOT"]}/src/main/resources/kr',src_path+'/kr',dirs_exist_ok=True)
       # if not os.path.exists(src_path+'/kr'):
       #   os.makedirs(src_path+'/kr')
       # if not os.path.exists(src_path+'/kr/ac'):
@@ -329,7 +329,7 @@ def test_original_project(work_dir: str, test: Union[str, List[str]], buggy_proj
       # Copy GlobalStates to source directory
       # We copy the GlobalStates before the instrumentation is success for the later patches
       src_path=work_dir+get_src_paths(buggy_project)[0]
-      shutil.copytree(f'{os.environ["GREYBOX_INSTR_ROOT"]}/src/main/resources/kr',src_path+'/kr')
+      shutil.copytree(f'{os.environ["GREYBOX_INSTR_ROOT"]}/src/main/resources/kr',src_path+'/kr',dirs_exist_ok=True)
       # if not os.path.exists(src_path+'/kr'):
       #   os.makedirs(src_path+'/kr')
       # if not os.path.exists(src_path+'/kr/ac'):
