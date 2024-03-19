@@ -291,23 +291,35 @@ def update_result_branch(state:GlobalState,selected_patch:Union[TbarPatchInfo,Re
   
   state.logger.debug(f"update_result_branch is called, d4j_negative_test length: {len(state.d4j_negative_test)}")
   
+  critical_branch_list:List[int] = list(state.critical_branch_up_down_manager.upDownDict.keys())
+  
   for testName in state.d4j_negative_test.copy():
     if testName in each_result and testName in branch_coverage and testName in state.original_branch_cov:
       # update branch difference
       branch_difference_list: list[Tuple[int,int]] = branch_coverage[testName].diff(state.original_branch_cov[testName]) # list of (branch index, branch count difference)
-      state.logger.debug(f"update_result_branch updating successfully. {branch_difference_list}")
-      
+      state.logger.debug(f"update_result_branch updating successfully.")
+
+      if each_result[testName]:
+        for branch_tuple in branch_difference_list:
+          branch_index:int=branch_tuple[0]
+          branch_difference=branch_tuple[1]
+          
+          #update the critical branch data in GlobalState
+          state.critical_branch_up_down_manager.update(branch_index, branch_difference)
+        
+        critical_branch_list = list(state.critical_branch_up_down_manager.upDownDict.keys())
+        
+          
       for branch_tuple in branch_difference_list:
         branch_index:int=branch_tuple[0]
         branch_difference=branch_tuple[1]
-        
-        #update the critical branch data in GlobalState
-        if each_result[testName]:
-          state.critical_branch_up_down_manager.update(branch_index, branch_difference)
         #update the branch difference data in each PatchTreeNode which are the ancestor of the selected_patch
-        selected_patch.update_branch_result(branch_index, branch_difference)
+        if state.optimized_instrumentation:
+          if branch_index in critical_branch_list:
+            selected_patch.update_branch_result(branch_index, branch_difference)
+        else:
+          selected_patch.update_branch_result(branch_index, branch_difference)
       
-      state.logger.debug(f"result critical_branch_up_down_manager.upDownDict: {state.critical_branch_up_down_manager.upDownDict}")
       """
       #update if critical branch
       if each_result[testName]:

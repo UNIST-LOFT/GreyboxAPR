@@ -82,6 +82,7 @@ class TBarLoop():
     if self.state.mode == Mode.greybox and self.state.optimized_instrumentation and run_result:
       have_to_find_branch_data = True
       self.state.logger.info("Test passed. Running the test again with full instrumentation.")
+      new_env["GREYBOX_BRANCH"] = "1"
       new_env["GREYBOX_TARGET_BRANCHES"] = ""
       compilable, run_result, is_timeout = run_test.run_fail_test_d4j(self.state, new_env)
       if not run_result:
