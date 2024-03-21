@@ -5,6 +5,7 @@ import numpy as np
 import seaborn
 import pandas as pd
 from os import path
+from sys import argv
 
 import d4j
 
@@ -170,9 +171,5 @@ def plot_patches_ci_java(mode='tbar'):
     plt.yticks(fontsize=15)
     plt.savefig(f'rq1-{mode}.pdf',bbox_inches='tight')
 
-plot_patches_ci_java('tbar')
-plot_patches_ci_java('avatar')
-plot_patches_ci_java('kpar')
-plot_patches_ci_java('fixminer')
-plot_patches_ci_java('recoder')
-plot_patches_ci_java('alpharepair')
+if __name__=='__main__':
+    plot_patches_ci_java(argv[1])
