@@ -10,7 +10,6 @@
 **/*.txt
 **/*.pdf
 **/*.log
-**/experiments/scripts
 
 search.py
 rq1.py
