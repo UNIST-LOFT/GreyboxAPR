@@ -112,7 +112,7 @@ def second_vertical_search_recursion(state:GlobalState, isUp:bool, source:PatchT
   randomly_selected_values = []
   for child in children_map.values():
     randomly_selected_values.append(child.critical_branch_up_down_manager.select_value(selected_branch, isUp))
-    state.logger.debug(f"appending to randomly_selected_values: {randomly_selected_values}")    
+    # state.logger.debug(f"appending to randomly_selected_values: {randomly_selected_values}")    
   
   max_index = randomly_selected_values.index(max(randomly_selected_values)) # TODO: buggy... maybe not?
   new_source = list(children_map.values())[max_index]
