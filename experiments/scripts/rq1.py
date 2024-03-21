@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import seaborn
 import pandas as pd
+from os import path
 
 import d4j
 
@@ -18,6 +19,9 @@ def plot_patches_ci_java(mode='tbar'):
     for i in range(MAX_EXP):
         casino_result.append([])
         for result in d4j.D4J_1_2_LIST:
+            if not path.exists(f'{mode}/result/{result}-greybox-{MAX_EXP-1}/simapr-result.json'):
+                # Skip if experiment not end
+                continue
             try:
                 result_file=open(f'{mode}/result/{result}-casino-{i}/simapr-result.json','r')
             except:
@@ -43,6 +47,9 @@ def plot_patches_ci_java(mode='tbar'):
     for i in range(MAX_EXP):
         casino_result.append([])
         for result in d4j.D4J_1_2_LIST:
+            if not path.exists(f'{mode}/result/{result}-greybox-{MAX_EXP-1}/simapr-result.json'):
+                # Skip if experiment not end
+                continue
             try:
                 result_file=open(f'{mode}/result/{result}-greybox-{i}/simapr-result.json','r')
             except:
@@ -66,6 +73,9 @@ def plot_patches_ci_java(mode='tbar'):
 
     # Original
     for result in d4j.D4J_1_2_LIST:
+        if not path.exists(f'{mode}/result/{result}-greybox-{MAX_EXP-1}/simapr-result.json'):
+            # Skip if experiment not end
+            continue
         try:
             result_file=open(f'{mode}/result/{result}-orig/simapr-result.json','r')
         except:
