@@ -46,7 +46,7 @@ def plot_patches_ci_java(mode='tbar'):
                     
     # Greybox
     for i in range(MAX_EXP):
-        casino_result.append([])
+        greybox_result.append([])
         for result in d4j.D4J_1_2_LIST:
             if not path.exists(f'{mode}/result/{result}-greybox-{MAX_EXP-1}/simapr-result.json'):
                 # Skip if experiment not end
@@ -141,7 +141,7 @@ def plot_patches_ci_java(mode='tbar'):
             if i%60==0:
                 temp_[i//60].append(guided_list[-1][-1])
     guided_df=pd.DataFrame({'Time':guided_x,'Number of valid patches':guided_y})
-    seaborn.lineplot(data=guided_df,x='Time',y='Number of valid patches',color='r',label='Casino')
+    seaborn.lineplot(data=guided_df,x='Time',y='Number of valid patches',color='g',label='Casino')
     for i in range(5):
         print(f'{i*60}: {np.std(temp_[i])}')
 
@@ -162,7 +162,7 @@ def plot_patches_ci_java(mode='tbar'):
                 other_x.append(i)
                 other_y.append(other_list[-1][-1])
     other_df=pd.DataFrame({'Time':other_x,'Number of valid patches':other_y})
-    seaborn.lineplot(data=other_df,x='Time',y='Number of valid patches',color='y',label='Greybox',linestyle='dashed')
+    seaborn.lineplot(data=other_df,x='Time',y='Number of valid patches',color='r',label='Greybox',linestyle='dashed')
 
     plt.legend(fontsize=12)
     plt.xlabel('Time (min)',fontsize=15)
