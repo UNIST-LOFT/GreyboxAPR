@@ -20,7 +20,7 @@ def plot_patches_ci_java(mode='tbar'):
     for i in range(MAX_EXP):
         casino_result.append([])
         for result in d4j.D4J_1_2_LIST:
-            if not path.exists(f'{mode}/result/{result}-greybox-{MAX_EXP-1}/simapr-result.json'):
+            if not path.exists(f'{mode}/result/{result}-greybox-{MAX_EXP-1}/simapr-finished.txt'):
                 # Skip if experiment not end
                 continue
             try:
@@ -49,7 +49,7 @@ def plot_patches_ci_java(mode='tbar'):
     for i in range(MAX_EXP):
         greybox_result.append([])
         for result in d4j.D4J_1_2_LIST:
-            if not path.exists(f'{mode}/result/{result}-greybox-{MAX_EXP-1}/simapr-result.json'):
+            if not path.exists(f'{mode}/result/{result}-greybox-{MAX_EXP-1}/simapr-finished.txt'):
                 # Skip if experiment not end
                 continue
             try:
@@ -76,7 +76,7 @@ def plot_patches_ci_java(mode='tbar'):
 
     # Original
     for result in d4j.D4J_1_2_LIST:
-        if not path.exists(f'{mode}/result/{result}-greybox-{MAX_EXP-1}/simapr-result.json'):
+        if not path.exists(f'{mode}/result/{result}-greybox-{MAX_EXP-1}/simapr-finished.txt'):
             # Skip if experiment not end
             continue
         try:
