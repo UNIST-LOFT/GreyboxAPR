@@ -43,7 +43,7 @@ def plot_patches_ci_java(mode='tbar'):
 
                 # if time>3600:
                 #     break
-    print(len(casino_result[MAX_EXP-1]))
+    print(np.mean([len(l) for l in casino_result]))
                     
     # Greybox
     for i in range(MAX_EXP):
@@ -72,7 +72,7 @@ def plot_patches_ci_java(mode='tbar'):
 
                 # if time>3600:
                 #     break
-    print(len(greybox_result[MAX_EXP-1]))
+    print(np.mean([len(l) for l in greybox_result]))
 
     # Original
     for result in d4j.D4J_1_2_LIST:
