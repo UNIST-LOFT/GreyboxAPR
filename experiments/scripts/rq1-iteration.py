@@ -99,7 +99,7 @@ def plot_patches_ci_java(mode='tbar'):
 
             # if time>3600:
             #     break
-    print(len(other_list))
+    print(len(orig_result))
 
     # Plausible patch plot
     plt.clf()
