@@ -8,9 +8,9 @@ import pandas as pd
 
 import d4j
 
-def plot_patches_ci_java(mode='tbar'):
-    dl = mode in {'recoder', 'alpharepair'}
+MAX_EXP=10
 
+def plot_patches_ci_java(mode='tbar'):
     for result in d4j.D4J_1_2_LIST:
         if not os.path.exists(f'{mode}/result/{result}-greybox-9/simapr-finished.txt'):
             continue
@@ -21,10 +21,8 @@ def plot_patches_ci_java(mode='tbar'):
         greybox_result:List[List[int]]=[]
 
         # Casino
-        for i in range(10):
+        for i in range(MAX_EXP):
             casino_result.append([])
-            if dl:
-                result = result.replace('_', '-')
             try:
                 result_file=open(f'{mode}/result/{result}-casino-{i}/simapr-result.json','r')
             except:
@@ -52,10 +50,8 @@ def plot_patches_ci_java(mode='tbar'):
                 print(f'{result}: {np.mean([len(l) for l in casino_result])}')
 
         # Greybox
-        for i in range(10):
+        for i in range(MAX_EXP):
             greybox_result.append([])
-            if dl:
-                result = result.replace('_', '-')
             try:
                 result_file=open(f'{mode}/result/{result}-greybox-{i}/simapr-result.json','r')
             except:
@@ -136,8 +132,6 @@ def plot_patches_ci_java(mode='tbar'):
         #             break
 
         # Original
-        if dl:
-            result = result.replace('_', '-')
         try:
             result_file=open(f'{mode}/result/{result}-orig/simapr-result.json','r')
         except:
@@ -179,19 +173,19 @@ def plot_patches_ci_java(mode='tbar'):
         # Original
         results=sorted(orig_result)
         other_list=[0]
-        for i in range(0,500):
+        for i in range(0,300):
             if i in results:
                 other_list.append(other_list[-1]+results.count(i))
             else:
                 other_list.append(other_list[-1])
-        plt.plot(list(range(0,501)),other_list,'-.b',label=name)
+        plt.plot(list(range(0,301)),other_list,'-.b',label=name)
 
         # Casino
         guided_list:List[List[int]]=[]
         guided_x=[]
         guided_y=[]
         temp_=[[],[],[],[],[]]
-        for j in range(10):
+        for j in range(MAX_EXP):
             cur_result=sorted(casino_result[j])
             guided_list.append([0])
             for i in range(0,500):
@@ -210,7 +204,7 @@ def plot_patches_ci_java(mode='tbar'):
 
         guided_y_temp=[]
         guided_y=[0]
-        for i in range(10):
+        for i in range(MAX_EXP):
             guided_y_temp+=casino_result[i]
         for i in range(0,500):
             if i in guided_y_temp:
