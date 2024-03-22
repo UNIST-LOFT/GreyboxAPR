@@ -43,6 +43,7 @@ def plot_patches_ci_java(mode='tbar'):
 
                 # if time>3600:
                 #     break
+    print(len(casino_result[MAX_EXP-1]))
                     
     # Greybox
     for i in range(MAX_EXP):
@@ -71,6 +72,7 @@ def plot_patches_ci_java(mode='tbar'):
 
                 # if time>3600:
                 #     break
+    print(len(greybox_result[MAX_EXP-1]))
 
     # Original
     for result in d4j.D4J_1_2_LIST:
@@ -97,6 +99,7 @@ def plot_patches_ci_java(mode='tbar'):
 
             # if time>3600:
             #     break
+    print(len(orig_result))
 
     # Plausible patch plot
     plt.clf()
@@ -114,12 +117,12 @@ def plot_patches_ci_java(mode='tbar'):
     # Original
     results=sorted(orig_result)
     other_list=[0]
-    for i in range(0,300):
+    for i in range(0,301):
         if i in results:
             other_list.append(other_list[-1]+results.count(i))
         else:
             other_list.append(other_list[-1])
-    plt.plot(list(range(0,301)),other_list,'-.b',label=name)
+    plt.plot(list(range(0,302)),other_list,'-.b',label=name)
 
     # Casino
     guided_list:List[List[int]]=[]
@@ -129,21 +132,27 @@ def plot_patches_ci_java(mode='tbar'):
     for j in range(MAX_EXP):
         cur_result=sorted(casino_result[j])
         guided_list.append([0])
-        for i in range(0,300):
+        for i in range(0,301):
             if i in cur_result:
-                guided_list[-1].append((MAX_EXP*guided_list[-1][-1]+cur_result.count(i))/MAX_EXP)
+                guided_list[-1].append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
                 guided_x.append(i)
-                guided_y.append((MAX_EXP*guided_list[-1][-1]+cur_result.count(i))/MAX_EXP)
+                if i==0:
+                    guided_y.append(0)
+                else:
+                    guided_y.append(guided_y[-1]+cur_result.count(i))
             else:
                 guided_list[-1].append(guided_list[-1][-1])
                 guided_x.append(i)
-                guided_y.append(guided_list[-1][-1])
-            if i%60==0:
-                temp_[i//60].append(guided_list[-1][-1])
+                if i==0:
+                    guided_y.append(0)
+                else:
+                    guided_y.append(guided_y[-1])
+            # if i%60==0:
+            #     temp_[i//60].append(guided_list[-1][-1])
     guided_df=pd.DataFrame({'Time':guided_x,'Number of valid patches':guided_y})
     seaborn.lineplot(data=guided_df,x='Time',y='Number of valid patches',color='g',label='Casino')
-    for i in range(5):
-        print(f'{i*60}: {np.std(temp_[i])}')
+    # for i in range(5):
+    #     print(f'{i*60}: {np.std(temp_[i])}')
 
     # Greybox
     other_list:List[List[int]]=[]
@@ -152,15 +161,23 @@ def plot_patches_ci_java(mode='tbar'):
     for j in range(MAX_EXP):
         cur_result=sorted(greybox_result[j])
         other_list.append([0])
-        for i in range(0,300):
+        for i in range(0,301):
             if i in cur_result:
-                other_list[-1].append((MAX_EXP*other_list[-1][-1]+cur_result.count(i))/MAX_EXP)
+                other_list[-1].append(other_list[-1][-1]+cur_result.count(i)/MAX_EXP)
                 other_x.append(i)
-                other_y.append((MAX_EXP*other_list[-1][-1]+cur_result.count(i))/MAX_EXP)
+                if i==0:
+                    other_y.append(0)
+                else:
+                    other_y.append(other_y[-1]+cur_result.count(i))
             else:
                 other_list[-1].append(other_list[-1][-1])
                 other_x.append(i)
-                other_y.append(other_list[-1][-1])
+                if i==0:
+                    other_y.append(0)
+                else:
+                    other_y.append(other_y[-1])
+            # if i%500==0:
+            #     temp_[i//500].append(other_list[-1][-1])
     other_df=pd.DataFrame({'Time':other_x,'Number of valid patches':other_y})
     seaborn.lineplot(data=other_df,x='Time',y='Number of valid patches',color='r',label='Greybox',linestyle='dashed')
 
