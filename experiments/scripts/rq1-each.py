@@ -49,7 +49,7 @@ def plot_patches_ci_java(mode='tbar'):
                 # if time>3600:
                 #     break
             if has_plau and i==0:
-                print(result)
+                print(f'{result}: {np.mean([len(l) for l in casino_result])}')
 
         # Greybox
         for i in range(10):
@@ -80,7 +80,7 @@ def plot_patches_ci_java(mode='tbar'):
                 # if time>3600:
                 #     break
             if has_plau and i==0:
-                print(result)
+                print(f'{result}: {np.mean([len(l) for l in greybox_result])}')
 
 
         # # GenProg
@@ -162,12 +162,11 @@ def plot_patches_ci_java(mode='tbar'):
             # if time>3600:
             #     break
         if has_plau:
-            print(result)
+            print(f'{result}: {len(orig_result)}')
 
         # Plausible patch plot
         plt.clf()
         fig=plt.figure(figsize=(4,3))
-        print(mode)
 
         # Original tool
         if mode=='tbar': name='TBar'
@@ -204,8 +203,8 @@ def plot_patches_ci_java(mode='tbar'):
                     guided_list[-1].append(guided_list[-1][-1])
                     guided_x.append(i)
                     guided_y.append(guided_list[-1][-1])
-                if i%100==0:
-                    temp_[i//100].append(guided_list[-1][-1])
+                # if i%100==0:
+                #     temp_[i//100].append(guided_list[-1][-1])
         # guided_df=pd.DataFrame({'Time':guided_x,'Number of valid patches':guided_y})
         # seaborn.lineplot(data=guided_df,x='Time',y='Number of valid patches',color='r',label='Casino')
 
@@ -219,8 +218,8 @@ def plot_patches_ci_java(mode='tbar'):
             else:
                 guided_y.append(guided_y[-1])
         plt.plot(list(range(0,501)),guided_y,'r',label='Casino')
-        for i in range(5):
-            print(f'{i*60}: {np.std(temp_[i])}')
+        # for i in range(5):
+        #     print(f'{i*60}: {np.std(temp_[i])}')
 
         # Greybox
         guided_list:List[List[int]]=[]
