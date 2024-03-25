@@ -59,16 +59,24 @@ def plot_patches_ci_java(mode='tbar'):
             root=json.load(result_file)
             result_file.close()
 
-            prev_time=0.
+            # Read cache to get baseline time
+            try:
+                cache_file=open(f'{mode}/result/cache/{result}-cache.json','r')
+            except:
+                continue
+            cache=json.load(cache_file)
+            cache_file.close()
+
+            total_time=0.
             for res in root:
                 is_hq=res['result']
                 is_plausible=res['pass_result']
                 iteration=res['iteration']
-                time=res['time']
+                total_time+=cache[res['config'][0]['location']]['fail_time']+cache[res['config'][0]['location']]['pass_time']
                 loc=res['config'][0]['location']
 
                 if is_plausible:
-                    greybox_result[-1].append(round((time)/60))
+                    greybox_result[-1].append(round((total_time)/60))
 
                 # if time>3600:
                 #     break
