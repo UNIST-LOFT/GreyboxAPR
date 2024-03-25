@@ -73,7 +73,7 @@ def plot_patches_ci_java(mode='tbar'):
                 is_hq=res['result']
                 is_plausible=res['pass_result']
                 iteration=res['iteration']
-                if res['config'][0]['location'] not in cache:
+                if 'fail_time' not in cache[res['config'][0]['location']]:
                     # If Casino mode did not try this pacth
                     total_time+=prev_time
                 else:
