@@ -65,17 +65,20 @@ class TBarLoop():
     have_to_find_branch_data = True if not self.state.optimized_instrumentation else False
     new_env=EnvGenerator.get_new_env_tbar(self.state, patch, test)
     if self.state.mode == Mode.greybox and self.state.optimized_instrumentation:
-      greybox_target_branches = list(self.state.critical_branch_up_down_manager.upDownDict.keys())
-      greybox_target_branches_str = ""
-      if len(greybox_target_branches)>0:
-        for id in greybox_target_branches:
-          greybox_target_branches_str+=f"{id},"
-        greybox_target_branches_str=greybox_target_branches_str[:-1]
+      if self.state.use_simulation_mode:
+        # do just as normal greybox
+        pass
       else:
-        self.state.logger.debug("There is no critical branches found. Therefore skipping instrumentation")
-        new_env["GREYBOX_BRANCH"] = "0"
-      new_env["GREYBOX_TARGET_BRANCHES"]=greybox_target_branches_str
-      self.state.logger.debug(f"GREYBOX_TARGET_BRANCHES:{new_env['GREYBOX_TARGET_BRANCHES']}")
+        greybox_target_branches = list(self.state.critical_branch_up_down_manager.upDownDict.keys())
+        greybox_target_branches_str = ""
+        if len(greybox_target_branches)>0:
+          for id in greybox_target_branches:
+            greybox_target_branches_str+=f"{id},"
+          greybox_target_branches_str=greybox_target_branches_str[:-1]
+        else:
+          self.state.logger.debug("There is no critical branches found. Therefore skipping instrumentation")
+          new_env["GREYBOX_BRANCH"] = "0"
+        new_env["GREYBOX_TARGET_BRANCHES"]=greybox_target_branches_str
     start_time=time.time()
     compilable, run_result, is_timeout = run_test.run_fail_test_d4j(self.state, new_env)
     
@@ -250,6 +253,7 @@ class TBarLoop():
       is_compilable = True
       pass_time=0
       key = patch.tbar_case_info.location
+      # checks if there is a cached data
       if key not in self.state.simulation_data or \
             (self.state.mode==Mode.greybox and 'fail_time_branch' not in self.state.simulation_data[key]) or \
             (self.state.mode!=Mode.greybox and 'fail_time' not in self.state.simulation_data[key]):
@@ -312,7 +316,7 @@ class TBarLoop():
             for test in each_result.keys():
               cov_file=os.path.join(self.state.branch_output,
                                     f'{patch.tbar_case_info.location.replace("/","#")}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt')
-              if os.path.exists(cov_file):
+              if os.path.exists(cov_file): # should exist. because there was an if statement that checks whether to use cache or not
                 cur_cov=branch_coverage.parse_cov(self.state.logger,cov_file)
                 coverages[test]=cur_cov
           result_handler.update_result_branch(self.state,patch,coverages,is_compilable,each_result,pass_result)
@@ -346,17 +350,20 @@ class RecoderLoop(TBarLoop):
     have_to_find_branch_data = True if not self.state.optimized_instrumentation else False
     new_env=EnvGenerator.get_new_env_recoder(self.state, patch, test)
     if self.state.mode == Mode.greybox and self.state.optimized_instrumentation:
-      greybox_target_branches = list(self.state.critical_branch_up_down_manager.upDownDict.keys())
-      greybox_target_branches_str = ""
-      if len(greybox_target_branches)>0:
-        for id in greybox_target_branches:
-          greybox_target_branches_str+=f"{id},"
-        greybox_target_branches_str=greybox_target_branches_str[:-1]
+      if self.state.use_simulation_mode:
+        # do just as normal greybox
+        pass
       else:
-        self.state.logger.debug("There is no critical branches found. Therefore skipping instrumentation")
-        new_env["GREYBOX_BRANCH"] = "0"
-      new_env["GREYBOX_TARGET_BRANCHES"]=greybox_target_branches_str
-      self.state.logger.debug(f"GREYBOX_TARGET_BRANCHES:{new_env['GREYBOX_TARGET_BRANCHES']}")
+        greybox_target_branches = list(self.state.critical_branch_up_down_manager.upDownDict.keys())
+        greybox_target_branches_str = ""
+        if len(greybox_target_branches)>0:
+          for id in greybox_target_branches:
+            greybox_target_branches_str+=f"{id},"
+          greybox_target_branches_str=greybox_target_branches_str[:-1]
+        else:
+          self.state.logger.debug("There is no critical branches found. Therefore skipping instrumentation")
+          new_env["GREYBOX_BRANCH"] = "0"
+        new_env["GREYBOX_TARGET_BRANCHES"]=greybox_target_branches_str
     start_time=time.time()
     compilable, run_result, is_timeout = run_test.run_fail_test_d4j(self.state, new_env)
     

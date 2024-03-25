@@ -292,6 +292,17 @@ def update_result_branch(state:GlobalState,selected_patch:Union[TbarPatchInfo,Re
   state.logger.debug(f"update_result_branch is called, d4j_negative_test length: {len(state.d4j_negative_test)}")
   
   critical_branch_list:List[int] = list(state.critical_branch_up_down_manager.upDownDict.keys())
+
+  if state.optimized_instrumentation and state.use_simulation_mode:
+    for testName in state.d4j_negative_test.copy():
+      if testName in each_result and testName in branch_coverage and testName in state.original_branch_cov:
+        if each_result[testName]:
+          pass
+        else:
+          branch_coverage[testName].branch_coverage = {key: value for key, value in branch_coverage[testName].branch_coverage.items() if key in critical_branch_list}
+        state.logger.debug(f"opt_greybox test result: {each_result[testName]}, branch_coverage: {branch_coverage[testName].branch_coverage}")
+      else:
+        state.logger.debug(f"testName in each_result: {testName in each_result}, each_result[testName]: {each_result[testName]}, testName in branch_coverage: {testName in branch_coverage}, testName in state.original_branch_cov: {testName in state.original_branch_cov}")
   
   for testName in state.d4j_negative_test.copy():
     if testName in each_result and testName in branch_coverage and testName in state.original_branch_cov:
@@ -314,11 +325,7 @@ def update_result_branch(state:GlobalState,selected_patch:Union[TbarPatchInfo,Re
         branch_index:int=branch_tuple[0]
         branch_difference=branch_tuple[1]
         #update the branch difference data in each PatchTreeNode which are the ancestor of the selected_patch
-        if state.optimized_instrumentation:
-          if branch_index in critical_branch_list:
-            selected_patch.update_branch_result(branch_index, branch_difference)
-        else:
-          selected_patch.update_branch_result(branch_index, branch_difference)
+        selected_patch.update_branch_result(branch_index, branch_difference)
       
       """
       #update if critical branch
@@ -328,5 +335,6 @@ def update_result_branch(state:GlobalState,selected_patch:Union[TbarPatchInfo,Re
         
     else:
       state.logger.debug(f"testName in each_result: {testName in each_result}, each_result[testName]: {each_result[testName]}, testName in branch_coverage: {testName in branch_coverage}, testName in state.original_branch_cov: {testName in state.original_branch_cov}")
+      state.logger.debug(f"original_branch_cov: {state.original_branch_cov}")
         
         
