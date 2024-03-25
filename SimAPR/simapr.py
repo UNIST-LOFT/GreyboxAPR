@@ -39,6 +39,7 @@ def parse_args(argv: list) -> GlobalState:
               'weight-critical-branch', 'optimized-instrumentation']
   opts, args = getopt.getopt(argv[1:], "ho:w:t:m:c:T:E:k:", longopts)
   state = GlobalState()
+  state.critical_branch_up_down_manager = CriticalBranchesUpDownManager(is_this_critical_branches = True)
   state.original_args = argv
   state.args = args  # After --
   for o, a in opts:

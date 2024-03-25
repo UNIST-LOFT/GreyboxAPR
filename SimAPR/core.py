@@ -219,12 +219,17 @@ class CriticalBranchesUpDownManager:
   This class will be instanciated when initiaing the GlobalState and it is used for the ~~~...
   Also it is instantiated in each PatchTreeNode. it is for ~~~
   """
-  def __init__(self):
+  def __init__(self, is_this_critical_branches = False):
     self.upDownDict:Dict[int, CriticalBranchUpDown]=dict()
+    self.is_this_critical_branches=is_this_critical_branches
+    self.state=GlobalState()
     
   def update(self, branch_index:int, branch_difference:int):
     if branch_index not in self.upDownDict:
       self.upDownDict[branch_index]=CriticalBranchUpDown()
+      if self.is_this_critical_branches:
+        self.state.new_critical_list.append(branch_index)
+
     self.upDownDict[branch_index].update(branch_difference)
   
   def is_empty(self):
@@ -749,7 +754,8 @@ class Result:
     self.compilable = compilable
     self.output_distance = output_distance
     self.out_diff = config[0].out_diff
-  def to_json_object(self,total_searched_patch:int=0,total_passed_patch:int=0,total_plausible_patch:int=0) -> dict:
+
+  def to_json_object(self,total_searched_patch:int=0,total_passed_patch:int=0,total_plausible_patch:int=0, new_critical_branch:List[int]=[]) -> dict:
     object = dict()
     object["execution"] = self.execution
     object['iteration']=self.iteration
@@ -766,14 +772,26 @@ class Result:
     object['total_passed']=total_passed_patch
     object['total_plausible']=total_plausible_patch
     conf_list = list()
+
+    # for optimized greybox
+    object['new_critical_branch']=new_critical_branch
+
     for patch in self.config:
       conf = patch.to_json_object()
       conf_list.append(conf)
     object["config"] = conf_list
     return object
 
+class SingletonMeta(type):
+    _instances = {}
+
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super().__call__(*args, **kwargs)
+        return cls._instances[cls]
+
 @dataclass()
-class GlobalState:
+class GlobalState(metaclass=SingletonMeta):
   logger: logging.Logger
   original_args: List[str]
   args: List[str] # The arguments passed when the program is executed.
@@ -866,8 +884,9 @@ class GlobalState:
     # self.critical_branches:list[Tuple[int,int]] = [] #saves every single data of critical branches. list of tuple (branch index, branch count difference)
     self.use_fl_score_in_greybox = False
     self.weight_critical_branch = False
-    self.critical_branch_up_down_manager = CriticalBranchesUpDownManager() # It is for the saving the branch count difference regardless of test cases.
+    self.critical_branch_up_down_manager = None # It is for the saving the branch count difference regardless of test cases.Initialized right after GlobalState is initialized, because critical_branch_up_down_manager initializes GlobalState in it.
     self.optimized_instrumentation = False
+    self.new_critical_list:List[int]=[] # get empty when each iteration begins
     
 def patch_ochiai_calculator(state:GlobalState, str):
   valid_branches=0

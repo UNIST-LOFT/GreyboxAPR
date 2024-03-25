@@ -62,7 +62,7 @@ class TBarLoop():
     Returns:
         Tuple[bool, bool,float,branch_coverage.BranchCoverage]: _description_
     """
-    have_to_find_branch_data = True if not self.state.optimized_instrumentation else False
+    have_to_find_branch_data = True if not self.state.optimized_instrumentation or patch.tbar_case_info.location=='original' else False
     new_env=EnvGenerator.get_new_env_tbar(self.state, patch, test)
     if self.state.mode == Mode.greybox and self.state.optimized_instrumentation:
       if self.state.use_simulation_mode:
@@ -181,6 +181,7 @@ class TBarLoop():
       is_compilable = True
       pass_time=0
       coverages:Dict[str,branch_coverage.BranchCoverage]=dict() # key: test name, value: branch coverage(contains a dict that shows how many times each branch has been taken.)
+      self.state.new_critical_list = []
       
       for neg in self.state.d4j_negative_test:
         compilable, run_result,fail_time,cur_cov = self.run_test(patch, neg)
@@ -253,6 +254,7 @@ class TBarLoop():
       is_compilable = True
       pass_time=0
       key = patch.tbar_case_info.location
+      self.state.new_critical_list = []
       # checks if there is a cached data
       if key not in self.state.simulation_data or \
             (self.state.mode==Mode.greybox and 'fail_time_branch' not in self.state.simulation_data[key]) or \
@@ -347,7 +349,7 @@ class RecoderLoop(TBarLoop):
     return self.state.is_alive
   
   def run_test(self, patch: RecoderPatchInfo, test: str) -> Tuple[bool, bool, float, branch_coverage.BranchCoverage]:
-    have_to_find_branch_data = True if not self.state.optimized_instrumentation else False
+    have_to_find_branch_data = True if not self.state.optimized_instrumentation or patch.tbar_case_info.location=='original' else False
     new_env=EnvGenerator.get_new_env_recoder(self.state, patch, test)
     if self.state.mode == Mode.greybox and self.state.optimized_instrumentation:
       if self.state.use_simulation_mode:
@@ -448,6 +450,7 @@ class RecoderLoop(TBarLoop):
       pass_time=0
       each_result=dict()
       coverages:Dict[str,branch_coverage.BranchCoverage]=dict()
+      self.state.new_critical_list = []
       for neg in self.state.d4j_negative_test:
         compilable, run_result,fail_time,cur_cov = self.run_test(patch, neg)
         self.state.test_time+=fail_time
@@ -502,6 +505,7 @@ class RecoderLoop(TBarLoop):
       is_compilable = True
       pass_time=0
       key = patch.recoder_case_info.location
+      self.state.new_critical_list = []
       if key not in self.state.simulation_data or \
             (self.state.mode==Mode.greybox and 'fail_time_branch' not in self.state.simulation_data[key]) or \
             (self.state.mode!=Mode.greybox and 'fail_time' not in self.state.simulation_data[key]):
