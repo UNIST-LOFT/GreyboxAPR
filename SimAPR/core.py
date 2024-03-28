@@ -46,6 +46,7 @@ class PassFail:
   def __init__(self, p: float = 0., f: float = 0.) -> None:
     self.pass_count = p
     self.fail_count = f
+    
   def __exp_alpha(self, exp_alpha:bool) -> float:
     if exp_alpha:
       if self.pass_count==0:
@@ -54,23 +55,30 @@ class PassFail:
         return min(1024.,self.pass_count)
     else:
       return 1.
+    
   def beta_mode(self, alpha: float, beta: float) -> float:
     if alpha+beta==2.0:
       return 1.0
     return (alpha - 1.0) / (alpha + beta - 2.0)
+  
   def update(self, result: bool, n: float,b_n:float=1.0, exp_alpha: bool = False) -> None:
     if result:
       self.pass_count += n * self.__exp_alpha(exp_alpha)
     else:
       self.fail_count+=b_n
+      
   def update_with_pf(self, other,b_n:float=1.0) -> None:
     self.pass_count += other.pass_count
+    
   def expect_probability(self,additional_score:float=0) -> float:
     return self.beta_mode(self.pass_count + 1.5+additional_score, self.fail_count + 2.0)
+  
   def select_value(self,a_init:float=1.0,b_init:float=1.0) -> float: # select a value randomly from the beta distribution
     return np.random.beta(self.pass_count + a_init, self.fail_count + b_init)
+  
   def copy(self) -> 'PassFail':
     return PassFail(self.pass_count, self.fail_count)
+  
   @staticmethod
   def normalize(x: List[float]) -> List[float]:
     npx = np.array(x)
@@ -82,12 +90,14 @@ class PassFail:
     else:
       x_norm = (npx - x_min) / x_diff
     return x_norm.tolist()
+  
   @staticmethod
   def softmax(x: List[float]) -> List[float]:
     npx = np.array(x)
     y = np.exp(npx)
     f_x = y / np.sum(y)
     return f_x.tolist()
+  
   @staticmethod
   def argmax(x: List[float]) -> int:
     m = max(x)
@@ -96,12 +106,14 @@ class PassFail:
       if x[i] == m:
         tmp.append(i)
     return np.random.choice(tmp)
+  
   @staticmethod
   def select_value_normal(x: List[float], sigma: float) -> List[float]:
     for i in range(len(x)):
       val = x[i]
       x[i] = np.random.normal(val, sigma)
     return x
+  
   @staticmethod
   def select_by_probability(probability: List[float]) -> int:   # pf_list: list of PassFail
     total = 0
@@ -116,35 +128,144 @@ class PassFail:
       if rand <= 0:
         return i
     return 0
+  
   @staticmethod
   def concave_up_exp(x: float, base: float = math.e) -> float:
     return (np.power(base, x) - 1) / (base - 1)
+  
   @staticmethod
   def concave_up(x: float, base: float = math.e) -> float:
     # unique function
     return x * x
+  
   @staticmethod
   def concave_down(x: float, base: float = math.e) -> float:
     atzero = PassFail.concave_up(0, base)
     return 2 * ((1 - atzero) * x + atzero) - PassFail.concave_up(x, base)
-  @staticmethod
+  
   # fail function
+  @staticmethod
   def log_func(x: float, half: float = 51) -> float:
     a=half
     if a-x<=0:
       return 0.
     else:
       return max(np.log(a - x) / np.log(a), 0.)
+  
+
+class CriticalBranchUpDown:
+  """
+  used for GreyBox approach
+  multiple of instances are stored in CriticalBranches as the value of the dictionary, with the branch indexes as a key.
+  saves and handle the data that are related to the fitness score of one branch
+
+  Returns:
+      _type_: _description_
+  """
+  def __init__(self, branchUpInit: float = 1., branchDownInit: float = 1.) -> None:
+    """_summary_
+
+    Args:
+        branchUpInit (float, optional): _description_. Defaults to 0..
+        branchDownInit (float, optional): _description_. Defaults to 0..
+    """
+    self.branchUpInit=branchUpInit # a constant value. saves the initial value of the branchUpScore.
+    self.branchUpScore=branchUpInit # it will be increase with some kinds of value (increasing amount depends on the update method)
+    self.branchDownInit=branchDownInit # a constant value. saves the initial value of the branchDownScore.
+    self.branchDownScore=branchDownInit # it will be increase with some kinds of value (increasing amount depends on the update method)
+    
+  def update(self, branch_difference:int):
+    """
+    Compare the original_branch_count and the patched_branch_count to update the scores.
+    - if original_branch_count > patched_branch_count then self.branchDownScore increases.
+    - if original_branch_count < patched_branch_count then self.branchUpScore increases.
+    - the amount of increasement can be modified in this source code.
+
+    Args:
+        original_branch_count (int): _description_
+        patched_branch_count (int): _description_
+    """
+    if branch_difference<0:
+      self.branchDownScore+=1 # increase the score with some value.
+    elif branch_difference>0:
+      self.branchUpScore+=1 # increase the score with some value.
+
+  def select_value(self,isUp:bool) -> float: # select a value randomly from the beta distribution
+    """
+    select a value randomly from the beta distribution.
+    The distribution for selecting varies depending on the 'isUp'.
+
+    Args:
+        isUp (bool): true if the branch count increases in patched one then the buggy one, otherwise false.
+
+    Returns:
+        float: _description_
+    """
+    if isUp:
+      return np.random.beta(self.branchUpScore, self.branchUpInit)
+    else:
+      return np.random.beta(self.branchDownScore, self.branchDownInit)
+    
+  
+class CriticalBranchesUpDownManager:
+  """
+  This class is used not only for the critical branch data but also for the branch difference data of each node in the patch tree 
+  although the name of the class is still "CriticalBranchUpDownManager"
+  
+  This class has a dictionary that saves the branch indexes as key and CriticalBranchUpDown as value.
+  It helps you to call CriticalBranchUpDown with an specific index when calling 'update' and 'select_value'.
+  this class also can be used when there are some jobs that have to deal with multiple of CriticalBranchUpDown.
+  
+  This class will be instanciated when initiaing the GlobalState and it is used for the ~~~...
+  Also it is instantiated in each PatchTreeNode. it is for ~~~
+  """
+  def __init__(self, is_this_critical_branches = False):
+    self.upDownDict:Dict[int, CriticalBranchUpDown]=dict()
+    self.is_this_critical_branches=is_this_critical_branches
+    self.state=GlobalState()
+    
+  def update(self, branch_index:int, branch_difference:int):
+    if branch_index not in self.upDownDict:
+      self.upDownDict[branch_index]=CriticalBranchUpDown()
+      if self.is_this_critical_branches:
+        self.state.new_critical_list.append(branch_index)
+
+    self.upDownDict[branch_index].update(branch_difference)
+  
+  def is_empty(self):
+    return not bool(self.upDownDict)
+    
+  def select_value(self, branch_index:int, isUp:bool)->float:
+    if branch_index not in self.upDownDict:
+      self.upDownDict[branch_index]=CriticalBranchUpDown()
+    return self.upDownDict[branch_index].select_value(isUp)
+  
+  def get_isUp(self, branch_index:int):
+    """
+    TODO: more description
+    IMPORTANT: it return False when up score == down score
+
+    Args:
+        branch_index (int): _description_
+
+    Returns:
+        _type_: _description_
+    """
+    the_branch=self.upDownDict[branch_index]
+    if the_branch.branchUpScore>the_branch.branchDownScore:
+      return True
+    else:
+      return False
 
 class PatchTreeNode:
   def __init__(self):
     self.parent=None
     self.pf = PassFail()
     self.positive_pf = PassFail()
-    self.total_case_info: int = 0
-    self.case_update_count: int = 0
-    self.update_count: int = 0
-    self.children_basic_patches:int=0
+    self.total_case_info: int = 0 # the number of cases that the node itself originally had. It increases only when reading the file and building the patch tree, and never decreases.
+    self.case_update_count: int = 0 # increases with 1 each time a patch under the node itself is removed.
+    self.update_count: int = 0 # never used??
+    self.children_basic_patches:int=0 # the number of patches that passed
     self.children_plausible_patches:int=0
     self.consecutive_fail_count:int=0
     self.consecutive_fail_plausible_count:int=0
@@ -155,6 +276,7 @@ class PatchTreeNode:
     # greybox things
     self.coverage_info=PassFail()
     self.patches_template_type:List[str] = []
+    self.critical_branch_up_down_manager:CriticalBranchesUpDownManager=CriticalBranchesUpDownManager()
 
 class LocationNode(PatchTreeNode):
   def __init__(self):
@@ -324,6 +446,18 @@ class EnvGenerator:
     pass
   @staticmethod
   def get_new_env_tbar(state: 'GlobalState', patch: 'TbarPatchInfo', test: str) -> Dict[str, str]:
+    """
+    TODO: need more description
+    generates new dictionary of environment variables
+
+    Args:
+        state (GlobalState): _description_
+        patch (TbarPatchInfo): _description_
+        test (str): _description_
+
+    Returns:
+        Dict[str, str]: _description_
+    """
     new_env = os.environ.copy()
     new_env["SIMAPR_UUID"] = str(state.uuid)
     new_env["SIMAPR_TEST"] = str(test)
@@ -345,6 +479,7 @@ class EnvGenerator:
       new_env['GREYBOX_BRANCH']='0'
       new_env['CLASSPATH']=state.instrumenter_classpath
     return new_env
+  
   @staticmethod
   def get_new_env_recoder(state: 'GlobalState', patch: 'RecoderPatchInfo', test: str) -> Dict[str, str]:
     new_env = os.environ.copy()
@@ -366,6 +501,7 @@ class EnvGenerator:
       new_env['GREYBOX_BRANCH']='0'
       new_env['CLASSPATH']=state.instrumenter_classpath
     return new_env
+  
   @staticmethod
   def get_new_env_d4j_positive_tests(state: 'GlobalState', tests: List[str], new_env: Dict[str, str]) -> Dict[str, str]:
     new_env["SIMAPR_TEST"] = "ALL"
@@ -374,6 +510,12 @@ class EnvGenerator:
     return new_env
 
 class TbarPatchInfo:
+  """
+  This class has methods related to a TbarCaseInfo, which is given in __init__ as an argument.
+  The instance can do the following jobs.
+  - update the data(such as the beta distributions(== PassFail)) in each nodes in the path from root to the patch
+  - remove the patch from the
+  """
   def __init__(self, tbar_case_info: TbarCaseInfo) -> None:
     self.tbar_case_info = tbar_case_info
     self.tbar_type_info = tbar_case_info.parent
@@ -389,18 +531,47 @@ class TbarPatchInfo:
     self.line_info.pf.update(result, n,b_n, exp_alpha)
     self.func_info.pf.update(result, n,b_n,exp_alpha)
     self.file_info.pf.update(result, n,b_n, exp_alpha)
+    
   def update_result_positive(self, result: bool, n: float, b_n:float,exp_alpha: bool) -> None:
     self.tbar_case_info.positive_pf.update(result, n,b_n, exp_alpha)
     self.tbar_type_info.positive_pf.update(result, n,b_n, exp_alpha)
     self.line_info.positive_pf.update(result, n,b_n, exp_alpha)
     self.func_info.positive_pf.update(result, n,b_n, exp_alpha)
     self.file_info.positive_pf.update(result, n,b_n, exp_alpha)
+    
+  def update_branch_result(self, branch_index:int, branch_difference:int) -> None:
+    """
+    Used for the GreyBox Approach.
+    
+    This function updates the CriticalBranchUpDown in every node in path to the patch
+
+    Args:
+        branch_index (int): _description_
+        branch_difference (int): _description_
+    """
+    self.tbar_case_info.critical_branch_up_down_manager.update(branch_index, branch_difference)
+    self.tbar_type_info.critical_branch_up_down_manager.update(branch_index, branch_difference)
+    self.line_info.critical_branch_up_down_manager.update(branch_index, branch_difference)
+    self.func_info.critical_branch_up_down_manager.update(branch_index, branch_difference)
+    self.file_info.critical_branch_up_down_manager.update(branch_index, branch_difference)
+    
   def remove_patch(self, state: 'GlobalState') -> None:
+    """
+    This funciton is called only at the end of each loop iteration. i.e. when the selecting patch, running tests, update the results have end.
+    This function removes self.tbar_case_info from the self.tbar_type_info.tbar_case_info_map, and handle all the additional jobs needed to remove it.
+    - ex) When self.tbar_type_info.tbar_case_info_map is empty after removing self.tbar_case_info, then remove the self.tbar_type_info.tbar_case_info_map from the self.line_info.tbar_type_info_map
+
+    Args:
+        state (GlobalState): _description_
+    """
     if self.tbar_case_info.location not in self.tbar_type_info.tbar_case_info_map:
       state.logger.critical(f"{self.tbar_case_info.location} not in {self.tbar_type_info.tbar_case_info_map}")
+      
     del self.tbar_type_info.tbar_case_info_map[self.tbar_case_info.location]
+    
     if len(self.tbar_type_info.tbar_case_info_map) == 0:
       del self.line_info.tbar_type_info_map[self.tbar_type_info.mutation]
+      
     if len(self.line_info.tbar_type_info_map) == 0:
       score = self.line_info.fl_score
       self.func_info.fl_score_list.remove(score)
@@ -415,11 +586,14 @@ class TbarPatchInfo:
       self.file_info.remain_lines_by_score[self.line_info.fl_score].remove(self.line_info)
       if len(self.file_info.remain_lines_by_score[self.line_info.fl_score])==0:
         self.file_info.remain_lines_by_score.pop(self.line_info.fl_score)
+        
     if len(self.func_info.line_info_map) == 0:
       del self.file_info.func_info_map[self.func_info.id]
       state.func_list.remove(self.func_info)
+      
     if len(self.file_info.func_info_map) == 0:
       del state.file_info_map[self.file_info.file_name]
+      
     self.tbar_case_info.case_update_count += 1
     self.tbar_type_info.case_update_count += 1
     self.tbar_type_info.remain_patches_by_score[self.line_info.fl_score].remove(self.tbar_case_info)
@@ -430,20 +604,26 @@ class TbarPatchInfo:
     self.file_info.case_update_count += 1
     self.file_info.remain_patches_by_score[self.line_info.fl_score].remove(self.tbar_case_info)
     state.java_remain_patch_ranking[self.line_info.fl_score].remove(self.tbar_case_info)
+    
     if len(state.java_remain_patch_ranking[self.line_info.fl_score])==0:
       state.java_remain_patch_ranking.pop(self.line_info.fl_score)
+      
     self.func_info.searched_patches_by_score[self.line_info.fl_score]+=1
 
   def to_json_object(self) -> dict:
     conf = dict()
     conf["location"] = self.tbar_case_info.location
     return conf
+  
   def to_str(self) -> str:
     return f"{self.tbar_case_info.location}"
+  
   def __str__(self) -> str:
     return self.to_str()
+  
   def to_str_sw_cs(self) -> str:
     return self.to_str()
+  
   @staticmethod
   def list_to_str(selected_patch: list) -> str:
     result = list()
@@ -452,6 +632,7 @@ class TbarPatchInfo:
     return ",".join(result)
   
 class RecoderPatchInfo:
+
   def __init__(self, recoder_case_info: RecoderCaseInfo) -> None:
     self.recoder_case_info = recoder_case_info
     self.line_info = self.recoder_case_info.parent
@@ -459,16 +640,34 @@ class RecoderPatchInfo:
     self.file_info = self.func_info.parent
     self.out_dist = -1.0
     self.out_diff = False
+
   def update_result(self, result: bool, n: float, b_n:float,exp_alpha: bool) -> None:
     self.recoder_case_info.pf.update(result, n,b_n, exp_alpha)
     self.line_info.pf.update(result, n,b_n, exp_alpha)
     self.func_info.pf.update(result, n,b_n, exp_alpha)
     self.file_info.pf.update(result, n,b_n, exp_alpha)
+
   def update_result_positive(self, result: bool, n: float, b_n:float,exp_alpha: bool) -> None:
     self.recoder_case_info.positive_pf.update(result, n,b_n, exp_alpha)
     self.line_info.positive_pf.update(result, n,b_n, exp_alpha)
     self.func_info.positive_pf.update(result, n,b_n, exp_alpha)
     self.file_info.positive_pf.update(result, n,b_n, exp_alpha)
+
+  def update_branch_result(self, branch_index:int, branch_difference:int) -> None:
+    """
+    Used for the GreyBox Approach.
+    
+    This function updates the CriticalBranchUpDown in every node in path to the patch
+
+    Args:
+        branch_index (int): _description_
+        branch_difference (int): _description_
+    """
+    self.recoder_case_info.critical_branch_up_down_manager.update(branch_index, branch_difference)
+    self.line_info.critical_branch_up_down_manager.update(branch_index, branch_difference)
+    self.func_info.critical_branch_up_down_manager.update(branch_index, branch_difference)
+    self.file_info.critical_branch_up_down_manager.update(branch_index, branch_difference)
+
   def remove_patch(self, state: 'GlobalState') -> None:
     if self.recoder_case_info.location not in self.line_info.recoder_case_info_map:
       state.logger.critical(f"{self.recoder_case_info.location} not in {self.line_info.recoder_case_info_map}")
@@ -511,18 +710,23 @@ class RecoderPatchInfo:
     if len(state.java_remain_patch_ranking[self.line_info.fl_score])==0:
       state.java_remain_patch_ranking.pop(self.line_info.fl_score)
     self.func_info.searched_patches_by_score[fl_score] += 1
+
   def to_json_object(self) -> dict:
     conf = dict()
     conf["location"] = self.recoder_case_info.location
     conf["id"] = self.line_info.line_id
     conf["case_id"] = self.recoder_case_info.case_id
     return conf
+  
   def to_str(self) -> str:
     return f"{self.recoder_case_info.location}"
+  
   def __str__(self) -> str:
     return self.to_str()
+  
   def to_str_sw_cs(self) -> str:
     return self.to_str()
+  
   @staticmethod
   def list_to_str(selected_patch: list) -> str:
     result = list()
@@ -550,7 +754,8 @@ class Result:
     self.compilable = compilable
     self.output_distance = output_distance
     self.out_diff = config[0].out_diff
-  def to_json_object(self,total_searched_patch:int=0,total_passed_patch:int=0,total_plausible_patch:int=0) -> dict:
+
+  def to_json_object(self,total_searched_patch:int=0,total_passed_patch:int=0,total_plausible_patch:int=0, new_critical_branch:List[int]=[]) -> dict:
     object = dict()
     object["execution"] = self.execution
     object['iteration']=self.iteration
@@ -567,17 +772,29 @@ class Result:
     object['total_passed']=total_passed_patch
     object['total_plausible']=total_plausible_patch
     conf_list = list()
+
+    # for optimized greybox
+    object['new_critical_branch']=new_critical_branch
+
     for patch in self.config:
       conf = patch.to_json_object()
       conf_list.append(conf)
     object["config"] = conf_list
     return object
 
+class SingletonMeta(type):
+    _instances = {}
+
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super().__call__(*args, **kwargs)
+        return cls._instances[cls]
+
 @dataclass()
-class GlobalState:
+class GlobalState(metaclass=SingletonMeta):
   logger: logging.Logger
   original_args: List[str]
-  args: List[str]
+  args: List[str] # The arguments passed when the program is executed.
   work_dir: str
   out_dir: str
   def __init__(self) -> None:
@@ -619,7 +836,7 @@ class GlobalState:
     self.total_searched_patch=0
     self.total_passed_patch=0
     self.total_plausible_patch=0
-    self.iteration=0
+    self.iteration=0 # To count how many times it has been repeated. It increments by 1 each time a big loop in simapr.run() iterates.
     self.use_partial_validation = True
     self.tool_type=ToolType.TEMPLATE
     self.use_exp_alpha = True
@@ -627,7 +844,7 @@ class GlobalState:
     self.patch_ranking:List[str] = list()
     self.finish_at_correct_patch=False
     self.func_list: List[FuncInfo] = list()
-    self.count_compile_fail=True
+    self.count_compile_fail=True # If False, state.iteration doesn't increases when the patch is not compilable.
     self.finish_top_method=False  # Finish if every patches in top-30 methods are searched. Should turn on for default SeAPR
 
     self.seapr_layer:SeAPRMode=SeAPRMode.FUNCTION
@@ -642,7 +859,7 @@ class GlobalState:
 
     self.not_use_guided_search=False  # Use only epsilon-greedy search
     self.not_use_epsilon_search=False  # Use only guided search and original
-    self.test_time=0.  # Total compile and test time
+    self.test_time=0.  # Sum of total compile and test time
     self.select_time=0.  # Total select time
     self.total_methods=0  # Total methods
 
@@ -661,8 +878,15 @@ class GlobalState:
     self.min_ochiai=0. #to maintain the min ochiai score to use when Patches(e) is empty 
     self.visited_tbar_patch:List[str] = list() 
     self.patch_to_branches_map:Dict[str, List[BranchInfo]] = dict() 
-    self.critical_branches:List[BranchInfo] = []
     self.patch_to_ochiai_map:Dict[str, float] = dict() 
+    
+    # 2nd vertical search things in greybox-APR
+    # self.critical_branches:list[Tuple[int,int]] = [] #saves every single data of critical branches. list of tuple (branch index, branch count difference)
+    self.use_fl_score_in_greybox = False
+    self.weight_critical_branch = False
+    self.critical_branch_up_down_manager = None # It is for the saving the branch count difference regardless of test cases.Initialized right after GlobalState is initialized, because critical_branch_up_down_manager initializes GlobalState in it.
+    self.optimized_instrumentation = False
+    self.new_critical_list:List[int]=[] # get empty when each iteration begins
     
 def patch_ochiai_calculator(state:GlobalState, str):
   valid_branches=0

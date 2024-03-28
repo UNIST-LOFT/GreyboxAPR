@@ -21,8 +21,8 @@ def run(project,seed,trial):
                            '--branch-output',f'result/branch/{project}','-T','18000','--skip-valid',
                            '--','python3',f'{new_cur_dir}/SimAPR/script/d4j_run_test.py',f'{new_cur_dir}/AlphaRepair/buggy'])
     
-    print(result.stdout.decode('utf-8'))
     print(f'{project} greybox-{trial} finish with return code {result.returncode}')
+    exit(result.returncode)
 
 if __name__ == '__main__':
     args=sys.argv

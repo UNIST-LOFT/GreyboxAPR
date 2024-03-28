@@ -14,7 +14,9 @@ class TBarLoop():
     self.is_initialized:bool=False
 
   def _is_method_over(self) -> bool:
-    """Check the ranks of every remaining methods are over then 30"""
+    """
+    Check the ranks of every remaining methods are over then 30
+    """
     if not self.state.finish_top_method: return False
     
     min_method_rank=10000 # Some large rank
@@ -26,46 +28,95 @@ class TBarLoop():
 
   def is_alive(self) -> bool:
     if len(self.state.file_info_map) == 0:
+      self.state.logger.info("finish because of len(self.state.file_info_map) == 0")
       self.state.is_alive = False
     if self.state.cycle_limit > 0 and self.state.iteration >= self.state.cycle_limit:
+      self.state.logger.info("finish because of cycle limit")
       self.state.is_alive = False
     elif self.state.time_limit > 0 and (self.state.select_time+self.state.test_time) > self.state.time_limit:
+      self.state.logger.info("finish because of time limit")
       self.state.is_alive = False
     elif len(self.state.patch_ranking) == 0:
+      self.state.logger.info("finish because of len(self.state.patch_ranking) == 0")
       self.state.is_alive = False
     elif self.state.finish_at_correct_patch and self.patch_str in self.state.correct_patch_str:
+      self.state.logger.info("finish because of self.state.finish_at_correct_patch and self.patch_str in self.state.correct_patch_str")
       self.state.is_alive = False
     elif self._is_method_over():
+      self.state.logger.info("finish because of self._is_method_over()")
       self.state.is_alive=False
     return self.state.is_alive
+  
   def save_result(self) -> None:
     result_handler.save_result(self.state)
+    
   def run_test(self, patch: TbarPatchInfo, test: str) -> Tuple[bool, bool,float,branch_coverage.BranchCoverage]:
+    """
+    TODO: need more description
+    _summary_
+
+    Args:
+        patch (TbarPatchInfo): _description_
+        test (str): _description_
+
+    Returns:
+        Tuple[bool, bool,float,branch_coverage.BranchCoverage]: _description_
+    """
+    have_to_find_branch_data = True if not self.state.optimized_instrumentation or patch.tbar_case_info.location=='original' else False
     new_env=EnvGenerator.get_new_env_tbar(self.state, patch, test)
+    if self.state.mode == Mode.greybox and self.state.optimized_instrumentation:
+      if self.state.use_simulation_mode:
+        # do just as normal greybox
+        pass
+      else:
+        greybox_target_branches = list(self.state.critical_branch_up_down_manager.upDownDict.keys())
+        greybox_target_branches_str = ""
+        if len(greybox_target_branches)>0:
+          for id in greybox_target_branches:
+            greybox_target_branches_str+=f"{id},"
+          greybox_target_branches_str=greybox_target_branches_str[:-1]
+        else:
+          self.state.logger.debug("There is no critical branches found. Therefore skipping instrumentation")
+          new_env["GREYBOX_BRANCH"] = "0"
+        new_env["GREYBOX_TARGET_BRANCHES"]=greybox_target_branches_str
     start_time=time.time()
     compilable, run_result, is_timeout = run_test.run_fail_test_d4j(self.state, new_env)
+    
+    if self.state.mode == Mode.greybox and self.state.optimized_instrumentation and run_result:
+      have_to_find_branch_data = True
+      self.state.logger.info("Test passed. Running the test again with full instrumentation.")
+      new_env["GREYBOX_BRANCH"] = "1"
+      new_env["GREYBOX_TARGET_BRANCHES"] = ""
+      compilable, run_result, is_timeout = run_test.run_fail_test_d4j(self.state, new_env)
+      if not run_result:
+        self.state.logger.warning("the result has changed after instrumentation")
+    
     run_time=time.time()-start_time
 
     cur_cov=None
-    if self.state.mode==Mode.greybox and self.state.instrumenter_classpath!='' and compilable:
+    if self.state.mode==Mode.greybox and self.state.instrumenter_classpath!='' and compilable and have_to_find_branch_data:
       try:
         cur_cov=branch_coverage.parse_cov(self.state.logger,new_env['GREYBOX_RESULT'])
-        shutil.copyfile(new_env['GREYBOX_RESULT'],os.path.join(self.state.branch_output,f'{patch.tbar_case_info.location.replace("/","#")}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt'))
-        # if self.state.use_simulation_mode:
-        #   shutil.copyfile(new_env['GREYBOX_RESULT'],os.path.join(self.state.branch_output,f'{patch.tbar_case_info.location.replace("/","#")}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt'))
+        dest_file_name = os.path.join(self.state.branch_output,f'{patch.tbar_case_info.location.replace("/","#")}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt')
+        self.state.logger.info(f"branch dest: {dest_file_name}")
+        os.makedirs(os.path.dirname(dest_file_name), exist_ok=True)
+        shutil.copyfile(new_env['GREYBOX_RESULT'],dest_file_name)
         os.remove(new_env['GREYBOX_RESULT'])
         
         if patch.tbar_case_info.location=='original':
           self.state.original_branch_cov[test]=cur_cov
       except OSError as e:
-        self.state.logger.warning(f"Greybox result not found for {patch.tbar_case_info.location} {test}")
+        self.state.logger.warning(f"Greybox result not found for {patch.tbar_case_info.location} {test}. expected location: {new_env['GREYBOX_RESULT']}")
         
     return compilable, run_result, run_time, cur_cov
+  
   def run_test_positive(self, patch: TbarPatchInfo) -> Tuple[bool,float]:
     start_time=time.time()
-    run_result = run_test.run_pass_test_d4j(self.state, EnvGenerator.get_new_env_tbar(self.state, patch, ""))
+    new_env = EnvGenerator.get_new_env_tbar(self.state, patch, "")
+    run_result = run_test.run_pass_test_d4j(self.state, new_env)
     run_time=time.time()-start_time
     return run_result,run_time
+  
   def initialize(self) -> None:
     self.is_initialized = True
     self.state.logger.info("Initializing...")
@@ -99,32 +150,48 @@ class TBarLoop():
             continue
           self.state.logger.warning(f"FAIL at {ft}!!!!")
           self.state.d4j_failed_passing_tests.add(ft)
+          
   def run(self) -> None:
+    """
+    Run the loop.
+    """
+    
     self.initialize()
+    
     if self.state.use_simulation_mode:
       self.run_sim()
       return
+    
     self.state.start_time = time.time()
     self.state.cycle = 0
+    
     while self.is_alive():
+      
       self.state.logger.info(f'[{self.state.cycle}]: executing')
+      
       patch = select_patch.select_patch_tbar_mode(self.state)
       self.patch_str=patch.tbar_case_info.location
       self.state.logger.info(f"Patch: {patch.tbar_case_info.location}")
       self.state.logger.info(f"{patch.file_info.file_name}${patch.func_info.id}${patch.line_info.line_number}")
+      
       pass_exists = False
       result = True
       pass_result = False
       each_result=dict()
       is_compilable = True
       pass_time=0
-      coverages:Dict[str,branch_coverage.BranchCoverage]=dict()
+      coverages:Dict[str,branch_coverage.BranchCoverage]=dict() # key: test name, value: branch coverage(contains a dict that shows how many times each branch has been taken.)
+      self.state.new_critical_list = []
+      
       for neg in self.state.d4j_negative_test:
         compilable, run_result,fail_time,cur_cov = self.run_test(patch, neg)
+        
         if not compilable:
           is_compilable = False
+          
         if run_result:
           pass_exists = True
+          
         if not run_result:
           result = False
           each_result[neg]=False
@@ -132,17 +199,31 @@ class TBarLoop():
               self.state.instrumenter_classpath=='': 
             break
         else:
+          self.state.logger.debug(f"each result neg name: {neg}")
           each_result[neg]=True
 
         if cur_cov is not None:
+          self.state.logger.debug(f"coverages neg name: {neg}")
           coverages[neg]=cur_cov
+          
         self.state.test_time+=fail_time
         
-      #add an entry that maps this patch to its branchess
+      #add an entry that maps this patch to its branches
       if is_compilable:
         self.state.visited_tbar_patch.append(patch.tbar_case_info.location)
         self.state.patch_to_branches_map[patch.tbar_case_info.location] = []
+        
       if self.state.mode==Mode.greybox:
+        # if self.state.optimized_instrumentation:
+        #   if pass_exists or self.state.critical_branch_up_down_manager.upDownDict:
+        #     self.state.logger.info("result handler is called")
+        #     result_handler.update_result_branch(self.state,patch,coverages,is_compilable,each_result,pass_result)
+        #   else:
+        #     self.state.logger.info(f"what the hell{pass_exists}, {self.state.critical_branch_up_down_manager.upDownDict}")
+        # else:
+          # TODO: wait a minute... pass result is ALWAYS False?? what is going on?
+          # well never mind. the function below doesn't even use the pass_result.
+        self.state.logger.debug("result handler is called")
         result_handler.update_result_branch(self.state,patch,coverages,is_compilable,each_result,pass_result)
 
       if is_compilable or self.state.ignore_compile_error:
@@ -173,6 +254,8 @@ class TBarLoop():
       is_compilable = True
       pass_time=0
       key = patch.tbar_case_info.location
+      self.state.new_critical_list = []
+      # checks if there is a cached data
       if key not in self.state.simulation_data or \
             (self.state.mode==Mode.greybox and 'fail_time_branch' not in self.state.simulation_data[key]) or \
             (self.state.mode!=Mode.greybox and 'fail_time' not in self.state.simulation_data[key]):
@@ -212,7 +295,7 @@ class TBarLoop():
         if is_compilable or self.state.count_compile_fail:
           self.state.iteration += 1
 
-      else:
+      else: # use cached results
         simapr_result = self.state.simulation_data[key]
         each_result=simapr_result['basic']
         pass_exists = True in each_result.values()
@@ -235,7 +318,7 @@ class TBarLoop():
             for test in each_result.keys():
               cov_file=os.path.join(self.state.branch_output,
                                     f'{patch.tbar_case_info.location.replace("/","#")}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt')
-              if os.path.exists(cov_file):
+              if os.path.exists(cov_file): # should exist. because there was an if statement that checks whether to use cache or not
                 cur_cov=branch_coverage.parse_cov(self.state.logger,cov_file)
                 coverages[test]=cur_cov
           result_handler.update_result_branch(self.state,patch,coverages,is_compilable,each_result,pass_result)
@@ -266,23 +349,51 @@ class RecoderLoop(TBarLoop):
     return self.state.is_alive
   
   def run_test(self, patch: RecoderPatchInfo, test: str) -> Tuple[bool, bool, float, branch_coverage.BranchCoverage]:
+    have_to_find_branch_data = True if not self.state.optimized_instrumentation or patch.tbar_case_info.location=='original' else False
     new_env=EnvGenerator.get_new_env_recoder(self.state, patch, test)
+    if self.state.mode == Mode.greybox and self.state.optimized_instrumentation:
+      if self.state.use_simulation_mode:
+        # do just as normal greybox
+        pass
+      else:
+        greybox_target_branches = list(self.state.critical_branch_up_down_manager.upDownDict.keys())
+        greybox_target_branches_str = ""
+        if len(greybox_target_branches)>0:
+          for id in greybox_target_branches:
+            greybox_target_branches_str+=f"{id},"
+          greybox_target_branches_str=greybox_target_branches_str[:-1]
+        else:
+          self.state.logger.debug("There is no critical branches found. Therefore skipping instrumentation")
+          new_env["GREYBOX_BRANCH"] = "0"
+        new_env["GREYBOX_TARGET_BRANCHES"]=greybox_target_branches_str
     start_time=time.time()
     compilable, run_result, is_timeout = run_test.run_fail_test_d4j(self.state, new_env)
+    
+    if self.state.mode == Mode.greybox and self.state.optimized_instrumentation and run_result:
+      have_to_find_branch_data = True
+      self.state.logger.info("Test passed. Running the test again with full instrumentation.")
+      new_env["GREYBOX_TARGET_BRANCHES"] = ""
+      compilable, run_result, is_timeout = run_test.run_fail_test_d4j(self.state, new_env)
+      if not run_result:
+        self.state.logger.warning("the result has changed after instrumentation")
+
     run_time=time.time() - start_time
 
     cur_cov=None
-    if self.state.mode==Mode.greybox and self.state.instrumenter_classpath!='' and compilable:
+    if self.state.mode==Mode.greybox and self.state.instrumenter_classpath!='' and compilable and have_to_find_branch_data:
       try:
         cur_cov=branch_coverage.parse_cov(self.state.logger,new_env['GREYBOX_RESULT'])
-        #if self.state.use_simulation_mode:
-        shutil.copyfile(new_env['GREYBOX_RESULT'],os.path.join(self.state.branch_output,f'{patch.recoder_case_info.location}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt'))
+        self.state.logger.info("everything is fine")
+        dest_file_name = os.path.join(self.state.branch_output,f'{patch.recoder_case_info.location}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt')
+        os.makedirs(os.path.dirname(dest_file_name), exist_ok=True)
+        shutil.copyfile(new_env['GREYBOX_RESULT'],dest_file_name)
         os.remove(new_env['GREYBOX_RESULT'])
 
         if patch.recoder_case_info.location=='original':
           self.state.original_branch_cov[test]=cur_cov
       except OSError as e:
-        self.state.logger.warning(f"Greybox result not found for {patch.recoder_case_info.location} {test}")
+        self.state.logger.error(e)
+        self.state.logger.warning(f"Greybox result not found for {patch.recoder_case_info.location} {test}. expected location: {new_env['GREYBOX_RESULT']}")
 
     return compilable, run_result,run_time,cur_cov
   def run_test_positive(self, patch: RecoderPatchInfo) -> Tuple[bool,float]:
@@ -339,6 +450,7 @@ class RecoderLoop(TBarLoop):
       pass_time=0
       each_result=dict()
       coverages:Dict[str,branch_coverage.BranchCoverage]=dict()
+      self.state.new_critical_list = []
       for neg in self.state.d4j_negative_test:
         compilable, run_result,fail_time,cur_cov = self.run_test(patch, neg)
         self.state.test_time+=fail_time
@@ -393,6 +505,7 @@ class RecoderLoop(TBarLoop):
       is_compilable = True
       pass_time=0
       key = patch.recoder_case_info.location
+      self.state.new_critical_list = []
       if key not in self.state.simulation_data or \
             (self.state.mode==Mode.greybox and 'fail_time_branch' not in self.state.simulation_data[key]) or \
             (self.state.mode!=Mode.greybox and 'fail_time' not in self.state.simulation_data[key]):
@@ -459,6 +572,27 @@ class RecoderLoop(TBarLoop):
               if os.path.exists(cov_file):
                 cur_cov=branch_coverage.parse_cov(self.state.logger,cov_file)
                 coverages[test]=cur_cov
+              else: # if there is no branch data in cache, run the test again
+                self.state.logger.warning(f"There is no branch file while using cache. expected location: {cov_file}")
+                is_compilable =True
+                for neg in self.state.d4j_negative_test:
+                  compilable, run_result,fail_time,cur_cov = self.run_test(patch, neg)
+                  self.state.test_time+=fail_time
+                  if not compilable:
+                    is_compilable = False
+                  if run_result:
+                    pass_exists = True
+                  if not run_result:
+                    result = False
+                    each_result[neg]=False
+                    if self.state.use_partial_validation and self.state.instrumenter_classpath!='' and \
+                      self.state.mode==Mode.seapr:
+                      break
+                  else:
+                    each_result[neg]=True
+
+                  if cur_cov is not None:
+                    coverages[neg]=cur_cov
           result_handler.update_result_branch(self.state,patch,coverages,is_compilable,each_result,pass_result)
 
         if is_compilable or self.state.ignore_compile_error:

@@ -1110,7 +1110,7 @@ def solveone(data, model: Decoder) -> list:# data: (treestr, prob, model, subroo
                 classcontent = json.load(open("Result/%s.json" % idss, 'r') )
             else:
                 classcontent = []
-            classcontent.extend(json.load(open("Result/others.json", 'r')))
+            # classcontent.extend(json.load(open("Result/others.json", 'r')))
             rrdicts = {}
             for x in classcontent:
                 rrdicts[x['filename']] = x

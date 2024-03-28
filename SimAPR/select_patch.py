@@ -34,15 +34,120 @@ def get_static_score(element):
   elif type(element) == RecoderCaseInfo:
     return element.prob
   else: raise ValueError(f'Unknown element type {type(element)}')
+  
+def second_vertical_search(state:GlobalState, source:PatchTreeNode):
+  """
+  second vertical search
+  when the critical branch list is empty, don't call this function. it will cause error.
+
+  Args:
+      state (GlobalState): _description_
+      source (PatchTreeNode): _description_
+
+  Returns:
+      _type_: _description_
+  """
+  # Select a random branch. maybe with some 가중치?
+  if state.weight_critical_branch:
+    weight = list(map(lambda a: max(a.branchUpScore, a.branchDownScore), state.critical_branch_up_down_manager.upDownDict.values()))
+    selected_branch:int = random.choices(list(state.critical_branch_up_down_manager.upDownDict.keys()), weights=weight)[0]
+  else:
+    selected_branch:int = random.choice(list(state.critical_branch_up_down_manager.upDownDict.keys()))
+  isUp:bool=state.critical_branch_up_down_manager.get_isUp(selected_branch)
+  state.logger.info(f"beginning vertical search. selected branch: {selected_branch}, isUp: {isUp}")
+  # vertical traversal with the selected branch by calling recursion.
+  return second_vertical_search_recursion(state, isUp, source, selected_branch)
+  
+def second_vertical_search_recursion(state:GlobalState, isUp:bool, source:PatchTreeNode, selected_branch:int):
+  """
+  A recursive method.
+
+  Args:
+      isUp (bool): _description_
+      source (PatchTreeNode): _description_
+  """
+  state.logger.debug(f"during second vertical search. source: {source}")
+  if isinstance(source, FileInfo):
+    children_map = source.func_info_map
+    if state.use_fl_score_in_greybox:
+      children_map = filter_children_list_by_fl_score(state, source, children_map)
+    state.logger.debug(f"second vertical traversing on file level. func_info_map len: {len(children_map)}, isUp: {isUp}, selected_branch: {selected_branch}")
+  elif isinstance(source, FuncInfo):
+    children_map = source.line_info_map
+    if state.use_fl_score_in_greybox:
+      children_map = filter_children_list_by_fl_score(state, source, children_map)
+    state.logger.debug(f"second vertical traversing on func level. line_info_map len: {len(children_map)}, isUp: {isUp}, selected_branch: {selected_branch}")
+    """
+    # use fl-score in second vertical search
+    if state.use_fl_score_in_greybox:
+      state.logger.debug(f"select the line with the highest fl_score")
+      highest_fl_score = -1
+      highest_line = None
+      for child in children_map.values():
+        if child.fl_score > highest_fl_score:
+          highest_fl_score = child.fl_score
+          highest_line = child
+          
+      return second_vertical_search_recursion(state, isUp, highest_line, selected_branch)"""
+  elif isinstance(source, LineInfo):
+    if state.tool_type == ToolType.TEMPLATE:
+      children_map = source.tbar_type_info_map
+      state.logger.debug(f"second vertical traversing on line level. type_info_map len: {len(children_map)}, isUp: {isUp}, selected_branch: {selected_branch}")
+    elif state.tool_type == ToolType.LEARNING:
+      children_map = source.recoder_case_info_map
+      state.logger.debug(f"second vertical traversing on line level. recoder_case_info_map len: {len(children_map)}, isUp: {isUp}, selected_branch: {selected_branch}")
+  elif isinstance(source, TbarTypeInfo): #Only for Tbar
+    children_map = source.tbar_case_info_map
+    state.logger.debug(f"second vertical traversing on type level. case_info_map len: {len(children_map)}, isUp: {isUp}, selected_branch: {selected_branch}")
+  elif isinstance(source, TbarCaseInfo): #Only for Tbar
+    state.logger.debug(f"second vertical search done. isUp: {isUp}, selected_branch: {selected_branch}")
+    return source
+  elif isinstance(source, RecoderCaseInfo): #Only for Recorder
+    state.logger.debug(f"second vertical search done. isUp: {isUp}, selected_branch: {selected_branch}")
+    return source
+  elif source == None:
+    epsilon_select(state) #epsilon select function handles the case that source is none.
+  
+
+  randomly_selected_values = []
+  for child in children_map.values():
+    randomly_selected_values.append(child.critical_branch_up_down_manager.select_value(selected_branch, isUp))
+    # state.logger.debug(f"appending to randomly_selected_values: {randomly_selected_values}")    
+  
+  max_index = randomly_selected_values.index(max(randomly_selected_values)) # TODO: buggy... maybe not?
+  new_source = list(children_map.values())[max_index]
+  
+  return second_vertical_search_recursion(state, isUp, new_source, selected_branch)
+  
+def filter_children_list_by_fl_score(state:GlobalState, source:PatchTreeNode, given_map):
+  """
+  filters the children map of PatchTreeNode to get Nodes with Highest fl score.
+  source should be the upper than line level of the patch tree node.
+  """
+  highest_fl_score = max(list(source.remain_lines_by_score.keys()))
+
+  state.logger.debug(f"filtering the childern list. highest_fl_score: {highest_fl_score}")
+  if isinstance(source, FuncInfo):
+    new_map = dict(filter(lambda patchNode: highest_fl_score == patchNode[1].fl_score, given_map.items()))
+  else:
+    new_map = dict(filter(lambda patchNode: highest_fl_score in list(patchNode[1].remain_lines_by_score.keys()), given_map.items()))
+  state.logger.debug(f"filtered map: {new_map}")
+  
+
+  return new_map
 
 def epsilon_select(state:GlobalState,source:PatchTreeNode=None):
   """
+  Here is the main logic of the horizontal navigation(= epsilon search)
+  
+  
+  previous description:
     Do epsilon search if there's no basic patch.
     source: File/Function/Line/TbarType info, or None if file selection
   """
   top_fl_patches:List[Union[TbarCaseInfo,RecoderCaseInfo]]=[] # All 'not searched' top scored patches
   top_all_patches=[] # All top scored patches, include searched or not searched
-  cur_score=-100.
+  cur_score=-100. # the value -100 means that this variable is not initialized yet.
   start_time=time.time()
   # Get all top fl patches
   if source is None:
@@ -72,7 +177,12 @@ def epsilon_select(state:GlobalState,source:PatchTreeNode=None):
   is_epsilon_greedy=np.random.random()<epsilon and not state.not_use_epsilon_search
 
   if is_epsilon_greedy:
+    if state.mode == Mode.greybox and not state.critical_branch_up_down_manager.is_empty() and source is not None:
+      state.logger.debug(f"Use second vertical search, epsilon: {epsilon}'")
+      return second_vertical_search(state, source)
     # Perform random search in epsilon probability
+    else:
+      state.logger.debug(f'is critical_branch empty: {state.critical_branch_up_down_manager.is_empty()}, is source none: {source is None}')
     state.logger.debug(f'Use epsilon greedy method, epsilon: {epsilon}')
 
     # Choose random element in candidates
@@ -86,9 +196,24 @@ def epsilon_select(state:GlobalState,source:PatchTreeNode=None):
     return top_fl_patches[0]
   
 def select_patch_guide_algorithm(state: GlobalState,elements:dict,parent:PatchTreeNode=None):
+  """
+  one step of vertical traversal.
+  This function selects a child node of the 'parent' in the patch tree.
+  - select a random value from the each child node. (the values are temporarily stored in 'p_b'in this function)
+  - select the child node with the highest value.
+  And return the selected child node.
+
+  Args:
+      state (GlobalState): _description_
+      elements (dict): the dictionary containing the children of the 'parent'. In normal cases, parent contains it but for some reason this dictionary is required by this function :b
+      parent (PatchTreeNode, optional): the node that you want to select a child from. Defaults to None.
+
+  Returns:
+      _type_: _description_
+  """
   start_time=time.time()
 
-  for element in elements:
+  for element in elements: # TODO: ...? wierd code
     element_type=type(elements[element])
   selected:List[PatchTreeNode]=[]
   p_b=[]
@@ -108,11 +233,12 @@ def select_patch_guide_algorithm(state: GlobalState,elements:dict,parent:PatchTr
         p_b.append(info.positive_pf.select_value(PT.ALPHA_INIT,PT.BETA_INIT))
       else:
         p_b.append(0.)
-
-      if state.mode==Mode.casino:
+      """
+      if state.mode==Mode.casino or state.mode == Mode.greybox:
         state.logger.debug(f'Basic: a: {info.pf.pass_count}, b: {info.pf.fail_count}')
       else:
         state.logger.debug(f'Branch Coverage: a: {info.coverage_info.pass_count}, b: {info.coverage_info.fail_count}')
+      """
 
     max_score=0.
     max_index=-1
@@ -151,6 +277,16 @@ def select_patch_guide_algorithm(state: GlobalState,elements:dict,parent:PatchTr
     return None
 
 def select_patch_tbar_mode(state: GlobalState) -> TbarPatchInfo:
+  """
+  Select a patch in appropriate way and return the patch.
+  The default method for selecting is select_patch_tbar_guided(state).
+
+  Args:
+      state (GlobalState): _description_
+
+  Returns:
+      TbarPatchInfo: _description_
+  """
   if state.mode == Mode.orig:
     return select_patch_tbar(state)
   elif state.mode==Mode.genprog:
@@ -168,7 +304,15 @@ def select_patch_tbar(state: GlobalState) -> TbarPatchInfo:
 
 def select_patch_tbar_guided(state: GlobalState) -> TbarPatchInfo:
   """
-  Select a patch for Tbar.
+  Here is the main logic of the vertical navigation.
+  It traverses the patch tree from the root, selecting file, function, line, type?, and patch.
+  During the traversing, It occationally switch to the horizontal navigation.
+
+  Args:
+      state (GlobalState): _description_
+
+  Returns:
+      TbarPatchInfo: _description_
   """
   p_fl = list() # fault localization
   p_frequency = list() # frequency of basic patches from total basic patches
@@ -189,6 +333,7 @@ def select_patch_tbar_guided(state: GlobalState) -> TbarPatchInfo:
     state.patch_ranking.remove(selected_switch_info.location)
     return result
   
+  # for logging (begin)
   for file_name in state.file_info_map:
     file_info=state.file_info_map[file_name]
     p_fl.append(max(file_info.fl_score_list))
@@ -203,6 +348,7 @@ def select_patch_tbar_guided(state: GlobalState) -> TbarPatchInfo:
   state.logger.debug(f'Selected file: FL: {norm[selected_file]}/{p_fl[selected_file]}, Basic: {selected_file_info.pf.beta_mode(selected_file_info.pf.pass_count,selected_file_info.pf.fail_count)}, '+
                   f'Plausible: {selected_file_info.positive_pf.beta_mode(selected_file_info.positive_pf.pass_count,selected_file_info.positive_pf.fail_count)}, '+
                   f'Unique/Freq: {PassFail.concave_up(p_frequency[selected_file])}/{p_frequency[selected_file]}, BPFreq: {PassFail.log_func(p_bp_frequency[selected_file])}')
+  # for logging (end)
 
   is_correct_guide=False
   for cor in state.correct_patch_list:
@@ -222,6 +368,7 @@ def select_patch_tbar_guided(state: GlobalState) -> TbarPatchInfo:
     state.patch_ranking.remove(selected_switch_info.location)
     return result
   
+  # for logging (begin)
   for func_name in selected_file_info.func_info_map:
     func_info=selected_file_info.func_info_map[func_name]
     p_fl.append(max(func_info.fl_score_list))
@@ -237,6 +384,7 @@ def select_patch_tbar_guided(state: GlobalState) -> TbarPatchInfo:
   state.logger.debug(f'Selected function: FL: {norm[selected_func]}/{p_fl[selected_func]}, Basic: {selected_func_info.pf.beta_mode(selected_func_info.pf.pass_count,selected_func_info.pf.fail_count)}, '+
                   f'Plausible: {selected_func_info.positive_pf.beta_mode(selected_func_info.positive_pf.pass_count,selected_func_info.positive_pf.fail_count)}, '+
                   f'Unique/Freq: {PassFail.concave_up(p_frequency[selected_func])}/{p_frequency[selected_func]}, BPFreq: {PassFail.log_func(p_bp_frequency[selected_func])}')
+  # for logging (end)
 
   is_correct_guide=False
   for cor in state.correct_patch_list:
@@ -256,6 +404,7 @@ def select_patch_tbar_guided(state: GlobalState) -> TbarPatchInfo:
     state.patch_ranking.remove(selected_switch_info.location)
     return result
   
+  # for logging (begin)
   for line in selected_func_info.line_info_map:
     line_info=selected_func_info.line_info_map[line]
     p_fl.append(line_info.fl_score)
@@ -271,6 +420,7 @@ def select_patch_tbar_guided(state: GlobalState) -> TbarPatchInfo:
   state.logger.debug(f'Selected line: FL: {norm[selected_line]}/{p_fl[selected_line]}, Basic: {selected_line_info.pf.beta_mode(selected_line_info.pf.pass_count,selected_line_info.pf.fail_count)}, '+
                   f'Plausible: {selected_line_info.positive_pf.beta_mode(selected_line_info.positive_pf.pass_count,selected_line_info.positive_pf.fail_count)}, '+
                   f'Unique/Freq: {PassFail.concave_up(p_frequency[selected_line])}/{p_frequency[selected_line]}, BPFreq: {PassFail.log_func(p_bp_frequency[selected_line])}')
+  # for logging (end)
   
   is_correct_guide=False
   for cor in state.correct_patch_list:
@@ -290,6 +440,7 @@ def select_patch_tbar_guided(state: GlobalState) -> TbarPatchInfo:
     state.patch_ranking.remove(selected_switch_info.location)
     return result
   
+  # for logging (begin)
   for tbar_type in selected_line_info.tbar_type_info_map:
     type_info=selected_line_info.tbar_type_info_map[tbar_type]
     p_frequency.append(type_info.children_basic_patches/state.total_basic_patch if state.total_basic_patch > 0 else 0)
@@ -302,6 +453,7 @@ def select_patch_tbar_guided(state: GlobalState) -> TbarPatchInfo:
   state.logger.debug(f'Selected type: Basic: {selected_type_info.pf.beta_mode(selected_type_info.pf.pass_count,selected_type_info.pf.fail_count)}, '+
                   f'Plausible: {selected_type_info.positive_pf.beta_mode(selected_type_info.positive_pf.pass_count,selected_type_info.positive_pf.fail_count)}, '+
                   f'Unique/Freq: {PassFail.concave_up(p_frequency[selected_type])}/{p_frequency[selected_type]}, BPFreq: {PassFail.log_func(p_bp_frequency[selected_type])}')
+  # for logging (end)
 
   is_correct_guide=False
   for cor in state.correct_patch_list:
@@ -510,7 +662,8 @@ def select_patch_recoder_guided(state: GlobalState) -> RecoderPatchInfo:
   # frequency of basic patches from total searched patches in subtree
   p_bp_frequency = list()
 
-  if state.total_basic_patch == 0 or state.not_use_guided_search:
+  if  (state.mode==Mode.casino and state.total_basic_patch==0) or \
+    (state.mode==Mode.greybox and state.total_basic_patch==0) or state.total_basic_patch == 0 or state.not_use_guided_search:
     selected_switch_info = epsilon_select(state)
     state.patch_ranking.remove(selected_switch_info.location)
     result = RecoderPatchInfo(selected_switch_info)

@@ -4,14 +4,30 @@ import subprocess
 
 # return (compilable, passed, timeout)
 def run_fail_test_d4j(state: GlobalState, new_env: Dict[str, str]) -> Tuple[bool, bool, bool]:
+  """
+    TODO: need more description
+
+  Args:
+      state (GlobalState): _description_
+      new_env (Dict[str, str]): _description_
+
+  Raises:
+      RuntimeError: _description_
+
+  Returns:
+      Tuple[bool, bool, bool]: 
+        - tuple[0]: compilable
+        - tuple[1]: run result
+        - tuple[2]: is time out
+  """
   state.cycle += 1
   state.logger.info(f"@{state.cycle} Run tbar test {new_env['SIMAPR_TEST']} with {new_env['SIMAPR_LOCATION']}")
   args = state.args
   state.logger.debug(' '.join(args))
   # state.logger.info(f"@This is {args} and {new_env}")
   test_proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=new_env)
-  so: bytes
-  se: bytes
+  so: bytes # subprocess out
+  se: bytes # subprocess error
   is_timeout = False
   try:
     so, se = test_proc.communicate()
@@ -27,6 +43,7 @@ def run_fail_test_d4j(state: GlobalState, new_env: Dict[str, str]) -> Tuple[bool
       child.kill()
     test_proc.kill()
     return False, False, True
+  
   result_str = so.decode('utf-8').strip()
   error_str = se.decode('utf-8').strip()
   if result_str == "":

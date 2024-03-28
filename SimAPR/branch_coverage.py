@@ -4,7 +4,7 @@ from typing import Dict, Set, Tuple
 
 class BranchCoverage:
     def __init__(self):
-        self.branch_coverage:Dict[int,int]=dict()
+        self.branch_coverage:Dict[int,int]=dict() # key: branch index, value: branch count
 
     def increment(self, line:int):
         if line in self.branch_coverage:
@@ -12,18 +12,18 @@ class BranchCoverage:
         else:
             self.branch_coverage[line]=1
     
-    def diff(self,other:'BranchCoverage')->Set[Tuple[int,int]]:
-        diff:Set[Tuple[int,int]]=set()
+    def diff(self,other:'BranchCoverage')->list[Tuple[int,int]]:
+        diff:list[Tuple[int,int]]=[]
         for line in self.branch_coverage:
             if line in other.branch_coverage:
                 if self.branch_coverage[line]!=other.branch_coverage[line]:
-                    diff.add((line,self.branch_coverage[line]-other.branch_coverage[line]))
+                    diff.append((line,self.branch_coverage[line]-other.branch_coverage[line]))
             else:
-                diff.add((line,self.branch_coverage[line]))
+                diff.append((line,self.branch_coverage[line]))
         
         for line in other.branch_coverage:
             if line not in self.branch_coverage:
-                diff.add((line,other.branch_coverage[line]))
+                diff.append((line,-other.branch_coverage[line]))
         return diff
     
 def parse_cov(logger:Logger, cov_file: str):
@@ -32,6 +32,7 @@ def parse_cov(logger:Logger, cov_file: str):
     :return: branch coverage vector
     """
     cov=BranchCoverage()
+    logger.info(f"i want to open {cov_file}")
     with open(cov_file, 'r') as f:
         for line in f:
             try:

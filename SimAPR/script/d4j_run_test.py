@@ -5,26 +5,8 @@ import sys
 from typing import List, Union, Tuple
 import psutil
 
-def run_d4j_export(d4j_dir: str) -> tuple:
-  class_dir_file = d4j_dir + "/bin.classes"
-  test_dir_file = d4j_dir + "/bin.tests"
-  if not os.path.exists(class_dir_file):
-    cmd = ["defects4j", "export", "-p", "dir.bin.classes", "-w", d4j_dir, "-o", class_dir_file]
-    subprocess.run(cmd, check=True)
-  if not os.path.exists(test_dir_file):
-    cmd = ["defects4j", "export", "-p", "dir.bin.tests", "-w", d4j_dir, "-o", test_dir_file]
-    subprocess.run(cmd, check=True)
-  if not os.path.exists(class_dir_file) or not os.path.exists(test_dir_file):
-    raise Exception("d4j export failed")
-  class_dir = open(class_dir_file).read().strip()
-  test_dir = open(test_dir_file).read().strip()
-  return class_dir, test_dir
-
 def get_src_paths(project):
-  sep = "_"
-  if "SIMAPR_RECODER" in os.environ:
-    sep = os.environ["SIMAPR_RECODER"]
-  project_name, bug_id = project.split(sep)
+  project_name, bug_id = project.split('_')
   if len(bug_id)>=4:
     bug_id=bug_id[:-3]
   bug_id = int(bug_id)
@@ -81,10 +63,7 @@ def get_src_paths(project):
     raise Exception("Unknown project: "+project_name)
 
 def get_target_paths(project):
-  sep = "_"
-  if "SIMAPR_RECODER" in os.environ:
-    sep = os.environ["SIMAPR_RECODER"]
-  project_name, bug_id = project.split(sep)
+  project_name, bug_id = project.split('_')
   if len(bug_id)>=4:
     bug_id=bug_id[:-3]
   bug_id = int(bug_id)
@@ -105,8 +84,8 @@ def get_target_paths(project):
   elif project_name == "Closure":
     return "/build/classes/", "/build/test/"
   elif project_name == "Mockito":
-    if 11 <= bug_id or 18 <= bug_id <= 21:
-      return "/build/classes/main/", "/build/classes/test/"
+    # if 11 >= bug_id or 18 <= bug_id <= 21:
+    #   return "/build/classes/main/", "/build/classes/test/"
     return "/target/classes/", "/target/test-classes/"
   
   # D4J 2.0
@@ -161,21 +140,33 @@ def deleteDirectory(dir):
 
 def instrument_patched_project(work_dir:str,buggy_project:str,buggy_path:str):
   instrumenter_root=os.environ['GREYBOX_INSTR_ROOT']
+  if 'GREYBOX_TARGET_BRANCHES' not in os.environ:
+    specified_branch_ids=''
+  else:
+    specified_branch_ids=os.environ["GREYBOX_TARGET_BRANCHES"]
   classpath=f'{instrumenter_root}/build/libs/JPatchInst.jar'
 
   src_path=work_dir+get_target_paths(buggy_project)[0]
   orig_src_path=work_dir+'b'+get_target_paths(buggy_project)[0]
   
-  cmd=['java','-Xmx100G','-jar',classpath,orig_src_path,src_path]
+  cmd=['java','-Xmx100G','-jar',classpath]
+  if specified_branch_ids!='':
+    cmd+=['-i',specified_branch_ids]
+  cmd+=[orig_src_path,src_path]
+
   instrumentation_result=subprocess.run(cmd,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
   if instrumentation_result.returncode!=0:
     print(instrumentation_result.stdout.decode('utf-8'),file=sys.stderr)
     return False
-  
+
   return True
   
 def compile_project_updated(work_dir, buggy_project):
-  compile_proc = subprocess.Popen(["defects4j", "compile", "-w", work_dir], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  if buggy_project.startswith('Mockito'):
+    # Mockito should use modified project structure by Ali Ghanbari
+    compile_proc = subprocess.Popen(["mvn", "install", '-DskipTests'], stdout=subprocess.PIPE, stderr=subprocess.PIPE,cwd=work_dir)
+  else:
+    compile_proc = subprocess.Popen(["defects4j", "compile", "-w", work_dir], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   result = True
   so = "".encode()
   se = "".encode()
@@ -204,12 +195,21 @@ def compile_project_updated(work_dir, buggy_project):
   return result
 
 def run_single_test(work_dir: str, buggy_project: str, test: str = "") -> Tuple[int, List[str]]:
-  cmd = ["defects4j", "test", "-w", work_dir]
-  if test != "":
-    cmd = ["defects4j", "test", "-w", work_dir, "-t", test]
+  if buggy_project.startswith('Mockito'):
+    # Mockito should use modified project structure by Ali Ghanbari
+    cmd=['mvn','test']
+    if test!='':
+      _test=test.split('.')[-1].replace('::','#')
+      cmd+=['-Dtest='+_test]
+    test_proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,cwd=work_dir)
+  else:
+    cmd = ["defects4j", "test", "-w", work_dir]
+    if test != "":
+      cmd = ["defects4j", "test", "-w", work_dir, "-t", test]
+    test_proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
   so = "".encode()
   se = "".encode()
-  test_proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   if "SIMAPR_TIMEOUT" in os.environ:
     timeout = int(os.environ["SIMAPR_TIMEOUT"])
     if test == "":
@@ -233,14 +233,25 @@ def run_single_test(work_dir: str, buggy_project: str, test: str = "") -> Tuple[
   # print(err_str, file=sys.stderr)
   error_num = -1
   failed_tests = list()
-  for line in result_str.splitlines():
-    line = line.strip()
-    if line.startswith("Failing tests:"):
-      error_num = int(line.split(":")[1].strip())
-      continue
-    if line.startswith("-"):
-      ft = line.replace("-", "").strip()
-      failed_tests.append(ft)
+  if buggy_project.startswith('Mockito'):
+    error_num=0
+    for line in result_str.splitlines():
+      line=line.strip()
+      if ('<<< ERROR!' in line or '<<< FAILURE!' in line) and not line.startswith('Tests run:'):
+        temp_str=line.split(' ')[0]
+        error_class=temp_str.split('(')[1][:-1]
+        error_method=temp_str.split('(')[0]
+        failed_tests.append(error_class+'::'+error_method)
+        error_num+=1
+  else:
+    for line in result_str.splitlines():
+      line = line.strip()
+      if line.startswith("Failing tests:"):
+        error_num = int(line.split(":")[1].strip())
+        continue
+      if line.startswith("-"):
+        ft = line.replace("-", "").strip()
+        failed_tests.append(ft)
   return error_num, failed_tests
 
 def test_project(patch_location: str, buggy_location: str, work_dir: str, test: str, buggy_project: str, class_file: str = "", run_original: bool = False):
@@ -267,16 +278,17 @@ def test_patched_project(patch_location: str, buggy_location: str, work_dir: str
       # Copy GlobalStates to source directory
       # We copy the GlobalStates before the instrumentation is success for the later patches
       src_path=work_dir+get_src_paths(buggy_project)[0]
-      if not os.path.exists(src_path+'/kr'):
-        os.makedirs(src_path+'/kr')
-      if not os.path.exists(src_path+'/kr/ac'):
-        os.makedirs(src_path+'/kr/ac')
-      if not os.path.exists(src_path+'/kr/ac/unist'):
-        os.makedirs(src_path+'/kr/ac/unist')
-      if not os.path.exists(src_path+'/kr/ac/unist/apr'):
-        os.makedirs(src_path+'/kr/ac/unist/apr')
-      if not os.path.exists(src_path+'/kr/ac/unist/apr/GlobalStates.java'):
-        copyfile(f'{os.environ["GREYBOX_INSTR_ROOT"]}/src/main/resources/kr/ac/unist/apr/GlobalStates.java',src_path+'/kr/ac/unist/apr/GlobalStates.java')
+      shutil.copytree(f'{os.environ["GREYBOX_INSTR_ROOT"]}/src/main/resources/kr',src_path+'/kr',dirs_exist_ok=True)
+      # if not os.path.exists(src_path+'/kr'):
+      #   os.makedirs(src_path+'/kr')
+      # if not os.path.exists(src_path+'/kr/ac'):
+      #   os.makedirs(src_path+'/kr/ac')
+      # if not os.path.exists(src_path+'/kr/ac/unist'):
+      #   os.makedirs(src_path+'/kr/ac/unist')
+      # if not os.path.exists(src_path+'/kr/ac/unist/apr'):
+      #   os.makedirs(src_path+'/kr/ac/unist/apr')
+      # if not os.path.exists(src_path+'/kr/ac/unist/apr/GlobalStates.java'):
+      #   copyfile(f'{os.environ["GREYBOX_INSTR_ROOT"]}/src/main/resources/kr/ac/unist/apr/GlobalStates.java',src_path+'/kr/ac/unist/apr/GlobalStates.java')
 
     if not compile_project_updated(work_dir, buggy_project):
       print("FAIL")
@@ -289,11 +301,11 @@ def test_patched_project(patch_location: str, buggy_location: str, work_dir: str
         print("FAIL")
         print("---INSTRUMENTATION_FAILED")
         raise ValueError("Patch is not instrumented")
-      
       if not compile_project_updated(work_dir, buggy_project):
         print("FAIL")
         print("---COMPILATION_FAILED")
         raise ValueError("Patch is not compiled after instrumentation")
+      
       
     error_num, failed_test = run_single_test(work_dir, buggy_project, test)
     if error_num != 0:
@@ -317,23 +329,24 @@ def test_original_project(work_dir: str, test: Union[str, List[str]], buggy_proj
       # Copy GlobalStates to source directory
       # We copy the GlobalStates before the instrumentation is success for the later patches
       src_path=work_dir+get_src_paths(buggy_project)[0]
-      if not os.path.exists(src_path+'/kr'):
-        os.makedirs(src_path+'/kr')
-      if not os.path.exists(src_path+'/kr/ac'):
-        os.makedirs(src_path+'/kr/ac')
-      if not os.path.exists(src_path+'/kr/ac/unist'):
-        os.makedirs(src_path+'/kr/ac/unist')
-      if not os.path.exists(src_path+'/kr/ac/unist/apr'):
-        os.makedirs(src_path+'/kr/ac/unist/apr')
-      if not os.path.exists(src_path+'/kr/ac/unist/apr/GlobalStates.java'):
-        copyfile(f'{os.environ["GREYBOX_INSTR_ROOT"]}/src/main/resources/kr/ac/unist/apr/GlobalStates.java',src_path+'/kr/ac/unist/apr/GlobalStates.java')
+      shutil.copytree(f'{os.environ["GREYBOX_INSTR_ROOT"]}/src/main/resources/kr',src_path+'/kr',dirs_exist_ok=True)
+      # if not os.path.exists(src_path+'/kr'):
+      #   os.makedirs(src_path+'/kr')
+      # if not os.path.exists(src_path+'/kr/ac'):
+      #   os.makedirs(src_path+'/kr/ac')
+      # if not os.path.exists(src_path+'/kr/ac/unist'):
+      #   os.makedirs(src_path+'/kr/ac/unist')
+      # if not os.path.exists(src_path+'/kr/ac/unist/apr'):
+      #   os.makedirs(src_path+'/kr/ac/unist/apr')
+      # if not os.path.exists(src_path+'/kr/ac/unist/apr/GlobalStates.java'):
+      #   copyfile(f'{os.environ["GREYBOX_INSTR_ROOT"]}/src/main/resources/kr/ac/unist/apr/GlobalStates.java',src_path+'/kr/ac/unist/apr/GlobalStates.java')
         
     if not compile_project_updated(work_dir, buggy_project):
       raise ValueError("Original is not compilable")
     
     if os.environ['GREYBOX_BRANCH']=='1':
       instr_result=instrument_patched_project(work_dir, buggy_project, None)
-      if instr_result:      
+      if instr_result:
         new_compile_result= compile_project_updated(work_dir, buggy_project)
 
     error_num, failed_test = run_single_test(work_dir, buggy_project, test)
@@ -372,8 +385,22 @@ def main(argv: List[str]) -> None:
     os.makedirs(f'{buggy_dir}b', exist_ok=True)
     if len(pid)>=4:
       pid=pid[:-3]
-    _temp=subprocess.run(f"defects4j checkout -p {proj} -v {pid}b -w {buggy_dir}", stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-    subprocess.run(f"defects4j checkout -p {proj} -v {pid}b -w {buggy_dir}b", stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    
+    if buggy_project.startswith('Mockito'):
+      version=buggy_project.split('_')[1]
+      parent_dir='/'.join(buggy_dir.split('/')[:-1])
+      pom_path='/'.join(__file__.split('/')[:-2])+f'/mockito/{version}-pom.xml'
+      subprocess.run(['wget',f'https://github.com/ali-ghanbari/d4j-mockito/raw/master/Mockito-{version}.tar.gz'], stdout=subprocess.PIPE, stderr=subprocess.PIPE,cwd=parent_dir)
+      subprocess.run(['tar','-xf',f'Mockito-{version}.tar.gz'],stdout=subprocess.PIPE, stderr=subprocess.PIPE,cwd=parent_dir)
+      _temp=subprocess.run(f'cp -rf {version}/* {buggy_dir}',stdout=subprocess.PIPE, stderr=subprocess.PIPE,cwd=parent_dir,shell=True)
+      _temp=subprocess.run(f'cp -f {pom_path} {buggy_dir}/pom.xml',stdout=subprocess.PIPE, stderr=subprocess.PIPE,cwd=parent_dir,shell=True)
+      _temp=subprocess.run(f'mv {version}/* {buggy_dir}b',stdout=subprocess.PIPE, stderr=subprocess.PIPE,cwd=parent_dir,shell=True)
+      _temp=subprocess.run(f'cp -f {pom_path} {buggy_dir}b/pom.xml',stdout=subprocess.PIPE, stderr=subprocess.PIPE,cwd=parent_dir,shell=True)
+      os.remove(f'{parent_dir}/Mockito-{version}.tar.gz')
+      shutil.rmtree(f'{parent_dir}/{version}')
+    else:
+      _temp=subprocess.run(f"defects4j checkout -p {proj} -v {pid}b -w {buggy_dir}", stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+      subprocess.run(f"defects4j checkout -p {proj} -v {pid}b -w {buggy_dir}b", stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
 
     if not compile_project_updated(f'{buggy_dir}b', buggy_project):
       print("FAIL")

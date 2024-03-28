@@ -13,15 +13,33 @@ from core import *
 from simapr_loop import TBarLoop, RecoderLoop, PraPRLoop
 
 def parse_args(argv: list) -> GlobalState:
+  """
+  This function parses the list of command-line arguments, 
+  and the parsing result is stored in the 'state' variable, which is a GlobalState object.
+  
+  At the latter part of the function, it creates the directory if the required directory doesn't exists.
+  Additionally, it remove and re-create the 'tmp' direcrory.
+
+  Args:
+      argv (list): A list that is the same as sys.args
+
+  Raises:
+      ValueError: 
+
+  Returns:
+      GlobalState: returns a instance of GlobalState, which is used as a singloton object.
+  """
   longopts = ["help", "outdir=", "workdir=", "timeout=", "time-limit=", "cycle-limit=",
               "mode=", 'skip-valid', 'params=', "no-exp-alpha",'tool-type=',
               "no-pass-test", "use-full-validation",'seed=','--correct-patch',
               "use-pattern", "use-simulation-mode=",
               'seapr-mode=','top-fl=','ignore-compile-error',
               'finish-correct-patch','not-count-compile-fail','not-use-guide','not-use-epsilon',
-              'finish-top-method', 'prapr-mode','instr-cp=','branch-output=']
+              'finish-top-method', 'prapr-mode','instr-cp=','branch-output=', 'use-fl-score-in-greybox',
+              'weight-critical-branch', 'optimized-instrumentation']
   opts, args = getopt.getopt(argv[1:], "ho:w:t:m:c:T:E:k:", longopts)
   state = GlobalState()
+  state.critical_branch_up_down_manager = CriticalBranchesUpDownManager(is_this_critical_branches = True)
   state.original_args = argv
   state.args = args  # After --
   for o, a in opts:
@@ -127,11 +145,27 @@ def parse_args(argv: list) -> GlobalState:
       state.instrumenter_classpath=a
     elif o in ['--branch-output']:
       state.branch_output=a
+    elif o in ['--use-fl-score-in-greybox']:
+      state.use_fl_score_in_greybox=True
+    elif o in ['weight-critical-branch']:
+      state.weight_critical_branch=True
+    elif o in ['--optimized-instrumentation']:
+      # with this option, you should not use the simulation mode
+      state.optimized_instrumentation = True
 
+  # make output directory if not exists
   if not os.path.exists(state.out_dir):
     os.makedirs(state.out_dir)
-  if state.use_simulation_mode and state.branch_output=='' and not os.path.exists(os.path.join(state.out_dir,'branch')):
-    os.makedirs(os.path.join(state.out_dir,'branch'))
+    
+  # make branch output directory if not exists. if the branch output directory is not given in arguments, it makes default branch output directory.
+  if state.use_simulation_mode:
+    if state.branch_output=='':
+      if not os.path.exists(os.path.join(state.out_dir,'branch')):
+        os.makedirs(os.path.join(state.out_dir,'branch'))
+    elif not os.path.exists(state.branch_output):
+      os.makedirs(state.branch_output)
+  
+  # make tmp directory. if the tmp directory already exsists, remove and make it again.
   state.tmp_dir = os.path.join(state.out_dir, 'tmp')
   if os.path.exists(state.tmp_dir):
     shutil.rmtree(state.tmp_dir)
@@ -146,6 +180,15 @@ def parse_args(argv: list) -> GlobalState:
   return state
 
 def set_logger(state: GlobalState) -> logging.Logger:
+  """
+  initialize and return the logger.
+
+  Args:
+      state (GlobalState): _description_
+
+  Returns:
+      logging.Logger: _description_
+  """
   logger = logging.getLogger('simapr')
   logger.setLevel(logging.DEBUG)
   fh = logging.FileHandler(os.path.join(state.out_dir, 'simapr-search.log'))
@@ -293,6 +336,16 @@ def read_info_recoder(state: GlobalState) -> None:
           state.simulation_data[key] = data
             
 def read_info_tbar(state: GlobalState) -> None:
+  """
+  read the file and build the patch tree for vertical navigation.
+  The function returns nothing. However, the result is stored in the 'state'.
+
+  Args:
+      state (GlobalState): _description_
+
+  Raises:
+      ValueError: _description_
+  """
   with open(os.path.join(state.work_dir, 'switch-info.json'), 'r') as f:
     info = json.load(f)
     # Read test informations (which tests to run, which of them are failing test or passing test)
@@ -633,6 +686,15 @@ def read_info_prapr(state: GlobalState) -> None:
           state.simulation_data[key] = data
 
 def copy_previous_results(state: GlobalState) -> None:
+  """
+  Create a new '~~ search.log' and '~~ result.json' files with newest prefix.
+  The new file contains the all content of previous file.
+  
+  Removes 'simapr-finished.txt'
+
+  Args:
+      state (GlobalState): 
+  """
   result_log = os.path.join(state.out_dir, "simapr-search.log")
   result_json = os.path.join(state.out_dir, "simapr-result.json")
   prefix = 0
@@ -652,8 +714,20 @@ def copy_previous_results(state: GlobalState) -> None:
     os.remove(os.path.join(state.out_dir, "simapr-finished.txt"))
 
 def main(argv: list):
+  """
+  This function is divided into three main parts.
+  - parse the command line arguments
+  - read info ~~~
+  - run the loop ~~~
+
+  Args:
+      argv (list): list of arguments, which will be handled by the function "arse_args(argv: list) -> GlobalState"
+
+  Raises:
+      e: _description_
+  """
   sys.setrecursionlimit(2002) # Reset recursion limit, for preventing RecursionError
-  state = parse_args(argv)
+  state = parse_args(argv) # returns the GlobalState instance, and it is used as a singleton. i.e. It is instantiated only once throughout the entire execution.
   copy_previous_results(state)
   state.logger = set_logger(state)
   if state.tool_type==ToolType.TEMPLATE:
