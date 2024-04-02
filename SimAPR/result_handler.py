@@ -300,7 +300,6 @@ def update_result_branch(state:GlobalState,selected_patch:Union[TbarPatchInfo,Re
           pass
         else:
           branch_coverage[testName].branch_coverage = {key: value for key, value in branch_coverage[testName].branch_coverage.items() if key in critical_branch_list}
-        state.logger.debug(f"opt_greybox test result: {each_result[testName]}, branch_coverage: {branch_coverage[testName].branch_coverage}")
       else:
         state.logger.debug(f"testName in each_result: {testName in each_result}, each_result[testName]: {each_result[testName]}, testName in branch_coverage: {testName in branch_coverage}, testName in state.original_branch_cov: {testName in state.original_branch_cov}")
   
@@ -335,6 +334,5 @@ def update_result_branch(state:GlobalState,selected_patch:Union[TbarPatchInfo,Re
         
     else:
       state.logger.debug(f"testName in each_result: {testName in each_result}, each_result[testName]: {each_result[testName]}, testName in branch_coverage: {testName in branch_coverage}, testName in state.original_branch_cov: {testName in state.original_branch_cov}")
-      state.logger.debug(f"original_branch_cov: {state.original_branch_cov}")
         
         
