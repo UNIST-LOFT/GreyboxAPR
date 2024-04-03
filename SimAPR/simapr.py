@@ -274,6 +274,9 @@ def read_info_recoder(state: GlobalState) -> None:
             func_info.total_patches_by_score[line_info.fl_score] += 1
 
   state.d4j_buggy_project = info["project_name"]
+  if state.d4j_buggy_project.startswith('Mockito'):
+    state.skip_valid=False # We have to validate Mocktio because we use maven project instead of defects4j
+
   state.patch_ranking = info["ranking"]
   func_rank_checker: Set[FuncInfo] = set()
   rank_num = 0
@@ -460,6 +463,9 @@ def read_info_tbar(state: GlobalState) -> None:
             func_info.total_patches_by_score[line_info.fl_score]+=1
 
   state.d4j_buggy_project = info["project_name"]
+  if state.d4j_buggy_project.startswith('Mockito'):
+    state.skip_valid=False # We have to validate Mocktio because we use maven project instead of defects4j
+    
   # Read ranking
   rank_num = 0
   ranking = info['ranking']
