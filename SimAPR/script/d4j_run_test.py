@@ -4,6 +4,7 @@ import shutil
 import sys
 from typing import List, Union, Tuple
 import psutil
+import xml.etree.ElementTree as ET
 
 def get_src_paths(project):
   project_name, bug_id = project.split('_')
@@ -235,14 +236,35 @@ def run_single_test(work_dir: str, buggy_project: str, test: str = "") -> Tuple[
   failed_tests = list()
   if buggy_project.startswith('Mockito'):
     error_num=0
-    for line in result_str.splitlines():
-      line=line.strip()
-      if ('<<< ERROR!' in line or '<<< FAILURE!' in line) and not line.startswith('Tests run:'):
-        temp_str=line.split(' ')[0]
-        error_class=temp_str.split('(')[1][:-1]
-        error_method=temp_str.split('(')[0]
-        failed_tests.append(error_class+'::'+error_method)
-        error_num+=1
+    if buggy_project.split('_')[1] not in ('23','24','25','26','38'):
+      for line in result_str.splitlines():
+        line=line.strip()
+        if ('<<< ERROR!' in line or '<<< FAILURE!' in line) and not line.startswith('Tests run:'):
+          temp_str=line.split(' ')[0]
+          error_class=temp_str.split('(')[1][:-1]
+          error_method=temp_str.split('(')[0]
+          failed_tests.append(error_class+'::'+error_method)
+          error_num+=1
+    else:
+      # Version that using surefire plugin
+      cur_tests=[]
+      if test!='':
+        cur_tests.append(test.split('::')[0])
+      else:
+        for _f in os.listdir(f'{work_dir}/target/surefire-reports'):
+          if _f.startswith('TEST-') and _f.endswith('.xml'):
+            removed_test=_f.split('-')[1].split('.')[:-1]
+            cur_tests.append('.'.join(removed_test))
+
+      for _test in cur_tests:
+        with open(f'{work_dir}/target/surefire-reports/TEST-{_test}.xml','r') as f:
+          tree=ET.parse(f)
+          root=tree.getroot()
+          for child in root:
+            if child.tag=='testcase':
+              if len(child)!=0 and (child[0].tag=='failure' or child[0].tag=='error'):
+                failed_tests.append(child.attrib['classname']+'::'+child.attrib['name'])
+                error_num+=1
   else:
     for line in result_str.splitlines():
       line = line.strip()
