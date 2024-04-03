@@ -58,9 +58,9 @@
     
 </dependency>
     <dependency>
-    <groupId>jarjar</groupId>
+    <groupId>com.googlecode.jarjar</groupId>
     <artifactId>jarjar</artifactId>
-    <version>1.0-own</version>
+    <version>1.1</version>
 </dependency>
     <dependency>
       <groupId>org.ow2.asm</groupId>
