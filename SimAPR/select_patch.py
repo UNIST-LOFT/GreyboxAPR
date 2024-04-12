@@ -68,6 +68,12 @@ def second_vertical_search_recursion(state:GlobalState, isUp:bool, source:PatchT
       source (PatchTreeNode): _description_
   """
   state.logger.debug(f"during second vertical search. source: {source}")
+  if source is None:
+    # Select file
+    children_map = state.file_info_map
+    if state.use_fl_score_in_greybox:
+      children_map = filter_children_list_by_fl_score(state, source, children_map)
+    state.logger.debug(f"second vertical traversing on root. file_info_map len: {len(children_map)}, isUp: {isUp}, selected_branch: {selected_branch}")
   if isinstance(source, FileInfo):
     children_map = source.func_info_map
     if state.use_fl_score_in_greybox:
@@ -105,11 +111,7 @@ def second_vertical_search_recursion(state:GlobalState, isUp:bool, source:PatchT
     return source
   elif isinstance(source, RecoderCaseInfo): #Only for Recorder
     state.logger.debug(f"second vertical search done. isUp: {isUp}, selected_branch: {selected_branch}")
-    return source
-  elif source == None:
-    # TODO: select file with FL score
-    epsilon_select(state) #epsilon select function handles the case that source is none.
-  
+    return source  
 
   randomly_selected_values = []
   for child in children_map.values():
@@ -126,16 +128,35 @@ def filter_children_list_by_fl_score(state:GlobalState, source:PatchTreeNode, gi
   filters the children map of PatchTreeNode to get Nodes with Highest fl score.
   source should be the upper than line level of the patch tree node.
   """
-  highest_fl_score = max(list(source.remain_lines_by_score.keys()))
+  if source is None:
+    highest_fl_score = max(list(state.score_remain_line_map.keys()))
+  else:
+    highest_fl_score = max(list(source.remain_lines_by_score.keys()))
 
   state.logger.debug(f"filtering the childern list. highest_fl_score: {highest_fl_score}")
-  if isinstance(source, FuncInfo):
+  if source is None:
+    new_map=dict()
+    for file in state.file_info_map:
+      file_info = state.file_info_map[file]
+      max_score=max(file_info.fl_score_list)
+      if max_score == highest_fl_score:
+        new_map[file] = file_info
+  elif isinstance(source,FileInfo):
+    new_map=dict()
+    for func in source.func_info_map:
+      func_info=source.func_info_map[func]
+      max_score=max(func_info.fl_score_list)
+      if max_score == highest_fl_score:
+        new_map[func] = func_info
+  elif isinstance(source, FuncInfo):
     new_map = dict(filter(lambda patchNode: highest_fl_score == patchNode[1].fl_score, given_map.items()))
+    for line in source.line_info_map:
+      if source.line_info_map[line].fl_score == highest_fl_score:
+        new_map[line] = source.line_info_map[line]
   else:
-    new_map = dict(filter(lambda patchNode: highest_fl_score in list(patchNode[1].remain_lines_by_score.keys()), given_map.items()))
-  state.logger.debug(f"filtered map: {new_map}")
-  
+    raise RuntimeError(f"source should be FileInfo, FuncInfo, or None; given {type(source)}")
 
+  state.logger.debug(f"filtered map: {new_map}")
   return new_map
 
 def epsilon_select(state:GlobalState,source:PatchTreeNode=None):
@@ -179,8 +200,9 @@ def epsilon_select(state:GlobalState,source:PatchTreeNode=None):
   is_epsilon_greedy=np.random.random()<epsilon and not state.not_use_epsilon_search
 
   if is_epsilon_greedy:
-    if state.mode == Mode.greybox and not state.critical_branch_up_down_manager.is_empty() and source is not None:
-      state.logger.debug(f"Use second vertical search, epsilon: {epsilon}'")
+    if state.mode == Mode.greybox and not state.critical_branch_up_down_manager.is_empty() and \
+            ((source is not None and source.children_basic_patches > 0) or (source is None and state.total_basic_patch > 0)):
+      state.logger.debug(f"Use second vertical search, epsilon: {epsilon}")
       return second_vertical_search(state, source)
     # Perform random search in epsilon probability
     else:
@@ -251,10 +273,7 @@ def select_patch_guide_algorithm(state: GlobalState,elements:Dict[Any,PatchTreeN
     scores.append(state.previous_score)
     
     if max_index>=0:
-      if state.mode==Mode.greybox:
-        state.logger.debug(f'Try coverage with a: {selected[max_index].coverage_info.pass_count}, b: {selected[max_index].coverage_info.fail_count}')
-      else:
-        state.logger.debug(f'Try basic patch with a: {selected[max_index].pf.pass_count}, b: {selected[max_index].pf.fail_count}')
+      state.logger.debug(f'Try basic patch with a: {selected[max_index].pf.pass_count}, b: {selected[max_index].pf.fail_count}')
       freq=selected[max_index].children_basic_patches/state.total_basic_patch if state.total_basic_patch > 0 else 0.
       bp_freq=selected[max_index].consecutive_fail_count
       cur_score=get_static_score(selected[max_index])
