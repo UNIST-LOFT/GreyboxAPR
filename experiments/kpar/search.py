@@ -10,13 +10,7 @@ def run(project):
       f.write(result.stdout.decode("utf-8"))
    print(f'Finish {project}-orig with returncode {result.returncode}')
 
-   print(f'Run {project}-seapr')
-   result=subprocess.run(['python3','search-kpar-seapr.py',project],stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
-   with open(f'result/{project}-seapr.log','w') as f:
-      f.write(result.stdout.decode("utf-8"))
-   print(f'Finish {project}-seapr with returncode {result.returncode}')
-
-   for i in range(50):
+   for i in range(10):
       print(f'Run {project}-casino-{i}')
       result=subprocess.run(['python3','search-kpar-casino.py',project,str(seeds.SEEDS[i]),str(i)],
                             stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
@@ -24,12 +18,12 @@ def run(project):
          f.write(result.stdout.decode("utf-8"))
       print(f'Finish {project}-casino-{i} with returncode {result.returncode}')
 
-      print(f'Run {project}-genprog-{i}')
-      result=subprocess.run(['python3','search-kpar-genprog.py',project,str(seeds.SEEDS[i]),str(i)],
+      print(f'Run {project}-greybox-{i}')
+      result=subprocess.run(['python3','search-kpar-greybox.py',project,str(seeds.SEEDS[i]),str(i)],
                             stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
-      with open(f'result/{project}-genprog-{i}.log','w') as f:
+      with open(f'result/{project}-greybox-{i}.log','w') as f:
          f.write(result.stdout.decode("utf-8"))
-      print(f'Finish {project}-genprog-{i} with returncode {result.returncode}')
+      print(f'Finish {project}-greybox-{i} with returncode {result.returncode}')
 
 from sys import argv
 

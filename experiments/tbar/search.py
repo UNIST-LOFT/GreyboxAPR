@@ -4,17 +4,11 @@ import multiprocessing as mp
 import seeds
 
 def run(project):
-   # print(f'Run {project}-orig')
-   # result=subprocess.run(['python3','search-tbar-orig.py',project],stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
-   # with open(f'result/{project}-orig.log','w') as f:
-   #    f.write(result.stdout.decode("utf-8"))
-   # print(f'Finish {project}-orig with returncode {result.returncode}')
-
-   # print(f'Run {project}-seapr')
-   # result=subprocess.run(['python3','search-tbar-seapr.py',project],stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
-   # with open(f'result/{project}-seapr.log','w') as f:
-   #    f.write(result.stdout.decode("utf-8"))
-   # print(f'Finish {project}-seapr with returncode {result.returncode}')
+   print(f'Run {project}-orig')
+   result=subprocess.run(['python3','search-tbar-orig.py',project],stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+   with open(f'result/{project}-orig.log','w') as f:
+      f.write(result.stdout.decode("utf-8"))
+   print(f'Finish {project}-orig with returncode {result.returncode}')
 
    for i in range(10):
       print(f'Run {project}-casino-{i}')
@@ -23,20 +17,13 @@ def run(project):
       with open(f'result/{project}-casino-{i}.log','w') as f:
          f.write(result.stdout.decode("utf-8"))
       print(f'Finish {project}-casino-{i} with returncode {result.returncode}')
-
-   #    print(f'Run {project}-genprog-{i}')
-   #    result=subprocess.run(['python3','search-tbar-genprog.py',project,str(seeds.SEEDS[i]),str(i)],
-   #                          stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
-   #    with open(f'result/{project}-genprog-{i}.log','w') as f:
-   #       f.write(result.stdout.decode("utf-8"))
-   #    print(f'Finish {project}-genprog-{i} with returncode {result.returncode}')
    
-      # print(f'Run {project}-greybox-{i}')
-      # result=subprocess.run(['python3','search-tbar-greybox.py',project,str(seeds.SEEDS[i]),str(i)],
-      #                       stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
-      # with open(f'result/{project}-greybox-{i}.log','w') as f:
-      #    f.write(result.stdout.decode("utf-8"))
-      # print(f'Finish {project}-greybox-{i} with returncode {result.returncode}')
+      print(f'Run {project}-greybox-{i}')
+      result=subprocess.run(['python3','search-tbar-greybox.py',project,str(seeds.SEEDS[i]),str(i)],
+                            stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+      with open(f'result/{project}-greybox-{i}.log','w') as f:
+         f.write(result.stdout.decode("utf-8"))
+      print(f'Finish {project}-greybox-{i} with returncode {result.returncode}')
 
 from sys import argv
 
