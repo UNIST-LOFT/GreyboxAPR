@@ -303,6 +303,7 @@ class TBarLoop():
           fail_time=simapr_result['fail_time']
         else:
           fail_time=simapr_result['fail_time_branch']
+          simapr_result['fail_time']=fail_time
         self.state.test_time+=fail_time
         self.state.test_time+=pass_time
         pass_time=simapr_result['pass_time']
@@ -561,6 +562,7 @@ class RecoderLoop(TBarLoop):
           fail_time=simapr_result['fail_time']
         else:
           fail_time=simapr_result['fail_time_branch']
+          simapr_result['fail_time']=fail_time
         pass_time=simapr_result['pass_time']
         self.state.test_time+=fail_time
         self.state.test_time+=pass_time
