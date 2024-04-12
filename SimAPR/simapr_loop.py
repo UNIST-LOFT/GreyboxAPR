@@ -299,7 +299,10 @@ class TBarLoop():
         pass_exists = True in each_result.values()
         result = simapr_result['pass_all_fail']
         pass_result = simapr_result['plausible']
-        fail_time=simapr_result['fail_time']
+        if 'fail_time' in simapr_result:  # TODO: Temporary fix for old cache
+          fail_time=simapr_result['fail_time']
+        else:
+          fail_time=simapr_result['fail_time_branch']
         self.state.test_time+=fail_time
         self.state.test_time+=pass_time
         pass_time=simapr_result['pass_time']
@@ -554,7 +557,10 @@ class RecoderLoop(TBarLoop):
         pass_exists = True in each_result.values()
         run_result = simapr_result['pass_all_fail']
         pass_result = simapr_result['plausible']
-        fail_time=simapr_result['fail_time']
+        if 'fail_time' in simapr_result:  # TODO: Temporary fix for old cache
+          fail_time=simapr_result['fail_time']
+        else:
+          fail_time=simapr_result['fail_time_branch']
         pass_time=simapr_result['pass_time']
         self.state.test_time+=fail_time
         self.state.test_time+=pass_time
