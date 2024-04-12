@@ -18,7 +18,7 @@ def run(project,seed,trial):
     result=subprocess.run(['python3',f'{new_cur_dir}/SimAPR/simapr.py','-o',f'result/{project}-greybox-{trial}','-m','greybox',
                            '--seed',f'{seed}','-k','template','-w',f'{new_cur_dir}/TBar/d4j/{project}','-t','180000',
                            '--use-simulation-mode',f'result/cache/{project}-cache.json','--instr-cp','../../../JPatchInst',
-                           '--branch-output',f'result/branch/{project}','-T','18000','--skip-valid',
+                           '--branch-output',f'result/branch/{project}','-E','3000','--skip-valid',
                            '--','python3',f'{new_cur_dir}/SimAPR/script/d4j_run_test.py',f'{new_cur_dir}/TBar/buggy'])
     
     print(f'{project} greybox-{trial} finish with return code {result.returncode}')

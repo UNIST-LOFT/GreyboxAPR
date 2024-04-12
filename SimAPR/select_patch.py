@@ -1,3 +1,4 @@
+from typing import Any
 from core import *
 import numpy as np
 import random
@@ -106,6 +107,7 @@ def second_vertical_search_recursion(state:GlobalState, isUp:bool, source:PatchT
     state.logger.debug(f"second vertical search done. isUp: {isUp}, selected_branch: {selected_branch}")
     return source
   elif source == None:
+    # TODO: select file with FL score
     epsilon_select(state) #epsilon select function handles the case that source is none.
   
 
@@ -195,7 +197,7 @@ def epsilon_select(state:GlobalState,source:PatchTreeNode=None):
     state.select_time+=time.time()-start_time
     return top_fl_patches[0]
   
-def select_patch_guide_algorithm(state: GlobalState,elements:dict,parent:PatchTreeNode=None):
+def select_patch_guide_algorithm(state: GlobalState,elements:Dict[Any,PatchTreeNode],parent:PatchTreeNode=None):
   """
   one step of vertical traversal.
   This function selects a child node of the 'parent' in the patch tree.
@@ -213,11 +215,9 @@ def select_patch_guide_algorithm(state: GlobalState,elements:dict,parent:PatchTr
   """
   start_time=time.time()
 
-  for element in elements: # TODO: ...? wierd code
-    element_type=type(elements[element])
   selected:List[PatchTreeNode]=[]
   p_b=[]
-  if element_type==FileInfo:
+  if parent is None: # Selecting file
     total_basic_patch=state.total_basic_patch
   else:
     total_basic_patch=parent.children_basic_patches

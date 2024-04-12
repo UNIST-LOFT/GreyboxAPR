@@ -920,21 +920,13 @@ def append_java_cache_result(state:GlobalState,case:Union[TbarCaseInfo,RecoderCa
     pass_time: pass time (second)
   """
   id=case.location
-  if id not in state.simulation_data or \
-            (state.mode==Mode.greybox and 'fail_time_branch' not in state.simulation_data[id]) or \
-            (state.mode!=Mode.greybox and 'fail_time' not in state.simulation_data[id]):
-    if id not in state.simulation_data:
-      current=dict()
-    else:
-      current=state.simulation_data[id]
+  if id not in state.simulation_data:
+    current=dict()
     current['basic']=fail_result
     current['plausible']=pass_result
     current['pass_all_fail']=False not in fail_result.values()
     current['compilable']=compilable
-    if state.mode==Mode.greybox:
-      current['fail_time_branch']=fail_time
-    else:
-      current['fail_time']=fail_time
+    current['fail_time']=fail_time
     current['pass_time']=pass_time
 
     state.simulation_data[id]=current

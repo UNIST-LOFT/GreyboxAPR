@@ -256,9 +256,7 @@ class TBarLoop():
       key = patch.tbar_case_info.location
       self.state.new_critical_list = []
       # checks if there is a cached data
-      if key not in self.state.simulation_data or \
-            (self.state.mode==Mode.greybox and 'fail_time_branch' not in self.state.simulation_data[key]) or \
-            (self.state.mode!=Mode.greybox and 'fail_time' not in self.state.simulation_data[key]):
+      if key not in self.state.simulation_data:
         each_result=dict()
         coverages:Dict[str,branch_coverage.BranchCoverage]=dict()
         for neg in self.state.d4j_negative_test:
@@ -301,7 +299,7 @@ class TBarLoop():
         pass_exists = True in each_result.values()
         result = simapr_result['pass_all_fail']
         pass_result = simapr_result['plausible']
-        fail_time=simapr_result['fail_time'] if self.state.mode!=Mode.greybox else simapr_result['fail_time_branch']
+        fail_time=simapr_result['fail_time']
         self.state.test_time+=fail_time
         self.state.test_time+=pass_time
         pass_time=simapr_result['pass_time']
@@ -512,9 +510,7 @@ class RecoderLoop(TBarLoop):
       pass_time=0
       key = patch.recoder_case_info.location
       self.state.new_critical_list = []
-      if key not in self.state.simulation_data or \
-            (self.state.mode==Mode.greybox and 'fail_time_branch' not in self.state.simulation_data[key]) or \
-            (self.state.mode!=Mode.greybox and 'fail_time' not in self.state.simulation_data[key]):
+      if key not in self.state.simulation_data:
         if not self.is_initialized:
           self.initialize()
         
@@ -558,7 +554,7 @@ class RecoderLoop(TBarLoop):
         pass_exists = True in each_result.values()
         run_result = simapr_result['pass_all_fail']
         pass_result = simapr_result['plausible']
-        fail_time=simapr_result['fail_time'] if self.state.mode!=Mode.greybox else simapr_result['fail_time_branch']
+        fail_time=simapr_result['fail_time']
         pass_time=simapr_result['pass_time']
         self.state.test_time+=fail_time
         self.state.test_time+=pass_time

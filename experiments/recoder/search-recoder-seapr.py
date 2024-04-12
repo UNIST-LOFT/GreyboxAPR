@@ -18,7 +18,7 @@ def run(project):
     result=subprocess.run(['python3',f'{new_cur_dir}/SimAPR/simapr.py','-o',f'result/{project}-seapr','-m','seapr',
                            '--ignore-compile-error','-k','learning','-w',f'{new_cur_dir}/Recoder/d4j/{project}',
                            '-t','180000','--use-simulation-mode',f'result/cache/{project}-cache.json',
-                           '-T','18000','--skip-valid',
+                           '-E','3000','--skip-valid',
                            '--','python3',f'{new_cur_dir}/SimAPR/script/d4j_run_test.py',f'{new_cur_dir}/Recoder/buggy'])
     
     print(f'{project} seapr finish with return code {result.returncode}')
