@@ -884,7 +884,7 @@ class GlobalState(metaclass=SingletonMeta):
     # self.critical_branches:list[Tuple[int,int]] = [] #saves every single data of critical branches. list of tuple (branch index, branch count difference)
     self.use_fl_score_in_greybox = False
     self.weight_critical_branch = False
-    self.critical_branch_up_down_manager = None # It is for the saving the branch count difference regardless of test cases.Initialized right after GlobalState is initialized, because critical_branch_up_down_manager initializes GlobalState in it.
+    self.critical_branch_up_down_manager:CriticalBranchesUpDownManager = None # It is for the saving the branch count difference regardless of test cases.Initialized right after GlobalState is initialized, because critical_branch_up_down_manager initializes GlobalState in it.
     self.optimized_instrumentation = False
     self.new_critical_list:List[int]=[] # get empty when each iteration begins
     

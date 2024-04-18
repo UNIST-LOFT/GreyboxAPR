@@ -48,7 +48,7 @@ def second_vertical_search(state:GlobalState, source:PatchTreeNode):
   Returns:
       _type_: _description_
   """
-  # Select a random branch. maybe with some 가중치?
+  # Select a random branch. maybe with some weight?
   if state.weight_critical_branch:
     weight = list(map(lambda a: max(a.branchUpScore, a.branchDownScore), state.critical_branch_up_down_manager.upDownDict.values()))
     selected_branch:int = random.choices(list(state.critical_branch_up_down_manager.upDownDict.keys()), weights=weight)[0]
