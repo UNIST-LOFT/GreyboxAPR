@@ -29,7 +29,7 @@ def append_result(state: GlobalState, selected_patch: List[Union[TbarPatchInfo,R
   tm = time.time()
   tm_interval=state.select_time+state.test_time
   result = Result(state.cycle,state.iteration,tm_interval, selected_patch, 
-          True in test_result.values(), pass_test_result, selected_patch[0].out_dist, False not in test_result.values(), compilable=compilable)
+          True in test_result.values(), pass_test_result, False not in test_result.values(), compilable=compilable)
   
   if result.result:
     state.total_passed_patch+=1
