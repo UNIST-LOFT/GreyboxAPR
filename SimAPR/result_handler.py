@@ -40,7 +40,7 @@ def append_result(state: GlobalState, selected_patch: List[Union[TbarPatchInfo,R
   state.simapr_result.append(obj)
   state.used_patch.append(result)
 
-  if state.use_simulation_mode and state.tool_type!=ToolType.PRAPR:
+  if state.use_simulation_mode:
     # Cache test result if option used
     for patch in selected_patch:
       # For Java, case_info is tbar_case_info

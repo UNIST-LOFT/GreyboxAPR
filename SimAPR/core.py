@@ -23,7 +23,6 @@ class Mode(Enum):
 class ToolType(Enum):
   TEMPLATE=1
   LEARNING=2
-  PRAPR=3
 
 # Parameters
 class PT():

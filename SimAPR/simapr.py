@@ -10,7 +10,7 @@ import shutil
 
 from core import *
 
-from simapr_loop import TBarLoop, RecoderLoop, PraPRLoop
+from simapr_loop import TBarLoop, RecoderLoop
 
 def parse_args(argv: list) -> GlobalState:
   """
@@ -35,7 +35,7 @@ def parse_args(argv: list) -> GlobalState:
               "use-pattern", "use-simulation-mode=",
               'seapr-mode=','top-fl=','ignore-compile-error',
               'finish-correct-patch','not-count-compile-fail','not-use-guide','not-use-epsilon',
-              'finish-top-method', 'prapr-mode','instr-cp=','branch-output=', 'use-fl-score-in-greybox',
+              'finish-top-method','instr-cp=','branch-output=', 'use-fl-score-in-greybox',
               'weight-critical-branch', 'optimized-instrumentation']
   opts, args = getopt.getopt(argv[1:], "ho:w:t:m:c:T:E:k:", longopts)
   state = GlobalState()
@@ -117,8 +117,6 @@ def parse_args(argv: list) -> GlobalState:
         state.tool_type = ToolType.TEMPLATE
       elif a.lower()=='learning':
         state.tool_type = ToolType.LEARNING
-      elif a.lower()=='prapr':
-        state.tool_type = ToolType.PRAPR
       else:
         raise ValueError(f'Invalid tool type: {a}')
     elif o in ['--seed']:
@@ -567,10 +565,6 @@ def main(argv: list):
     read_info_recoder(state)
     state.logger.info('Learning mode: Initialized!')
     simapr = RecoderLoop(state)
-  elif state.tool_type==ToolType.PRAPR:
-    read_info_prapr(state)
-    state.logger.info('PraPR mode: Initialized!')
-    simapr = PraPRLoop(state)
   state.logger.info('SimAPR is started')
   try:
     simapr.run()
