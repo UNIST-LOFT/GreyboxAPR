@@ -582,27 +582,6 @@ class RecoderLoop(TBarLoop):
               if os.path.exists(cov_file):
                 cur_cov=branch_coverage.parse_cov(self.state.logger,cov_file)
                 coverages[test]=cur_cov
-              else: # if there is no branch data in cache, run the test again
-                self.state.logger.warning(f"There is no branch file while using cache. expected location: {cov_file}")
-                is_compilable =True
-                for neg in self.state.d4j_negative_test:
-                  compilable, run_result,fail_time,cur_cov = self.run_test(patch, neg)
-                  self.state.test_time+=fail_time
-                  if not compilable:
-                    is_compilable = False
-                  if run_result:
-                    pass_exists = True
-                  if not run_result:
-                    result = False
-                    each_result[neg]=False
-                    if self.state.use_partial_validation and self.state.instrumenter_classpath!='' and \
-                      self.state.mode==Mode.seapr:
-                      break
-                  else:
-                    each_result[neg]=True
-
-                  if cur_cov is not None:
-                    coverages[neg]=cur_cov
           result_handler.update_result_branch(self.state,patch,coverages,is_compilable,each_result,pass_result)
 
         if is_compilable or self.state.ignore_compile_error:
@@ -613,69 +592,3 @@ class RecoderLoop(TBarLoop):
         self.state.iteration += 1
       result_handler.append_result(self.state, [patch], each_result, pass_result, is_compilable,fail_time,pass_time)
       result_handler.remove_patch_recoder(self.state, patch)
-
-class PraPRLoop(TBarLoop):
-  def _is_method_over(self) -> bool:
-    """Check the ranks of every remaining methods are over then 30"""
-    if not self.state.finish_top_method: return False
-    
-    min_method_rank=10000 # Some large rank
-    for p in self.state.patch_ranking:
-      if self.state.switch_case_map[p].parent.parent.parent.func_rank < min_method_rank:
-        min_method_rank=self.state.switch_case_map[p].parent.parent.parent.func_rank
-    
-    return min_method_rank>30
-
-  def is_alive(self) -> bool:
-    if len(self.state.file_info_map) == 0:
-      self.state.is_alive = False
-    if self.state.cycle_limit > 0 and self.state.iteration >= self.state.cycle_limit:
-      self.state.is_alive = False
-    elif self.state.time_limit > 0 and (self.state.select_time+self.state.test_time) > self.state.time_limit:
-      self.state.is_alive = False
-    elif len(self.state.patch_ranking) == 0:
-      self.state.is_alive = False
-    elif self.state.finish_at_correct_patch and self.patch_str in self.state.correct_patch_str:
-      self.state.is_alive = False
-    elif self._is_method_over():
-      self.state.is_alive=False
-    return self.state.is_alive
-  def save_result(self) -> None:
-    result_handler.save_result(self.state)
-  def run(self) -> None:
-    assert self.state.use_simulation_mode,'PraPR needs cache files always'
-    self.run_sim()
-  
-  def run_sim(self) -> None:
-    self.state.start_time = time.time()
-    self.state.cycle = 0
-    while(self.is_alive()):
-      self.state.logger.info(f'[{self.state.cycle}]: executing')
-      patch = select_patch.select_patch_tbar_mode(self.state)
-      self.patch_str=patch.tbar_case_info.location
-      self.state.logger.info(f"Patch: {patch.tbar_case_info.location}")
-      self.state.logger.info(f"{patch.file_info.file_name}${patch.func_info.id}${patch.line_info.line_number}")
-      pass_exists = False
-      result = True
-      pass_result = False
-      is_compilable = True
-      pass_time=0
-      key = patch.tbar_case_info.location
-
-      simapr_result = self.state.simulation_data[key]
-      pass_exists = simapr_result['basic']
-      result = simapr_result['pass_all_fail']
-      pass_result = simapr_result['plausible']
-      fail_time=simapr_result['fail_time']
-      self.state.test_time+=fail_time
-      self.state.test_time+=pass_time
-      pass_time=simapr_result['pass_time']
-      is_compilable=simapr_result['compilable']
-      if is_compilable or self.state.ignore_compile_error:
-        result_handler.update_result_tbar(self.state, patch, pass_exists)
-        if result:
-          result_handler.update_positive_result_tbar(self.state, patch, pass_result)
-      if is_compilable or self.state.count_compile_fail:
-        self.state.iteration += 1
-      result_handler.append_result(self.state, [patch], pass_exists, pass_result, result, is_compilable,fail_time,pass_time)
-      result_handler.remove_patch_tbar(self.state, patch)
