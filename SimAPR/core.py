@@ -65,19 +65,10 @@ class PassFail:
       self.pass_count += n * self.__exp_alpha(exp_alpha)
     else:
       self.fail_count+=b_n
-      
-  def update_with_pf(self, other,b_n:float=1.0) -> None:
-    self.pass_count += other.pass_count
-    
-  def expect_probability(self,additional_score:float=0) -> float:
-    return self.beta_mode(self.pass_count + 1.5+additional_score, self.fail_count + 2.0)
-  
+            
   def select_value(self,a_init:float=1.0,b_init:float=1.0) -> float: # select a value randomly from the beta distribution
     return np.random.beta(self.pass_count + a_init, self.fail_count + b_init)
-  
-  def copy(self) -> 'PassFail':
-    return PassFail(self.pass_count, self.fail_count)
-  
+    
   @staticmethod
   def normalize(x: List[float]) -> List[float]:
     npx = np.array(x)
@@ -89,30 +80,7 @@ class PassFail:
     else:
       x_norm = (npx - x_min) / x_diff
     return x_norm.tolist()
-  
-  @staticmethod
-  def softmax(x: List[float]) -> List[float]:
-    npx = np.array(x)
-    y = np.exp(npx)
-    f_x = y / np.sum(y)
-    return f_x.tolist()
-  
-  @staticmethod
-  def argmax(x: List[float]) -> int:
-    m = max(x)
-    tmp = list()
-    for i in range(len(x)):
-      if x[i] == m:
-        tmp.append(i)
-    return np.random.choice(tmp)
-  
-  @staticmethod
-  def select_value_normal(x: List[float], sigma: float) -> List[float]:
-    for i in range(len(x)):
-      val = x[i]
-      x[i] = np.random.normal(val, sigma)
-    return x
-  
+    
   @staticmethod
   def select_by_probability(probability: List[float]) -> int:   # pf_list: list of PassFail
     total = 0
@@ -129,19 +97,10 @@ class PassFail:
     return 0
   
   @staticmethod
-  def concave_up_exp(x: float, base: float = math.e) -> float:
-    return (np.power(base, x) - 1) / (base - 1)
-  
-  @staticmethod
   def concave_up(x: float, base: float = math.e) -> float:
     # unique function
     return x * x
-  
-  @staticmethod
-  def concave_down(x: float, base: float = math.e) -> float:
-    atzero = PassFail.concave_up(0, base)
-    return 2 * ((1 - atzero) * x + atzero) - PassFail.concave_up(x, base)
-  
+    
   # fail function
   @staticmethod
   def log_func(x: float, half: float = 51) -> float:
@@ -150,7 +109,6 @@ class PassFail:
       return 0.
     else:
       return max(np.log(a - x) / np.log(a), 0.)
-  
 
 class CriticalBranchUpDown:
   """
@@ -369,24 +327,6 @@ class RecoderCaseInfo(PatchTreeNode):
     return hash(self.location)
   def __eq__(self, other) -> bool:
     return self.location == other.location
-
-# Find with f"{file_name}:{line_number}"
-class FileLine:
-  def __init__(self, fi: FileInfo, li: LineInfo, score: float) -> None:
-    self.file_info = fi
-    self.line_info = li
-    self.score = score
-    self.case_map: Dict[str, TbarCaseInfo] = dict() # switch_number-case_number -> TbarCaseInfo
-    self.seapr_e_pf: PassFail = PassFail()
-    self.seapr_n_pf: PassFail = PassFail()
-  def to_str(self) -> str:
-    return f"{self.file_info.file_name}:{self.line_info.line_number}"
-  def __str__(self) -> str:
-    return self.to_str()
-  def __hash__(self) -> int:
-    return hash(self.to_str())
-  def __eq__(self, other) -> bool:
-    return self.file_info == other.file_info and self.line_info == other.line_info
 
 class BranchInfo:
   def __init__(self, id: int, c_i: int, c_u: int, n_i: int, n_u:int) -> None:
@@ -814,7 +754,6 @@ class GlobalState(metaclass=SingletonMeta):
     self.line_list:List[LineInfo]=list()
     self.simapr_result:List[dict] = list()
     self.failed_positive_test:Set[str] = set()
-    self.priority_map: Dict[str, FileLine] = dict()
     self.used_patch:List[Result] = list()
     self.timeout = 60000
     self.uuid=uuid.uuid1()

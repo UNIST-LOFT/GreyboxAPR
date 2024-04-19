@@ -247,8 +247,6 @@ def read_info_recoder(state: GlobalState) -> None:
           if fl_score not in func_info.remain_lines_by_score:
             func_info.remain_lines_by_score[fl_score]=[]
           func_info.remain_lines_by_score[fl_score].append(line_info)
-          file_line = FileLine(file_info, line_info, 0)
-          state.priority_map[f"{file_info.file_name}:{line_info.line_number}"] = file_line
 
           for cs in line["cases"]:
             case_id = cs["case"]
@@ -404,8 +402,6 @@ def read_info_tbar(state: GlobalState) -> None:
           if line_info.fl_score not in func_info.remain_lines_by_score:
             func_info.remain_lines_by_score[line_info.fl_score]=[]
           func_info.remain_lines_by_score[line_info.fl_score].append(line_info)
-          file_line = FileLine(file_info, line_info, 0)
-          state.priority_map[f"{file_info.file_name}:{line_info.line_number}"] = file_line
 
           # Add patches
           for case in line['cases']:
