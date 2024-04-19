@@ -499,8 +499,6 @@ class RecoderLoop(TBarLoop):
     self.state.start_time = time.time()
     self.state.cycle = 0    
     
-    #delete later
-    info = {}
     while(self.is_alive()):
       self.state.logger.info(f'[{self.state.cycle}]: executing')
       patch = select_patch.select_patch_recoder_mode(self.state)
