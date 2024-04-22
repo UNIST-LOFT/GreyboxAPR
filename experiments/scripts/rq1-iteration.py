@@ -7,14 +7,19 @@ import pandas as pd
 from os import path
 from sys import argv
 
+from getopt import getopt
+
 import d4j
 
 MAX_EXP=10
+WITH_MOCKITO=False
 
 def plot_patches_ci_java(mode='tbar'):
     orig_result:List[int]=[]
     casino_result:List[List[int]]=[]
     greybox_result:List[List[int]]=[]
+
+    valid_patch_set:Dict[str,set]=dict()
 
     # Casino
     for i in range(MAX_EXP):
@@ -23,6 +28,8 @@ def plot_patches_ci_java(mode='tbar'):
             if not path.exists(f'{mode}/result/{result}-greybox-{MAX_EXP-1}/simapr-finished.txt'):
                 # Skip if experiment not end
                 continue
+            if not WITH_MOCKITO and 'Mockito' in result:
+                continue
             try:
                 result_file=open(f'{mode}/result/{result}-casino-{i}/simapr-result.json','r')
             except:
@@ -30,7 +37,8 @@ def plot_patches_ci_java(mode='tbar'):
             root=json.load(result_file)
             result_file.close()
 
-            prev_time=0.
+            if result not in valid_patch_set:
+                valid_patch_set[result]=set()
             for res in root:
                 is_hq=res['result']
                 is_plausible=res['pass_result']
@@ -39,10 +47,9 @@ def plot_patches_ci_java(mode='tbar'):
                 loc=res['config'][0]['location']
 
                 if is_plausible:
+                    valid_patch_set[result].add(loc)
                     casino_result[-1].append(iteration)
 
-                # if time>3600:
-                #     break
     print(np.mean([len(l) for l in casino_result]))
                     
     # Greybox
@@ -52,6 +59,8 @@ def plot_patches_ci_java(mode='tbar'):
             if not path.exists(f'{mode}/result/{result}-greybox-{MAX_EXP-1}/simapr-finished.txt'):
                 # Skip if experiment not end
                 continue
+            if not WITH_MOCKITO and 'Mockito' in result:
+                continue
             try:
                 result_file=open(f'{mode}/result/{result}-greybox-{i}/simapr-result.json','r')
             except:
@@ -59,7 +68,6 @@ def plot_patches_ci_java(mode='tbar'):
             root=json.load(result_file)
             result_file.close()
 
-            prev_time=0.
             for res in root:
                 is_hq=res['result']
                 is_plausible=res['pass_result']
@@ -68,10 +76,9 @@ def plot_patches_ci_java(mode='tbar'):
                 loc=res['config'][0]['location']
 
                 if is_plausible:
+                    valid_patch_set[result].add(loc)
                     greybox_result[-1].append(iteration)
 
-                # if time>3600:
-                #     break
     print(np.mean([len(l) for l in greybox_result]))
 
     # Original
@@ -79,6 +86,8 @@ def plot_patches_ci_java(mode='tbar'):
         if not path.exists(f'{mode}/result/{result}-greybox-{MAX_EXP-1}/simapr-finished.txt'):
             # Skip if experiment not end
             continue
+        if not WITH_MOCKITO and 'Mockito' in result:
+                continue
         try:
             result_file=open(f'{mode}/result/{result}-orig/simapr-result.json','r')
         except:
@@ -86,7 +95,6 @@ def plot_patches_ci_java(mode='tbar'):
         root=json.load(result_file)
         result_file.close()
 
-        prev_time=0.
         for res in root:
             is_hq=res['result']
             is_plausible=res['pass_result']
@@ -95,11 +103,19 @@ def plot_patches_ci_java(mode='tbar'):
             loc=res['config'][0]['location']
 
             if is_plausible:
+                valid_patch_set[result].add(loc)
                 orig_result.append(iteration)
 
-            # if time>3600:
-            #     break
     print(len(orig_result))
+
+    # Store valid patch set to csv file
+    if WITH_MOCKITO:
+        f=open(f'rq1-iter-valid-patch-count-{mode}-w-mockito.csv','w')
+    else:
+        f=open(f'rq1-iter-valid-patch-count-{mode}.csv','w')
+    f.write('project,# of valid patch\n')
+    for k,v in valid_patch_set.items():
+        f.write(f'{k},{len(v)}\n')
 
     # Plausible patch plot
     plt.clf()
@@ -147,12 +163,8 @@ def plot_patches_ci_java(mode='tbar'):
                     guided_y.append(0)
                 else:
                     guided_y.append(guided_y[-1])
-            # if i%500==0:
-            #     temp_[i//500].append(guided_list[-1][-1])
     guided_df=pd.DataFrame({'Time':guided_x,'Number of valid patches':guided_y})
     seaborn.lineplot(data=guided_df,x='Time',y='Number of valid patches',color='g',label='Casino')
-    # for i in range(5):
-    #     print(f'{i*500}: {np.std(temp_[i])}')
 
     # Greybox
     guided_list:List[List[int]]=[]
@@ -177,20 +189,24 @@ def plot_patches_ci_java(mode='tbar'):
                     guided_y.append(0)
                 else:
                     guided_y.append(guided_y[-1])
-            # if i%500==0:
-            #     temp_[i//500].append(guided_list[-1][-1])
     guided_df=pd.DataFrame({'Time':guided_x,'Number of valid patches':guided_y})
     seaborn.lineplot(data=guided_df,x='Time',y='Number of valid patches',color='r',label='Greybox',linestyle='dashed')
-    # for i in range(5):
-    #     print(f'{i*500}: {np.std(temp_[i])}')
-
 
     plt.legend(fontsize=12)
     plt.xlabel('Iteration',fontsize=15)
     plt.ylabel('# of Valid Patches',fontsize=15)
     plt.xticks(fontsize=15)
     plt.yticks(fontsize=15)
-    plt.savefig(f'rq1-iter-{mode}.pdf',bbox_inches='tight')
+
+    if WITH_MOCKITO:
+        plt.savefig(f'rq1-iter-{mode}-w-mockito.pdf',bbox_inches='tight')
+    else:
+        plt.savefig(f'rq1-iter-{mode}.pdf',bbox_inches='tight')
 
 if __name__=='__main__':
-    plot_patches_ci_java(argv[1])
+    o,a=getopt(argv[1:],'',['with-mockito'])
+    for opt,arg in o:
+        if o=='--with-mockito':
+            WITH_MOCKITO=True
+
+    plot_patches_ci_java(a[1])
