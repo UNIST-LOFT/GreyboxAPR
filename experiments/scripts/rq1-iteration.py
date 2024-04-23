@@ -209,4 +209,4 @@ if __name__=='__main__':
         if o=='--with-mockito':
             WITH_MOCKITO=True
 
-    plot_patches_ci_java(a[1])
+    plot_patches_ci_java(a[0])
