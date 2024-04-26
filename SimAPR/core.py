@@ -179,13 +179,12 @@ class CriticalBranchesUpDownManager:
   def __init__(self, is_this_critical_branches = False):
     self.upDownDict:Dict[int, CriticalBranchUpDown]=dict()
     self.is_this_critical_branches=is_this_critical_branches
-    self.state=GlobalState()
     
-  def update(self, branch_index:int, branch_difference:int):
+  def update(self, state:'GlobalState', branch_index:int, branch_difference:int):
     if branch_index not in self.upDownDict:
       self.upDownDict[branch_index]=CriticalBranchUpDown()
       if self.is_this_critical_branches:
-        self.state.new_critical_list.append(branch_index)
+        state.new_critical_list.append(branch_index)
 
     self.upDownDict[branch_index].update(branch_difference)
   
@@ -476,7 +475,7 @@ class TbarPatchInfo:
     self.func_info.positive_pf.update(result, n,b_n, exp_alpha)
     self.file_info.positive_pf.update(result, n,b_n, exp_alpha)
     
-  def update_branch_result(self, branch_index:int, branch_difference:int) -> None:
+  def update_branch_result(self, state:'GlobalState', branch_index:int, branch_difference:int) -> None:
     """
     Used for the GreyBox Approach.
     
@@ -486,11 +485,11 @@ class TbarPatchInfo:
         branch_index (int): _description_
         branch_difference (int): _description_
     """
-    self.tbar_case_info.critical_branch_up_down_manager.update(branch_index, branch_difference)
-    self.tbar_type_info.critical_branch_up_down_manager.update(branch_index, branch_difference)
-    self.line_info.critical_branch_up_down_manager.update(branch_index, branch_difference)
-    self.func_info.critical_branch_up_down_manager.update(branch_index, branch_difference)
-    self.file_info.critical_branch_up_down_manager.update(branch_index, branch_difference)
+    self.tbar_case_info.critical_branch_up_down_manager.update(state,branch_index, branch_difference)
+    self.tbar_type_info.critical_branch_up_down_manager.update(state,branch_index, branch_difference)
+    self.line_info.critical_branch_up_down_manager.update(state,branch_index, branch_difference)
+    self.func_info.critical_branch_up_down_manager.update(state,branch_index, branch_difference)
+    self.file_info.critical_branch_up_down_manager.update(state,branch_index, branch_difference)
     
   def remove_patch(self, state: 'GlobalState') -> None:
     """
@@ -569,7 +568,6 @@ class TbarPatchInfo:
     return ",".join(result)
   
 class RecoderPatchInfo:
-
   def __init__(self, recoder_case_info: RecoderCaseInfo) -> None:
     self.recoder_case_info = recoder_case_info
     self.line_info = self.recoder_case_info.parent
@@ -590,7 +588,7 @@ class RecoderPatchInfo:
     self.func_info.positive_pf.update(result, n,b_n, exp_alpha)
     self.file_info.positive_pf.update(result, n,b_n, exp_alpha)
 
-  def update_branch_result(self, branch_index:int, branch_difference:int) -> None:
+  def update_branch_result(self, state:'GlobalState', branch_index:int, branch_difference:int) -> None:
     """
     Used for the GreyBox Approach.
     
@@ -600,10 +598,10 @@ class RecoderPatchInfo:
         branch_index (int): _description_
         branch_difference (int): _description_
     """
-    self.recoder_case_info.critical_branch_up_down_manager.update(branch_index, branch_difference)
-    self.line_info.critical_branch_up_down_manager.update(branch_index, branch_difference)
-    self.func_info.critical_branch_up_down_manager.update(branch_index, branch_difference)
-    self.file_info.critical_branch_up_down_manager.update(branch_index, branch_difference)
+    self.recoder_case_info.critical_branch_up_down_manager.update(state,branch_index, branch_difference)
+    self.line_info.critical_branch_up_down_manager.update(state,branch_index, branch_difference)
+    self.func_info.critical_branch_up_down_manager.update(state,branch_index, branch_difference)
+    self.file_info.critical_branch_up_down_manager.update(state,branch_index, branch_difference)
 
   def remove_patch(self, state: 'GlobalState') -> None:
     if self.recoder_case_info.location not in self.line_info.recoder_case_info_map:

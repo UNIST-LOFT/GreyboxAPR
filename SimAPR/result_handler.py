@@ -324,7 +324,7 @@ def update_result_branch(state:GlobalState,selected_patch:Union[TbarPatchInfo,Re
         branch_index:int=branch_tuple[0]
         branch_difference=branch_tuple[1]
         #update the branch difference data in each PatchTreeNode which are the ancestor of the selected_patch
-        selected_patch.update_branch_result(branch_index, branch_difference)
+        selected_patch.update_branch_result(state, branch_index, branch_difference)
       
       """
       #update if critical branch
