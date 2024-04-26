@@ -673,11 +673,11 @@ class RecoderPatchInfo:
 class Result:
   iteration: int
   time: float
-  config: List[TbarPatchInfo]
+  config: List[Union[TbarPatchInfo,RecoderPatchInfo]]
   result: bool
   pass_result: bool
   pass_all_neg_test: bool
-  def __init__(self, execution: int, iteration:int,time: float, config: List[TbarPatchInfo], result: bool,
+  def __init__(self, execution: int, iteration:int,time: float, config: List[Union[TbarPatchInfo,RecoderPatchInfo]], result: bool,
                pass_test_result:bool=False, pass_all_neg_test: bool = False, compilable: bool = True) -> None:
     self.execution = execution
     self.iteration=iteration

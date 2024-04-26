@@ -24,7 +24,7 @@ def run_fail_test_d4j(state: GlobalState, new_env: Dict[str, str]) -> Tuple[bool
   state.logger.info(f"@{state.cycle} Run tbar test {new_env['SIMAPR_TEST']} with {new_env['SIMAPR_LOCATION']}")
   args = state.args
   state.logger.debug(' '.join(args))
-  # state.logger.info(f"@This is {args} and {new_env}")
+
   test_proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=new_env)
   so: bytes # subprocess out
   se: bytes # subprocess error
@@ -149,14 +149,7 @@ def run_pass_test_d4j(state: GlobalState, new_env: Dict[str, str]) -> bool:
   state.cycle += 1
   state.logger.info(f"@{state.cycle} Run tbar test {new_env['SIMAPR_TEST']} with {new_env['SIMAPR_LOCATION']}")
   tests = list()
-  # if len(state.failed_positive_test) > 0:
-  #   for test in state.failed_positive_test:
-  #     tests.append(test)
-  #   tmp_env = EnvGenerator.get_new_env_d4j_positive_tests(state, tests, new_env.copy())
-  #   run_result, failed_tests = run_pass_test_d4j_exec(state, tmp_env, tests)
-  #   if not run_result:
-  #     return False
-  # tests.clear()
+  
   for test in state.d4j_positive_test:
     if test not in state.failed_positive_test:
       tests.append(test)

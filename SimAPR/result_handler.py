@@ -318,8 +318,7 @@ def update_result_branch(state:GlobalState,selected_patch:Union[TbarPatchInfo,Re
           state.critical_branch_up_down_manager.update(branch_index, branch_difference)
         
         critical_branch_list = list(state.critical_branch_up_down_manager.upDownDict.keys())
-        
-          
+
       for branch_tuple in branch_difference_list:
         branch_index:int=branch_tuple[0]
         branch_difference=branch_tuple[1]
