@@ -13,6 +13,7 @@ import d4j
 
 MAX_EXP=10
 WITH_MOCKITO=False
+MAX_TIME=300
 
 def plot_patches_ci_java(mode='tbar'):
     orig_result:List[int]=[]
@@ -50,8 +51,9 @@ def plot_patches_ci_java(mode='tbar'):
                     valid_patch_set[result].add(loc)
                     casino_result[-1].append(round((time)/60))
 
-                if time>3600:
+                if round((time)/60)>MAX_TIME:
                     break
+
     print(np.mean([len(l) for l in casino_result]))
                     
     # Greybox
@@ -96,8 +98,9 @@ def plot_patches_ci_java(mode='tbar'):
                     valid_patch_set[result].add(loc)
                     greybox_result[-1].append(round((total_time)/60))
 
-                if time>3600:
+                if round((time)/60)>MAX_TIME:
                     break
+
     print(np.mean([len(l) for l in greybox_result]))
 
     # Original
@@ -126,8 +129,9 @@ def plot_patches_ci_java(mode='tbar'):
                 valid_patch_set[result].add(loc)
                 orig_result.append(round((time)/60))
 
-            if time>3600:
+            if round((time)/60)>MAX_TIME:
                 break
+
     print(len(orig_result))
 
     # Store valid patch set to csv file
@@ -155,12 +159,12 @@ def plot_patches_ci_java(mode='tbar'):
     # Original
     results=sorted(orig_result)
     other_list=[0]
-    for i in range(0,301):
+    for i in range(0,MAX_TIME+1):
         if i in results:
             other_list.append(other_list[-1]+results.count(i))
         else:
             other_list.append(other_list[-1])
-    plt.plot(list(range(0,302)),other_list,'-.b',label=name)
+    plt.plot(list(range(0,MAX_TIME+2)),other_list,'-.b',label=name)
 
     # Casino
     guided_list:List[List[int]]=[]
@@ -170,7 +174,7 @@ def plot_patches_ci_java(mode='tbar'):
     for j in range(MAX_EXP):
         cur_result=sorted(casino_result[j])
         guided_list.append([0])
-        for i in range(0,301):
+        for i in range(0,MAX_TIME+1):
             if i in cur_result:
                 guided_list[-1].append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
                 guided_x.append(i)
@@ -195,7 +199,7 @@ def plot_patches_ci_java(mode='tbar'):
     for j in range(MAX_EXP):
         cur_result=sorted(greybox_result[j])
         other_list.append([0])
-        for i in range(0,301):
+        for i in range(0,MAX_TIME+1):
             if i in cur_result:
                 other_list[-1].append(other_list[-1][-1]+cur_result.count(i)/MAX_EXP)
                 other_x.append(i)
