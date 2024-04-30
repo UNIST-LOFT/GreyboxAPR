@@ -297,8 +297,6 @@ def update_result_branch(state:GlobalState,selected_patch:Union[TbarPatchInfo,Re
     for testName in state.d4j_negative_test.copy():
       if testName in each_result and testName in branch_coverage and testName in state.original_branch_cov:
         if each_result[testName]:
-          pass
-        else:
           branch_coverage[testName].branch_coverage = {key: value for key, value in branch_coverage[testName].branch_coverage.items() if key in critical_branch_list}
       else:
         state.logger.debug(f"testName in each_result: {testName in each_result}, each_result[testName]: {each_result[testName]}, testName in branch_coverage: {testName in branch_coverage}, testName in state.original_branch_cov: {testName in state.original_branch_cov}")
@@ -314,16 +312,8 @@ def update_result_branch(state:GlobalState,selected_patch:Union[TbarPatchInfo,Re
           branch_index:int=branch_tuple[0]
           branch_difference=branch_tuple[1]
           
-          #update the critical branch data in GlobalState
-          state.critical_branch_up_down_manager.update(branch_index, branch_difference)
-        
-        critical_branch_list = list(state.critical_branch_up_down_manager.upDownDict.keys())
-
-      for branch_tuple in branch_difference_list:
-        branch_index:int=branch_tuple[0]
-        branch_difference=branch_tuple[1]
-        #update the branch difference data in each PatchTreeNode which are the ancestor of the selected_patch
-        selected_patch.update_branch_result(state, branch_index, branch_difference)
+          #update the critical branch data in node
+          selected_patch.update_branch_result(state, branch_index, branch_difference)
       
       """
       #update if critical branch

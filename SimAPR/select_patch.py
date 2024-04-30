@@ -98,7 +98,7 @@ def second_vertical_search_recursion(state:GlobalState, isUp:bool, source:PatchT
   elif isinstance(source, TbarCaseInfo): # Only for Tbar
     state.logger.debug(f"second vertical search done. isUp: {isUp}, selected_branch: {selected_branch}")
     return source
-  elif isinstance(source, RecoderCaseInfo): # Only for Recorder
+  elif isinstance(source, RecoderCaseInfo): # Only for Recoder
     state.logger.debug(f"second vertical search done. isUp: {isUp}, selected_branch: {selected_branch}")
     return source  
 
