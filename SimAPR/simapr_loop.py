@@ -435,6 +435,8 @@ class RecoderLoop(TBarLoop):
       run_result, failed_tests = run_test.run_pass_test_d4j_exec(self.state, new_env, self.state.d4j_positive_test)
       if not run_result:
         for ft in failed_tests:
+          if ft in self.state.d4j_negative_test or ft in self.state.failed_positive_test:
+            continue
           self.state.logger.info("Removing {} from positive test".format(ft))
           self.state.d4j_failed_passing_tests.add(ft)
 
