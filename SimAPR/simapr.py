@@ -36,7 +36,7 @@ def parse_args(argv: list) -> GlobalState:
               'seapr-mode=','top-fl=','ignore-compile-error',
               'finish-correct-patch','not-count-compile-fail','not-use-guide','not-use-epsilon',
               'finish-top-method','instr-cp=','branch-output=', 'use-fl-score-in-greybox',
-              'weight-critical-branch', 'optimized-instrumentation']
+              'weight-critical-branch', 'optimized-instrumentation', 'no-instrumentation-time-data-output']
   opts, args = getopt.getopt(argv[1:], "ho:w:t:m:c:T:E:k:", longopts)
   state = GlobalState()
   state.critical_branch_up_down_manager = CriticalBranchesUpDownManager(is_this_critical_branches = True)
@@ -148,8 +148,9 @@ def parse_args(argv: list) -> GlobalState:
     elif o in ['weight-critical-branch']:
       state.weight_critical_branch=True
     elif o in ['--optimized-instrumentation']:
-      # with this option, you should not use the simulation mode
       state.optimized_instrumentation = True
+    elif o in ['no-instrumentation-time-data-output']:
+      state.no_instrumentation_time_data_output = a 
 
   # make output directory if not exists
   if not os.path.exists(state.out_dir):
@@ -174,6 +175,13 @@ def parse_args(argv: list) -> GlobalState:
       os.makedirs(state.branch_output)
   elif state.instrumenter_classpath!='':
     state.branch_output=os.path.join(state.out_dir,'branch')
+
+  
+  # if state.mode == Mode.greybox and state.optimized_instrumentation and state.use_simulation_mode:
+  #   if not os.path.exists(state.no_instrumentation_time_data_output):
+  #     os.makedirs(state.no_instrumentation_time_data_output)
+  #   else:
+  #     raise Exception("You need 'no-instrumentation-time-data-output' option to run the greybox apr simulation with optimized instrumentation")
 
   return state
 
@@ -507,12 +515,22 @@ def read_info_tbar(state: GlobalState) -> None:
           data=prev_info[key]
           state.simulation_data[key] = data
 
+  # read no-instrumentation-time-data
+  # if (state.mode == Mode.greybox and state.optimized_instrumentation and state.use_simulation_mode) or (state.mode == Mode.casino and state.no_instrumentation_time_data != ""):
+  #   file_path = os.path.join(state.no_instrumentation_time_data_output, "no_instrumentation_time_data.json")
+  #   if not (os.path.exists(file_path)):
+  #     with open(file_path, 'w') as f:
+  #       f.write('')
+  #   with open(file_path, 'r') as f:
+  #     info = json.load(f)
+  #     state.no_instrumentation_time_data = info
+      
 def copy_previous_results(state: GlobalState) -> None:
   """
-  Create a new '~~ search.log' and '~~ result.json' files with newest prefix.
-  The new file contains the all content of previous file.
+  saves the existing result with a prefix.
+  This is not to overwrite the data to the existing experiment result.
   
-  Removes 'simapr-finished.txt'
+  and removes the previous 'simapr-finished.txt'
 
   Args:
       state (GlobalState): 

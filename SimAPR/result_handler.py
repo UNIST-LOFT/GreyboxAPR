@@ -19,6 +19,12 @@ def save_result(state: GlobalState) -> None:
     with open(state.prev_data, "w") as f:
       json.dump(state.simulation_data, f, indent=2)
 
+  # if (state.mode == Mode.greybox and state.optimized_instrumentation and state.use_simulation_mode) or (state.mode == Mode.casino and state.no_instrumentation_time_data != ""):
+  #   file_path = os.path.join(state.no_instrumentation_time_data_output, "no_instrumentation_time_data.json")
+  #   if not (os.path.exists(file_path)):
+  #     with open(file_path, 'w') as f:
+  #       json.dump(state.no_instrumentation_time_data, f, indent=2)
+
 # Append result list, save result to file periodically
 def append_result(state: GlobalState, selected_patch: List[Union[TbarPatchInfo,RecoderPatchInfo]], test_result: Dict[str,bool],pass_test_result:bool=False,compilable: bool = True,fail_time:float=0.0,pass_time:float=0.0) -> None:
   """
@@ -319,11 +325,11 @@ def update_result_branch(state:GlobalState,selected_patch:Union[TbarPatchInfo,Re
         
         critical_branch_list = list(state.critical_branch_up_down_manager.upDownDict.keys())
 
-      for branch_tuple in branch_difference_list:
-        branch_index:int=branch_tuple[0]
-        branch_difference=branch_tuple[1]
-        #update the branch difference data in each PatchTreeNode which are the ancestor of the selected_patch
-        selected_patch.update_branch_result(state, branch_index, branch_difference)
+        for branch_tuple in branch_difference_list:
+          branch_index:int=branch_tuple[0]
+          branch_difference=branch_tuple[1]
+          #update the branch difference data in each PatchTreeNode which are the ancestor of the selected_patch
+          selected_patch.update_branch_result(state, branch_index, branch_difference)
       
       """
       #update if critical branch

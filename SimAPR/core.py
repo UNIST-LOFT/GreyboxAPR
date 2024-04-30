@@ -818,6 +818,8 @@ class GlobalState(metaclass=SingletonMeta):
     self.critical_branch_up_down_manager:CriticalBranchesUpDownManager = None # It is for the saving the branch count difference regardless of test cases.Initialized right after GlobalState is initialized, because critical_branch_up_down_manager initializes GlobalState in it.
     self.optimized_instrumentation = False
     self.new_critical_list:List[int]=[] # get empty when each iteration begins
+    self.no_instrumentation_time_data_output = "" # the directory path where the data is going to be saved.
+    # self.no_instrumentation_time_data = {} # the data that will be referenced and modified during the experiment
     
 def patch_ochiai_calculator(state:GlobalState, str):
   valid_branches=0

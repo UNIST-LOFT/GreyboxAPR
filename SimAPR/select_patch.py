@@ -49,18 +49,14 @@ def second_vertical_search(state:GlobalState, source:PatchTreeNode):
       _type_: _description_
   """
   # Select a random branch. maybe with some weight?
-  if state.weight_critical_branch:
-    weight = list(map(lambda a: max(a.branchUpScore, a.branchDownScore), state.critical_branch_up_down_manager.upDownDict.values()))
-    selected_branch:int = random.choices(list(state.critical_branch_up_down_manager.upDownDict.keys()), weights=weight)[0]
-  else:
-    selected_branch:int = random.choice(list(state.critical_branch_up_down_manager.upDownDict.keys()))
-  isUp:bool=state.critical_branch_up_down_manager.get_isUp(selected_branch)
-  state.logger.info(f"beginning vertical search. selected branch: {selected_branch}, isUp: {isUp}")
+  # if state.weight_critical_branch:
+  #   weight = list(map(lambda a: max(a.branchUpScore, a.branchDownScore), state.critical_branch_up_down_manager.upDownDict.values()))
+  #   selected_branch:int = random.choices(list(state.critical_branch_up_down_manager.upDownDict.keys()), weights=weight)[0]
 
   # vertical traversal with the selected branch by calling recursion.
-  return second_vertical_search_recursion(state, isUp, source, selected_branch)
+  return second_vertical_search_recursion(state, source)
   
-def second_vertical_search_recursion(state:GlobalState, isUp:bool, source:PatchTreeNode, selected_branch:int):
+def second_vertical_search_recursion(state:GlobalState, source:PatchTreeNode):
   """
   A recursive method.
 
@@ -68,6 +64,12 @@ def second_vertical_search_recursion(state:GlobalState, isUp:bool, source:PatchT
       isUp (bool): _description_
       source (PatchTreeNode): _description_
   """
+  if source.critical_branch_up_down_manager.is_empty():
+    epsilon_select(state, source)
+
+  selected_branch:int = random.choice(list(source.critical_branch_up_down_manager.upDownDict.keys()))
+  isUp:bool=source.critical_branch_up_down_manager.get_isUp(selected_branch)
+
   state.logger.debug(f"during second vertical search. source: {source}")
   if source is None:
     # Select file
@@ -187,13 +189,13 @@ def epsilon_select(state:GlobalState,source:PatchTreeNode=None):
   is_epsilon_greedy=np.random.random()<epsilon and not state.not_use_epsilon_search
 
   if is_epsilon_greedy:
-    if state.mode == Mode.greybox and not state.critical_branch_up_down_manager.is_empty() and \
+    if state.mode == Mode.greybox and not source.critical_branch_up_down_manager.is_empty() and \
             ((source is not None and source.children_basic_patches > 0) or (source is None and state.total_basic_patch > 0)):
       state.logger.debug(f"Use second vertical search, epsilon: {epsilon}")
       return second_vertical_search(state, source)
     # Perform random search in epsilon probability
     else:
-      state.logger.debug(f'is critical_branch empty: {state.critical_branch_up_down_manager.is_empty()}, is source none: {source is None}')
+      state.logger.debug(f'is critical_branch empty: {source.critical_branch_up_down_manager.is_empty()}, is source none: {source is None}')
     state.logger.debug(f'Use epsilon greedy method, epsilon: {epsilon}')
 
     # Choose random element in candidates

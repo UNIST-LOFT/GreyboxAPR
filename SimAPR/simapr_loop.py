@@ -110,6 +110,31 @@ class TBarLoop():
         
     return compilable, run_result, run_time, cur_cov
   
+  def run_test_only_for_time_check(self, patch: TbarPatchInfo, test: str) -> Tuple[bool, bool,float]:
+    """
+    used for grybox apr simulation with optimized instrumentation.
+    It is called when there is no measured time of the selected patch with no instrumentation.
+    The measued time data with no instrumentation is needed because the time will be estimated later the experiment based on this data.
+    
+    Args:
+        patch (TbarPatchInfo): _description_
+        test (str): _description_
+
+    Returns:
+        Tuple[bool, bool,float,branch_coverage.BranchCoverage]: _description_
+    """
+    new_env=EnvGenerator.get_new_env_tbar(self.state, patch, test)
+    new_env["GREYBOX_BRANCH"] = "0" # no instrumentation
+
+    self.state.logger.debug("run test with no instrumentation to check time")
+
+    start_time=time.time()
+    compilable, run_result, is_timeout = run_test.run_fail_test_d4j(self.state, new_env)
+    
+    run_time=time.time()-start_time
+
+    return compilable, run_result, run_time
+    
   def run_test_positive(self, patch: TbarPatchInfo) -> Tuple[bool,float]:
     start_time=time.time()
     new_env = EnvGenerator.get_new_env_tbar(self.state, patch, "")
@@ -276,6 +301,11 @@ class TBarLoop():
             each_result[neg]=True
           if cur_cov is not None:
             coverages[neg]=cur_cov
+
+          # optimized instrumentation greybox things
+          if self.state.mode == Mode.greybox and self.state.use_simulation_mode and self.state.optimized_instrumentation:
+            # not done.
+            pass
 
         #add an entry that maps this patch to its branchess
         if is_compilable:
