@@ -291,37 +291,46 @@ def update_result_branch(state:GlobalState,selected_patch:Union[TbarPatchInfo,Re
   
   state.logger.debug(f"update_result_branch is called, d4j_negative_test length: {len(state.d4j_negative_test)}")
   
-  critical_branch_list:List[int] = list(state.critical_branch_up_down_manager.upDownDict.keys())
+  if isinstance(selected_patch,TbarPatchInfo):
+    cur_node=selected_patch.tbar_case_info
+  elif isinstance(selected_patch,RecoderPatchInfo):
+    cur_node=selected_patch.recoder_case_info
+  else:
+    raise RuntimeError(f'Invalid patch type: {type(selected_patch)}, it should be TbarPatchInfo or RecoderPatchInfo')
 
-  if state.optimized_instrumentation and state.use_simulation_mode:
-    for testName in state.d4j_negative_test.copy():
-      if testName in each_result and testName in branch_coverage and testName in state.original_branch_cov:
+  while not isinstance(cur_node,FileInfo):
+    # Update critical branches in each nodes
+    cur_node=cur_node.parent
+    critical_branch_list:List[int] = list(cur_node.critical_branch_up_down_manager.upDownDict.keys())
+
+    if state.optimized_instrumentation and state.use_simulation_mode:
+      for testName in state.d4j_negative_test:
         if each_result[testName]:
-          branch_coverage[testName].branch_coverage = {key: value for key, value in branch_coverage[testName].branch_coverage.items() if key in critical_branch_list}
-      else:
-        state.logger.debug(f"testName in each_result: {testName in each_result}, each_result[testName]: {each_result[testName]}, testName in branch_coverage: {testName in branch_coverage}, testName in state.original_branch_cov: {testName in state.original_branch_cov}")
-  
-  for testName in state.d4j_negative_test.copy():
-    if testName in each_result and testName in branch_coverage and testName in state.original_branch_cov:
-      # update branch difference
-      branch_difference_list: list[Tuple[int,int]] = branch_coverage[testName].diff(state.original_branch_cov[testName]) # list of (branch index, branch count difference)
-      state.logger.debug(f"update_result_branch updating successfully.")
+          # If the patch is cached and interesting, prune non-critical branches
+          if testName in each_result and testName in branch_coverage and testName in state.original_branch_cov:
+              branch_coverage[testName].branch_coverage = {key: value for key, value in branch_coverage[testName].branch_coverage.items() if key in critical_branch_list}
+          else:
+            state.logger.debug(f"testName in each_result: {testName in each_result}, "
+                              f"each_result[testName]: {each_result[testName]}, "
+                              f"testName in branch_coverage: {testName in branch_coverage}, "
+                              f"testName in state.original_branch_cov: {testName in state.original_branch_cov}")
+    
+    for testName in state.d4j_negative_test:
+      if testName in each_result and testName in branch_coverage and testName in state.original_branch_cov:
+        # get branch difference
+        branch_difference_list: list[Tuple[int,int]] = branch_coverage[testName].diff(state.original_branch_cov[testName]) # list of (branch index, branch count difference)
+        state.logger.debug(f"update_result_branch updating successfully.")
 
-      if each_result[testName]:
-        for branch_tuple in branch_difference_list:
-          branch_index:int=branch_tuple[0]
-          branch_difference=branch_tuple[1]
-          
-          #update the critical branch data in node
-          selected_patch.update_branch_result(state, branch_index, branch_difference)
-      
-      """
-      #update if critical branch
-      if each_result[testName]:
-        state.critical_branches+=branch_difference_list
-        """
-        
-    else:
-      state.logger.debug(f"testName in each_result: {testName in each_result}, each_result[testName]: {each_result[testName]}, testName in branch_coverage: {testName in branch_coverage}, testName in state.original_branch_cov: {testName in state.original_branch_cov}")
-        
-        
+        if each_result[testName]:
+          # update if the patch is interesting
+          for branch_tuple in branch_difference_list:
+            branch_index:int=branch_tuple[0]
+            branch_difference=branch_tuple[1]
+            
+            # update the critical branch data in current node
+            cur_node.critical_branch_up_down_manager.update(state,branch_index, branch_difference)
+      else:
+        state.logger.debug(f"testName in each_result: {testName in each_result}, "
+                          f"each_result[testName]: {each_result[testName]}, "
+                          f"testName in branch_coverage: {testName in branch_coverage}, "
+                          f"testName in state.original_branch_cov: {testName in state.original_branch_cov}")
