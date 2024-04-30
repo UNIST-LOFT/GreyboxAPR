@@ -111,7 +111,7 @@ def second_vertical_search_recursion(state:GlobalState, source:PatchTreeNode):
   max_index = randomly_selected_values.index(max(randomly_selected_values))
   new_source = list(children_map.values())[max_index]
   
-  return second_vertical_search_recursion(state, isUp, new_source, selected_branch)
+  return second_vertical_search_recursion(state, new_source)
   
 def filter_children_list_by_fl_score(state:GlobalState, source:PatchTreeNode, given_map):
   """
