@@ -65,7 +65,7 @@ def second_vertical_search_recursion(state:GlobalState, source:PatchTreeNode):
       source (PatchTreeNode): _description_
   """
   if source.critical_branch_up_down_manager.is_empty():
-    epsilon_select(state, source)
+    return epsilon_select(state, source)
 
   selected_branch:int = random.choice(list(source.critical_branch_up_down_manager.upDownDict.keys()))
   isUp:bool=source.critical_branch_up_down_manager.get_isUp(selected_branch)
