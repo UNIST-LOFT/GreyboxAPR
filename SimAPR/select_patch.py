@@ -189,7 +189,12 @@ def epsilon_select(state:GlobalState,source:PatchTreeNode=None):
   is_epsilon_greedy=np.random.random()<epsilon and not state.not_use_epsilon_search
 
   if is_epsilon_greedy:
-    if state.mode == Mode.greybox and not source.critical_branch_up_down_manager.is_empty() and \
+    if source is None:
+      _source=state
+    else:
+      _source=source
+
+    if state.mode == Mode.greybox and not _source.critical_branch_up_down_manager.is_empty() and \
             ((source is not None and source.children_basic_patches > 0) or (source is None and state.total_basic_patch > 0)):
       state.logger.debug(f"Use second vertical search, epsilon: {epsilon}")
       return second_vertical_search(state, source)
