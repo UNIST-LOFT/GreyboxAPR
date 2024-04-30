@@ -540,7 +540,7 @@ for i, xss in enumerate(prlist):
         wf.close()'''
         data = []
         func_map: Dict[str, List[dict]] = dict()
-        for j in range(5):
+        for j in range(500):
             if j >= len(location):
                 break
             patchdict = {}
