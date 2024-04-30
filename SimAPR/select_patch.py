@@ -200,7 +200,7 @@ def epsilon_select(state:GlobalState,source:PatchTreeNode=None):
       return second_vertical_search(state, source)
     # Perform random search in epsilon probability
     else:
-      state.logger.debug(f'is critical_branch empty: {source.critical_branch_up_down_manager.is_empty()}, is source none: {source is None}')
+      state.logger.debug(f'is critical_branch empty: {_source.critical_branch_up_down_manager.is_empty()}, is source none: {source is None}')
     state.logger.debug(f'Use epsilon greedy method, epsilon: {epsilon}')
 
     # Choose random element in candidates
