@@ -44,13 +44,17 @@ def second_vertical_search_recursion(state:GlobalState, source:PatchTreeNode):
       isUp (bool): _description_
       source (PatchTreeNode): _description_
   """
-  if source.critical_branch_up_down_manager.is_empty():
+  if source is None:
+    _source=state
+  else:
+    _source=source
+  if _source.critical_branch_up_down_manager.is_empty():
     return epsilon_select(state, source)
 
-  selected_branch:int = random.choice(list(source.critical_branch_up_down_manager.upDownDict.keys()))
-  isUp:bool=source.critical_branch_up_down_manager.get_isUp(selected_branch)
+  selected_branch:int = random.choice(list(_source.critical_branch_up_down_manager.upDownDict.keys()))
+  isUp:bool=_source.critical_branch_up_down_manager.get_isUp(selected_branch)
 
-  state.logger.debug(f"during second vertical search. source: {source}")
+  state.logger.debug(f"during second vertical search. source: {_source}")
   if source is None:
     # Select file
     children_map = state.file_info_map
