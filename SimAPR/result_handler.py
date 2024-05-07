@@ -304,9 +304,12 @@ def update_result_branch(state:GlobalState,selected_patch:Union[TbarPatchInfo,Re
   else:
     raise RuntimeError(f'Invalid patch type: {type(selected_patch)}, it should be TbarPatchInfo or RecoderPatchInfo')
 
-  while not isinstance(cur_node,FileInfo):
+  while not isinstance(cur_node,GlobalState):
     # Update critical branches in each nodes
-    cur_node=cur_node.parent
+    if isinstance(cur_node,FileInfo):
+      cur_node=state
+    else:
+      cur_node=cur_node.parent
     critical_branch_list:List[int] = list(cur_node.critical_branch_up_down_manager.upDownDict.keys())
 
     if state.optimized_instrumentation and state.use_simulation_mode:
