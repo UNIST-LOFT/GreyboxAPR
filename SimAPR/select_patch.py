@@ -35,27 +35,7 @@ def get_static_score(element):
   elif type(element) == RecoderCaseInfo:
     return element.prob
   else: raise ValueError(f'Unknown element type {type(element)}')
-  
-def second_vertical_search(state:GlobalState, source:PatchTreeNode):
-  """
-  second vertical search
-  when the critical branch list is empty, don't call this function. it will cause error.
-
-  Args:
-      state (GlobalState): _description_
-      source (PatchTreeNode): _description_
-
-  Returns:
-      _type_: _description_
-  """
-  # Select a random branch. maybe with some weight?
-  # if state.weight_critical_branch:
-  #   weight = list(map(lambda a: max(a.branchUpScore, a.branchDownScore), state.critical_branch_up_down_manager.upDownDict.values()))
-  #   selected_branch:int = random.choices(list(state.critical_branch_up_down_manager.upDownDict.keys()), weights=weight)[0]
-
-  # vertical traversal with the selected branch by calling recursion.
-  return second_vertical_search_recursion(state, source)
-  
+    
 def second_vertical_search_recursion(state:GlobalState, source:PatchTreeNode):
   """
   A recursive method.
@@ -197,7 +177,7 @@ def epsilon_select(state:GlobalState,source:PatchTreeNode=None):
     if state.mode == Mode.greybox and not _source.critical_branch_up_down_manager.is_empty() and \
             ((source is not None and source.children_basic_patches > 0) or (source is None and state.total_basic_patch > 0)):
       state.logger.debug(f"Use second vertical search, epsilon: {epsilon}")
-      return second_vertical_search(state, source)
+      return second_vertical_search_recursion(state, source)
     # Perform random search in epsilon probability
     else:
       state.logger.debug(f'is critical_branch empty: {_source.critical_branch_up_down_manager.is_empty()}, is source none: {source is None}')
