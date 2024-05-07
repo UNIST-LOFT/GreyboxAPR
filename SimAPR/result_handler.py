@@ -131,24 +131,25 @@ def update_result_tbar(state: GlobalState, selected_patch: TbarPatchInfo, result
         seapr_list_for_sort.append((1.-get_ochiai(ts.same_seapr_pf.pass_count, ts.same_seapr_pf.fail_count,
             ts.diff_seapr_pf.pass_count, ts.diff_seapr_pf.fail_count),ts.patch_rank,ts.location))
 
-    # Sort seapr list, for debugging
-    cor_set=set()
-    for cor_str in state.correct_patch_list:
-      if type(state.switch_case_map[cor_str])==TbarCaseInfo:
-        cor_set.add(state.switch_case_map[cor_str].parent.parent.parent)
-      else:
-        cor_set.add(state.switch_case_map[cor_str].parent.parent.parent.parent)
+    if state.debug_mode:
+      # Sort seapr list, for debugging
+      cor_set=set()
+      for cor_str in state.correct_patch_list:
+        if type(state.switch_case_map[cor_str])==TbarCaseInfo:
+          cor_set.add(state.switch_case_map[cor_str].parent.parent.parent)
+        else:
+          cor_set.add(state.switch_case_map[cor_str].parent.parent.parent.parent)
 
-      if selected_patch.func_info in cor_set:
-        if not result:
-          state.logger.debug('Misguide type L')
-        else:
-          state.logger.debug('Correct guide H')
-      elif selected_patch.func_info not in cor_set:
-        if result:
-          state.logger.debug('Misguide type H')
-        else:
-          state.logger.debug('Correct guide L')
+        if selected_patch.func_info in cor_set:
+          if not result:
+            state.logger.debug('Misguide type L')
+          else:
+            state.logger.debug('Correct guide H')
+        elif selected_patch.func_info not in cor_set:
+          if result:
+            state.logger.debug('Misguide type H')
+          else:
+            state.logger.debug('Correct guide L')
 
 def update_positive_result_tbar(state: GlobalState, selected_patch: TbarPatchInfo, result: bool) -> None:
   if result:

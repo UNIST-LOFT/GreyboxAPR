@@ -321,32 +321,33 @@ def select_patch_tbar_guided(state: GlobalState) -> TbarPatchInfo:
     state.patch_ranking.remove(selected_switch_info.location)
     return result
   
-  # for logging (begin)
-  for file_name in state.file_info_map:
-    file_info=state.file_info_map[file_name]
-    p_fl.append(max(file_info.fl_score_list))
-    p_frequency.append(file_info.children_basic_patches/state.total_basic_patch if state.total_basic_patch > 0 else 0)
-    p_bp_frequency.append(file_info.consecutive_fail_count)
-  norm=PassFail.normalize(p_fl)
-  selected_file=0
-  for i,file in enumerate(state.file_info_map):
-    if state.file_info_map[file]==selected_file_info:
-      selected_file=i
-      break
-  state.logger.debug(f'Selected file: FL: {norm[selected_file]}/{p_fl[selected_file]}, Basic: {selected_file_info.pf.beta_mode(selected_file_info.pf.pass_count,selected_file_info.pf.fail_count)}, '+
-                  f'Plausible: {selected_file_info.positive_pf.beta_mode(selected_file_info.positive_pf.pass_count,selected_file_info.positive_pf.fail_count)}, '+
-                  f'Unique/Freq: {PassFail.concave_up(p_frequency[selected_file])}/{p_frequency[selected_file]}, BPFreq: {PassFail.log_func(p_bp_frequency[selected_file])}')
-  # for logging (end)
+  if state.debug_mode:
+    # for logging (begin)
+    for file_name in state.file_info_map:
+      file_info=state.file_info_map[file_name]
+      p_fl.append(max(file_info.fl_score_list))
+      p_frequency.append(file_info.children_basic_patches/state.total_basic_patch if state.total_basic_patch > 0 else 0)
+      p_bp_frequency.append(file_info.consecutive_fail_count)
+    norm=PassFail.normalize(p_fl)
+    selected_file=0
+    for i,file in enumerate(state.file_info_map):
+      if state.file_info_map[file]==selected_file_info:
+        selected_file=i
+        break
+    state.logger.debug(f'Selected file: FL: {norm[selected_file]}/{p_fl[selected_file]}, Basic: {selected_file_info.pf.beta_mode(selected_file_info.pf.pass_count,selected_file_info.pf.fail_count)}, '+
+                    f'Plausible: {selected_file_info.positive_pf.beta_mode(selected_file_info.positive_pf.pass_count,selected_file_info.positive_pf.fail_count)}, '+
+                    f'Unique/Freq: {PassFail.concave_up(p_frequency[selected_file])}/{p_frequency[selected_file]}, BPFreq: {PassFail.log_func(p_bp_frequency[selected_file])}')
+    # for logging (end)
 
-  is_correct_guide=False
-  for cor in state.correct_patch_list:
-    cor_patch=state.switch_case_map[cor]
-    if cor_patch.parent.parent.parent.parent==selected_file_info:
-      state.logger.debug(f'Correct guide at file')
-      is_correct_guide=True
-      break
-  if not is_correct_guide:
-    state.logger.debug(f'Misguide at file')
+    is_correct_guide=False
+    for cor in state.correct_patch_list:
+      cor_patch=state.switch_case_map[cor]
+      if cor_patch.parent.parent.parent.parent==selected_file_info:
+        state.logger.debug(f'Correct guide at file')
+        is_correct_guide=True
+        break
+    if not is_correct_guide:
+      state.logger.debug(f'Misguide at file')
     
   # Select function
   selected_func_info:FuncInfo = select_patch_guide_algorithm(state,selected_file_info.func_info_map,selected_file_info)
@@ -356,33 +357,34 @@ def select_patch_tbar_guided(state: GlobalState) -> TbarPatchInfo:
     state.patch_ranking.remove(selected_switch_info.location)
     return result
   
-  # for logging (begin)
-  for func_name in selected_file_info.func_info_map:
-    func_info=selected_file_info.func_info_map[func_name]
-    p_fl.append(max(func_info.fl_score_list))
-    p_frequency.append(func_info.children_basic_patches/state.total_basic_patch if state.total_basic_patch > 0 else 0)
-    p_bp_frequency.append(func_info.consecutive_fail_count)
-  norm=PassFail.normalize(p_fl)
-  selected_func=0
-  for i,func in enumerate(selected_file_info.func_info_map):
-    if selected_file_info.func_info_map[func]==selected_func_info:
-      selected_func=i
-      break
-  norm=PassFail.normalize(p_fl)
-  state.logger.debug(f'Selected function: FL: {norm[selected_func]}/{p_fl[selected_func]}, Basic: {selected_func_info.pf.beta_mode(selected_func_info.pf.pass_count,selected_func_info.pf.fail_count)}, '+
-                  f'Plausible: {selected_func_info.positive_pf.beta_mode(selected_func_info.positive_pf.pass_count,selected_func_info.positive_pf.fail_count)}, '+
-                  f'Unique/Freq: {PassFail.concave_up(p_frequency[selected_func])}/{p_frequency[selected_func]}, BPFreq: {PassFail.log_func(p_bp_frequency[selected_func])}')
-  # for logging (end)
+  if state.debug_mode:
+    # for logging (begin)
+    for func_name in selected_file_info.func_info_map:
+      func_info=selected_file_info.func_info_map[func_name]
+      p_fl.append(max(func_info.fl_score_list))
+      p_frequency.append(func_info.children_basic_patches/state.total_basic_patch if state.total_basic_patch > 0 else 0)
+      p_bp_frequency.append(func_info.consecutive_fail_count)
+    norm=PassFail.normalize(p_fl)
+    selected_func=0
+    for i,func in enumerate(selected_file_info.func_info_map):
+      if selected_file_info.func_info_map[func]==selected_func_info:
+        selected_func=i
+        break
+    norm=PassFail.normalize(p_fl)
+    state.logger.debug(f'Selected function: FL: {norm[selected_func]}/{p_fl[selected_func]}, Basic: {selected_func_info.pf.beta_mode(selected_func_info.pf.pass_count,selected_func_info.pf.fail_count)}, '+
+                    f'Plausible: {selected_func_info.positive_pf.beta_mode(selected_func_info.positive_pf.pass_count,selected_func_info.positive_pf.fail_count)}, '+
+                    f'Unique/Freq: {PassFail.concave_up(p_frequency[selected_func])}/{p_frequency[selected_func]}, BPFreq: {PassFail.log_func(p_bp_frequency[selected_func])}')
+    # for logging (end)
 
-  is_correct_guide=False
-  for cor in state.correct_patch_list:
-    cor_patch=state.switch_case_map[cor]
-    if cor_patch.parent.parent.parent==selected_func_info:
-      state.logger.debug(f'Correct guide at func')
-      is_correct_guide=True
-      break
-  if not is_correct_guide:
-    state.logger.debug(f'Misguide at func')
+    is_correct_guide=False
+    for cor in state.correct_patch_list:
+      cor_patch=state.switch_case_map[cor]
+      if cor_patch.parent.parent.parent==selected_func_info:
+        state.logger.debug(f'Correct guide at func')
+        is_correct_guide=True
+        break
+    if not is_correct_guide:
+      state.logger.debug(f'Misguide at func')
 
   # Select line
   selected_line_info:LineInfo = select_patch_guide_algorithm(state,selected_func_info.line_info_map,selected_func_info)
@@ -392,33 +394,34 @@ def select_patch_tbar_guided(state: GlobalState) -> TbarPatchInfo:
     state.patch_ranking.remove(selected_switch_info.location)
     return result
   
-  # for logging (begin)
-  for line in selected_func_info.line_info_map:
-    line_info=selected_func_info.line_info_map[line]
-    p_fl.append(line_info.fl_score)
-    p_frequency.append(line_info.children_basic_patches/state.total_basic_patch if state.total_basic_patch > 0 else 0)
-    p_bp_frequency.append(line_info.consecutive_fail_count)
-  norm=PassFail.normalize(p_fl)
-  selected_line=0
-  for i,line in enumerate(selected_func_info.line_info_map):
-    if selected_func_info.line_info_map[line]==selected_line_info:
-      selected_line=i
-      break
-  norm=PassFail.normalize(p_fl)
-  state.logger.debug(f'Selected line: FL: {norm[selected_line]}/{p_fl[selected_line]}, Basic: {selected_line_info.pf.beta_mode(selected_line_info.pf.pass_count,selected_line_info.pf.fail_count)}, '+
-                  f'Plausible: {selected_line_info.positive_pf.beta_mode(selected_line_info.positive_pf.pass_count,selected_line_info.positive_pf.fail_count)}, '+
-                  f'Unique/Freq: {PassFail.concave_up(p_frequency[selected_line])}/{p_frequency[selected_line]}, BPFreq: {PassFail.log_func(p_bp_frequency[selected_line])}')
-  # for logging (end)
+  if state.debug_mode:
+    # for logging (begin)
+    for line in selected_func_info.line_info_map:
+      line_info=selected_func_info.line_info_map[line]
+      p_fl.append(line_info.fl_score)
+      p_frequency.append(line_info.children_basic_patches/state.total_basic_patch if state.total_basic_patch > 0 else 0)
+      p_bp_frequency.append(line_info.consecutive_fail_count)
+    norm=PassFail.normalize(p_fl)
+    selected_line=0
+    for i,line in enumerate(selected_func_info.line_info_map):
+      if selected_func_info.line_info_map[line]==selected_line_info:
+        selected_line=i
+        break
+    norm=PassFail.normalize(p_fl)
+    state.logger.debug(f'Selected line: FL: {norm[selected_line]}/{p_fl[selected_line]}, Basic: {selected_line_info.pf.beta_mode(selected_line_info.pf.pass_count,selected_line_info.pf.fail_count)}, '+
+                    f'Plausible: {selected_line_info.positive_pf.beta_mode(selected_line_info.positive_pf.pass_count,selected_line_info.positive_pf.fail_count)}, '+
+                    f'Unique/Freq: {PassFail.concave_up(p_frequency[selected_line])}/{p_frequency[selected_line]}, BPFreq: {PassFail.log_func(p_bp_frequency[selected_line])}')
+    # for logging (end)
   
-  is_correct_guide=False
-  for cor in state.correct_patch_list:
-    cor_patch=state.switch_case_map[cor]
-    if cor_patch.parent.parent==selected_line_info:
-      state.logger.debug(f'Correct guide at line')
-      is_correct_guide=True
-      break
-  if not is_correct_guide:
-    state.logger.debug(f'Misguide at line')
+    is_correct_guide=False
+    for cor in state.correct_patch_list:
+      cor_patch=state.switch_case_map[cor]
+      if cor_patch.parent.parent==selected_line_info:
+        state.logger.debug(f'Correct guide at line')
+        is_correct_guide=True
+        break
+    if not is_correct_guide:
+      state.logger.debug(f'Misguide at line')
 
   # Select type
   selected_type_info:TbarTypeInfo = select_patch_guide_algorithm(state,selected_line_info.tbar_type_info_map,selected_line_info)
@@ -428,30 +431,31 @@ def select_patch_tbar_guided(state: GlobalState) -> TbarPatchInfo:
     state.patch_ranking.remove(selected_switch_info.location)
     return result
   
-  # for logging (begin)
-  for tbar_type in selected_line_info.tbar_type_info_map:
-    type_info=selected_line_info.tbar_type_info_map[tbar_type]
-    p_frequency.append(type_info.children_basic_patches/state.total_basic_patch if state.total_basic_patch > 0 else 0)
-    p_bp_frequency.append(type_info.consecutive_fail_count)
-  selected_type=0
-  for i,tbar_type in enumerate(selected_line_info.tbar_type_info_map):
-    if selected_line_info.tbar_type_info_map[tbar_type]==selected_type_info:
-      selected_type=i
-      break
-  state.logger.debug(f'Selected type: Basic: {selected_type_info.pf.beta_mode(selected_type_info.pf.pass_count,selected_type_info.pf.fail_count)}, '+
-                  f'Plausible: {selected_type_info.positive_pf.beta_mode(selected_type_info.positive_pf.pass_count,selected_type_info.positive_pf.fail_count)}, '+
-                  f'Unique/Freq: {PassFail.concave_up(p_frequency[selected_type])}/{p_frequency[selected_type]}, BPFreq: {PassFail.log_func(p_bp_frequency[selected_type])}')
-  # for logging (end)
+  if state.debug_mode:
+    # for logging (begin)
+    for tbar_type in selected_line_info.tbar_type_info_map:
+      type_info=selected_line_info.tbar_type_info_map[tbar_type]
+      p_frequency.append(type_info.children_basic_patches/state.total_basic_patch if state.total_basic_patch > 0 else 0)
+      p_bp_frequency.append(type_info.consecutive_fail_count)
+    selected_type=0
+    for i,tbar_type in enumerate(selected_line_info.tbar_type_info_map):
+      if selected_line_info.tbar_type_info_map[tbar_type]==selected_type_info:
+        selected_type=i
+        break
+    state.logger.debug(f'Selected type: Basic: {selected_type_info.pf.beta_mode(selected_type_info.pf.pass_count,selected_type_info.pf.fail_count)}, '+
+                    f'Plausible: {selected_type_info.positive_pf.beta_mode(selected_type_info.positive_pf.pass_count,selected_type_info.positive_pf.fail_count)}, '+
+                    f'Unique/Freq: {PassFail.concave_up(p_frequency[selected_type])}/{p_frequency[selected_type]}, BPFreq: {PassFail.log_func(p_bp_frequency[selected_type])}')
+    # for logging (end)
 
-  is_correct_guide=False
-  for cor in state.correct_patch_list:
-    cor_patch=state.switch_case_map[cor]
-    if cor_patch.parent==selected_type_info:
-      state.logger.debug(f'Correct guide at type')
-      is_correct_guide=True
-      break
-  if not is_correct_guide:
-    state.logger.debug(f'Misguide at type')
+    is_correct_guide=False
+    for cor in state.correct_patch_list:
+      cor_patch=state.switch_case_map[cor]
+      if cor_patch.parent==selected_type_info:
+        state.logger.debug(f'Correct guide at type')
+        is_correct_guide=True
+        break
+    if not is_correct_guide:
+      state.logger.debug(f'Misguide at type')
 
   # select tbar patch
   selected_switch_info:TbarCaseInfo=epsilon_select(state,selected_type_info)
@@ -663,30 +667,31 @@ def select_patch_recoder_guided(state: GlobalState) -> RecoderPatchInfo:
     state.patch_ranking.remove(selected_switch_info.location)
     return result
   
-  for file_name in state.file_info_map:
-    file_info=state.file_info_map[file_name]
-    p_fl.append(max(file_info.fl_score_list))
-    p_frequency.append(file_info.children_basic_patches/state.total_basic_patch if state.total_basic_patch > 0 else 0)
-    p_bp_frequency.append(file_info.consecutive_fail_count)
-  norm=PassFail.normalize(p_fl)
-  selected_file=0
-  for i,file in enumerate(state.file_info_map):
-    if state.file_info_map[file]==selected_file_info:
-      selected_file=i
-      break
-  state.logger.debug(f'Selected file: FL: {norm[selected_file]}/{p_fl[selected_file]}, Basic: {selected_file_info.pf.beta_mode(selected_file_info.pf.pass_count,selected_file_info.pf.fail_count)}, '+
-                  f'Plausible: {selected_file_info.positive_pf.beta_mode(selected_file_info.positive_pf.pass_count,selected_file_info.positive_pf.fail_count)}, '+
-                  f'Unique/Freq: {PassFail.concave_up(p_frequency[selected_file])}/{p_frequency[selected_file]}, BPFreq: {PassFail.log_func(p_bp_frequency[selected_file])}')
+  if state.debug_mode:
+    for file_name in state.file_info_map:
+      file_info=state.file_info_map[file_name]
+      p_fl.append(max(file_info.fl_score_list))
+      p_frequency.append(file_info.children_basic_patches/state.total_basic_patch if state.total_basic_patch > 0 else 0)
+      p_bp_frequency.append(file_info.consecutive_fail_count)
+    norm=PassFail.normalize(p_fl)
+    selected_file=0
+    for i,file in enumerate(state.file_info_map):
+      if state.file_info_map[file]==selected_file_info:
+        selected_file=i
+        break
+    state.logger.debug(f'Selected file: FL: {norm[selected_file]}/{p_fl[selected_file]}, Basic: {selected_file_info.pf.beta_mode(selected_file_info.pf.pass_count,selected_file_info.pf.fail_count)}, '+
+                    f'Plausible: {selected_file_info.positive_pf.beta_mode(selected_file_info.positive_pf.pass_count,selected_file_info.positive_pf.fail_count)}, '+
+                    f'Unique/Freq: {PassFail.concave_up(p_frequency[selected_file])}/{p_frequency[selected_file]}, BPFreq: {PassFail.log_func(p_bp_frequency[selected_file])}')
 
-  is_correct_guide=False
-  for cor in state.correct_patch_list:
-    cor_patch=state.switch_case_map[cor]
-    if cor_patch.parent.parent.parent==selected_file_info:
-      state.logger.debug(f'Correct guide at file')
-      is_correct_guide=True
-      break
-  if not is_correct_guide:
-    state.logger.debug(f'Misguide at file')
+    is_correct_guide=False
+    for cor in state.correct_patch_list:
+      cor_patch=state.switch_case_map[cor]
+      if cor_patch.parent.parent.parent==selected_file_info:
+        state.logger.debug(f'Correct guide at file')
+        is_correct_guide=True
+        break
+    if not is_correct_guide:
+      state.logger.debug(f'Misguide at file')
 
   selected_func_info:FuncInfo = select_patch_guide_algorithm(state,selected_file_info.func_info_map,selected_file_info)
   if selected_func_info is None:
@@ -695,31 +700,32 @@ def select_patch_recoder_guided(state: GlobalState) -> RecoderPatchInfo:
     state.patch_ranking.remove(selected_switch_info.location)
     return result
   
-  for func_name in selected_file_info.func_info_map:
-    func_info=selected_file_info.func_info_map[func_name]
-    p_fl.append(max(func_info.fl_score_list))
-    p_frequency.append(func_info.children_basic_patches/state.total_basic_patch if state.total_basic_patch > 0 else 0)
-    p_bp_frequency.append(func_info.consecutive_fail_count)
-  norm=PassFail.normalize(p_fl)
-  selected_func=0
-  for i,func in enumerate(selected_file_info.func_info_map):
-    if selected_file_info.func_info_map[func]==selected_func_info:
-      selected_func=i
-      break
-  norm=PassFail.normalize(p_fl)
-  state.logger.debug(f'Selected function: FL: {norm[selected_func]}/{p_fl[selected_func]}, Basic: {selected_func_info.pf.beta_mode(selected_func_info.pf.pass_count,selected_func_info.pf.fail_count)}, '+
-                  f'Plausible: {selected_func_info.positive_pf.beta_mode(selected_func_info.positive_pf.pass_count,selected_func_info.positive_pf.fail_count)}, '+
-                  f'Unique/Freq: {PassFail.concave_up(p_frequency[selected_func])}/{p_frequency[selected_func]}, BPFreq: {PassFail.log_func(p_bp_frequency[selected_func])}')
+  if state.debug_mode:
+    for func_name in selected_file_info.func_info_map:
+      func_info=selected_file_info.func_info_map[func_name]
+      p_fl.append(max(func_info.fl_score_list))
+      p_frequency.append(func_info.children_basic_patches/state.total_basic_patch if state.total_basic_patch > 0 else 0)
+      p_bp_frequency.append(func_info.consecutive_fail_count)
+    norm=PassFail.normalize(p_fl)
+    selected_func=0
+    for i,func in enumerate(selected_file_info.func_info_map):
+      if selected_file_info.func_info_map[func]==selected_func_info:
+        selected_func=i
+        break
+    norm=PassFail.normalize(p_fl)
+    state.logger.debug(f'Selected function: FL: {norm[selected_func]}/{p_fl[selected_func]}, Basic: {selected_func_info.pf.beta_mode(selected_func_info.pf.pass_count,selected_func_info.pf.fail_count)}, '+
+                    f'Plausible: {selected_func_info.positive_pf.beta_mode(selected_func_info.positive_pf.pass_count,selected_func_info.positive_pf.fail_count)}, '+
+                    f'Unique/Freq: {PassFail.concave_up(p_frequency[selected_func])}/{p_frequency[selected_func]}, BPFreq: {PassFail.log_func(p_bp_frequency[selected_func])}')
 
-  is_correct_guide=False
-  for cor in state.correct_patch_list:
-    cor_patch=state.switch_case_map[cor]
-    if cor_patch.parent.parent==selected_func_info:
-      state.logger.debug(f'Correct guide at func')
-      is_correct_guide=True
-      break
-  if not is_correct_guide:
-    state.logger.debug(f'Misguide at func')
+    is_correct_guide=False
+    for cor in state.correct_patch_list:
+      cor_patch=state.switch_case_map[cor]
+      if cor_patch.parent.parent==selected_func_info:
+        state.logger.debug(f'Correct guide at func')
+        is_correct_guide=True
+        break
+    if not is_correct_guide:
+      state.logger.debug(f'Misguide at func')
   
   selected_line_info:LineInfo = select_patch_guide_algorithm(state,selected_func_info.line_info_map,selected_func_info)
   if selected_line_info is None:
@@ -728,31 +734,32 @@ def select_patch_recoder_guided(state: GlobalState) -> RecoderPatchInfo:
     state.patch_ranking.remove(selected_switch_info.location)
     return result
   
-  for line in selected_func_info.line_info_map:
-    line_info=selected_func_info.line_info_map[line]
-    p_fl.append(line_info.fl_score)
-    p_frequency.append(line_info.children_basic_patches/state.total_basic_patch if state.total_basic_patch > 0 else 0)
-    p_bp_frequency.append(line_info.consecutive_fail_count)
-  norm=PassFail.normalize(p_fl)
-  selected_line=0
-  for i,line in enumerate(selected_func_info.line_info_map):
-    if selected_func_info.line_info_map[line]==selected_line_info:
-      selected_line=i
-      break
-  norm=PassFail.normalize(p_fl)
-  state.logger.debug(f'Selected line: FL: {norm[selected_line]}/{p_fl[selected_line]}, Basic: {selected_line_info.pf.beta_mode(selected_line_info.pf.pass_count,selected_line_info.pf.fail_count)}, '+
-                  f'Plausible: {selected_line_info.positive_pf.beta_mode(selected_line_info.positive_pf.pass_count,selected_line_info.positive_pf.fail_count)}, '+
-                  f'Unique/Freq: {PassFail.concave_up(p_frequency[selected_line])}/{p_frequency[selected_line]}, BPFreq: {PassFail.log_func(p_bp_frequency[selected_line])}')
+  if state.debug_mode:
+    for line in selected_func_info.line_info_map:
+      line_info=selected_func_info.line_info_map[line]
+      p_fl.append(line_info.fl_score)
+      p_frequency.append(line_info.children_basic_patches/state.total_basic_patch if state.total_basic_patch > 0 else 0)
+      p_bp_frequency.append(line_info.consecutive_fail_count)
+    norm=PassFail.normalize(p_fl)
+    selected_line=0
+    for i,line in enumerate(selected_func_info.line_info_map):
+      if selected_func_info.line_info_map[line]==selected_line_info:
+        selected_line=i
+        break
+    norm=PassFail.normalize(p_fl)
+    state.logger.debug(f'Selected line: FL: {norm[selected_line]}/{p_fl[selected_line]}, Basic: {selected_line_info.pf.beta_mode(selected_line_info.pf.pass_count,selected_line_info.pf.fail_count)}, '+
+                    f'Plausible: {selected_line_info.positive_pf.beta_mode(selected_line_info.positive_pf.pass_count,selected_line_info.positive_pf.fail_count)}, '+
+                    f'Unique/Freq: {PassFail.concave_up(p_frequency[selected_line])}/{p_frequency[selected_line]}, BPFreq: {PassFail.log_func(p_bp_frequency[selected_line])}')
 
-  is_correct_guide=False
-  for cor in state.correct_patch_list:
-    cor_patch=state.switch_case_map[cor]
-    if cor_patch.parent==selected_line_info:
-      state.logger.debug(f'Correct guide at line')
-      is_correct_guide=True
-      break
-  if not is_correct_guide:
-    state.logger.debug(f'Misguide at line')
+    is_correct_guide=False
+    for cor in state.correct_patch_list:
+      cor_patch=state.switch_case_map[cor]
+      if cor_patch.parent==selected_line_info:
+        state.logger.debug(f'Correct guide at line')
+        is_correct_guide=True
+        break
+    if not is_correct_guide:
+      state.logger.debug(f'Misguide at line')
 
   selected_case_info: RecoderCaseInfo = epsilon_select(state, selected_line_info)
   state.patch_ranking.remove(selected_case_info.location)
