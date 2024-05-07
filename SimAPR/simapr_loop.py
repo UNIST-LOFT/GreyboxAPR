@@ -387,7 +387,7 @@ class RecoderLoop(TBarLoop):
     return self.state.is_alive
   
   def run_test(self, patch: RecoderPatchInfo, test: str) -> Tuple[bool, bool, float, branch_coverage.BranchCoverage]:
-    have_to_find_branch_data = True if not self.state.optimized_instrumentation or patch.tbar_case_info.location=='original' else False
+    have_to_find_branch_data = True if not self.state.optimized_instrumentation or patch.recoder_case_info.location=='original' else False
     new_env=EnvGenerator.get_new_env_recoder(self.state, patch, test)
     if self.state.mode == Mode.greybox and self.state.optimized_instrumentation:
       if self.state.use_simulation_mode:
