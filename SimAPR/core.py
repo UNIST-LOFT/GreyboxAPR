@@ -777,6 +777,7 @@ class GlobalState(metaclass=SingletonMeta):
     self.func_list: List[FuncInfo] = list()
     self.count_compile_fail=True # If False, state.iteration doesn't increases when the patch is not compilable.
     self.finish_top_method=False  # Finish if every patches in top-30 methods are searched. Should turn on for default SeAPR
+    self.debug_mode=False  # Set logger to debug mode
 
     self.seapr_layer:SeAPRMode=SeAPRMode.FUNCTION
 

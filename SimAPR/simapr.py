@@ -32,7 +32,7 @@ def parse_args(argv: list) -> GlobalState:
   longopts = ["help", "outdir=", "workdir=", "timeout=", "time-limit=", "cycle-limit=",
               "mode=", 'skip-valid', 'params=', "no-exp-alpha",'tool-type=',
               "no-pass-test", "use-full-validation",'seed=','--correct-patch',
-              "use-pattern", "use-simulation-mode=",
+              "use-pattern", "use-simulation-mode=",'debug',
               'seapr-mode=','top-fl=','ignore-compile-error',
               'finish-correct-patch','not-count-compile-fail','not-use-guide','not-use-epsilon',
               'finish-top-method','instr-cp=','branch-output=', 'use-fl-score-in-greybox',
@@ -67,6 +67,8 @@ def parse_args(argv: list) -> GlobalState:
       state.use_exp_alpha=False
     elif o in ['--skip-valid']:
       state.skip_valid=True
+    elif o in ['--debug']:
+      state.debug_mode=True
     elif o in ['--use-pattern']:
       state.use_pattern = True
     elif o in ['--top-fl']:
@@ -196,9 +198,13 @@ def set_logger(state: GlobalState) -> logging.Logger:
       logging.Logger: _description_
   """
   logger = logging.getLogger('simapr')
-  logger.setLevel(logging.DEBUG)
   fh = logging.FileHandler(os.path.join(state.out_dir, 'simapr-search.log'))
-  fh.setLevel(logging.DEBUG)
+  if state.debug_mode:
+    logger.setLevel(logging.DEBUG)
+    fh.setLevel(logging.DEBUG)
+  else:
+    logger.setLevel(logging.INFO)
+    fh.setLevel(logging.INFO)
   ch = logging.StreamHandler()
   ch.setLevel(logging.INFO)
   formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
