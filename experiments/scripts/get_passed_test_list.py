@@ -5,8 +5,9 @@ import json
 
 def find_test_name(subjects:str, count:int)->list[str]:
     result = []
-    for i in range(0,int):
+    for i in range(0,count):
         file_location = f"./experiments/tbar/result/{subjects}-greybox-{i}/simapr-result.json"
+        print(file_location)
         with open(file_location, "r") as f:
             data = json.load(f)
             filtered_data = [item for item in data if item.get('result') == True]
@@ -14,7 +15,7 @@ def find_test_name(subjects:str, count:int)->list[str]:
                 patch_location = e.get("config")[0].get("location")
                 if patch_location not in result:
                     result.append(patch_location)
-    return patch_location
+    return result
 
 def main(target_list:list[str]):
     result = dict()
@@ -22,8 +23,8 @@ def main(target_list:list[str]):
         try:
             result[target] = find_test_name(target, 10)
         except:
-            pass
-    with open("passed_test_list.txt", "w") as f:
+            print("error", target)
+    with open("passed_test_list.json", "w") as f:
         f.write(json.dumps(result, indent=4))
 
 CHART_SIZE=26
