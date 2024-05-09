@@ -359,7 +359,7 @@ class RecoderLoop(TBarLoop):
       try:
         cur_cov=branch_coverage.parse_cov(self.state.logger,new_env['GREYBOX_RESULT'])
         self.state.logger.info("everything is fine")
-        dest_file_name = os.path.join(self.state.branch_output,f'{patch.recoder_case_info.location}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt')
+        dest_file_name = os.path.join(self.state.branch_output,f'{patch.recoder_case_info.location.replace("/","#")}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt')
         os.makedirs(os.path.dirname(dest_file_name), exist_ok=True)
         shutil.copyfile(new_env['GREYBOX_RESULT'],dest_file_name)
         os.remove(new_env['GREYBOX_RESULT'])
@@ -547,7 +547,7 @@ class RecoderLoop(TBarLoop):
             for test in each_result.keys():
               if each_result[test]:
                 cov_file=os.path.join(self.state.branch_output,
-                                      f'{patch.recoder_case_info.location}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt')
+                                      f'{patch.recoder_case_info.location.replace("/","#")}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt')
                 if not os.path.exists(cov_file):
                   compilable, run_result,fail_time,cur_cov = self.run_test(patch, test)
                 cur_cov=branch_coverage.parse_cov(self.state.logger,cov_file)
