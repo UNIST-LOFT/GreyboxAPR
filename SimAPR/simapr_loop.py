@@ -305,9 +305,10 @@ class TBarLoop():
             for test in each_result.keys():
               cov_file=os.path.join(self.state.branch_output,
                                     f'{patch.tbar_case_info.location.replace("/","#")}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt')
-              if os.path.exists(cov_file): # should exist. because there was an if statement that checks whether to use cache or not
-                cur_cov=branch_coverage.parse_cov(self.state.logger,cov_file)
-                coverages[test]=cur_cov
+              if not os.path.exists(cov_file):
+                compilable, run_result,fail_time,cur_cov = self.run_test(patch, test)
+              cur_cov=branch_coverage.parse_cov(self.state.logger,cov_file)
+              coverages[test]=cur_cov
           result_handler.update_result_branch(self.state,patch,coverages,is_compilable,each_result,pass_result)
 
         if is_compilable or self.state.ignore_compile_error:
@@ -544,9 +545,11 @@ class RecoderLoop(TBarLoop):
           coverages:Dict[str,branch_coverage.BranchCoverage]=dict()
           if is_compilable:
             for test in each_result.keys():
-              cov_file=os.path.join(self.state.branch_output,
-                                    f'{patch.recoder_case_info.location}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt')
-              if os.path.exists(cov_file):
+              if each_result[test]:
+                cov_file=os.path.join(self.state.branch_output,
+                                      f'{patch.recoder_case_info.location}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt')
+                if not os.path.exists(cov_file):
+                  compilable, run_result,fail_time,cur_cov = self.run_test(patch, test)
                 cur_cov=branch_coverage.parse_cov(self.state.logger,cov_file)
                 coverages[test]=cur_cov
           result_handler.update_result_branch(self.state,patch,coverages,is_compilable,each_result,pass_result)
