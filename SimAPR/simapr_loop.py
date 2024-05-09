@@ -50,7 +50,7 @@ class TBarLoop():
   def save_result(self) -> None:
     result_handler.save_result(self.state)
     
-  def run_test(self, patch: TbarPatchInfo, test: str) -> Tuple[bool, bool,float,branch_coverage.BranchCoverage]:
+  def run_test(self, patch: TbarPatchInfo, test: str, get_branch_cov:bool=False) -> Tuple[bool, bool,float,branch_coverage.BranchCoverage]:
     """
     TODO: need more description
     _summary_
@@ -68,12 +68,10 @@ class TBarLoop():
     compilable, run_result, is_timeout = run_test.run_fail_test_d4j(self.state, new_env)
     run_time=time.time()-start_time
     
-    if self.state.mode == Mode.greybox and self.state.optimized_instrumentation and run_result:
+    if self.state.mode == Mode.greybox and (run_result or get_branch_cov):
       new_env=EnvGenerator.get_new_env_tbar(self.state, patch, test,instrument=True)
       self.state.logger.info("Test passed. Running the test again with full instrumentation.")
-      compilable, run_result, is_timeout = run_test.run_fail_test_d4j(self.state, new_env)
-      if not run_result:
-        self.state.logger.warning("the result has changed after instrumentation")
+      _, _, _ = run_test.run_fail_test_d4j(self.state, new_env)
 
       try:
         cur_cov=branch_coverage.parse_cov(self.state.logger,new_env['GREYBOX_RESULT'])
@@ -106,7 +104,7 @@ class TBarLoop():
       if neg in self.state.failed_positive_test:
         self.state.d4j_negative_test.remove(neg)
       else:
-        compilable, run_result,_,_ = self.run_test(op, neg)
+        compilable, run_result,_,_ = self.run_test(op, neg,get_branch_cov=True)
         if not compilable:
           self.state.logger.warning("Project is not compilable")
           self.state.is_alive = False
@@ -306,7 +304,7 @@ class TBarLoop():
               cov_file=os.path.join(self.state.branch_output,
                                     f'{patch.tbar_case_info.location.replace("/","#")}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt')
               if not os.path.exists(cov_file):
-                compilable, run_result,fail_time,cur_cov = self.run_test(patch, test)
+                compilable, run_result,fail_time,cur_cov = self.run_test(patch, test,get_branch_cov=True)
               cur_cov=branch_coverage.parse_cov(self.state.logger,cov_file)
               coverages[test]=cur_cov
           result_handler.update_result_branch(self.state,patch,coverages,is_compilable,each_result,pass_result)
@@ -342,19 +340,17 @@ class RecoderLoop(TBarLoop):
       self.state.is_alive=False
     return self.state.is_alive
   
-  def run_test(self, patch: RecoderPatchInfo, test: str) -> Tuple[bool, bool, float, branch_coverage.BranchCoverage]:
+  def run_test(self, patch: RecoderPatchInfo, test: str, get_branch_cov:bool=False) -> Tuple[bool, bool, float, branch_coverage.BranchCoverage]:
     cur_cov=None
     new_env=EnvGenerator.get_new_env_recoder(self.state, patch, test)
     start_time=time.time()
     compilable, run_result, is_timeout = run_test.run_fail_test_d4j(self.state, new_env)
     run_time=time.time()-start_time
     
-    if self.state.mode == Mode.greybox and self.state.optimized_instrumentation and run_result:
+    if self.state.mode == Mode.greybox and (run_result or get_branch_cov):
       new_env=EnvGenerator.get_new_env_recoder(self.state, patch, test,instrument=True)
       self.state.logger.info("Test passed. Running the test again with full instrumentation.")
-      compilable, run_result, is_timeout = run_test.run_fail_test_d4j(self.state, new_env)
-      if not run_result:
-        self.state.logger.warning("the result has changed after instrumentation")
+      _, _, _ = run_test.run_fail_test_d4j(self.state, new_env)
 
       try:
         cur_cov=branch_coverage.parse_cov(self.state.logger,new_env['GREYBOX_RESULT'])
@@ -384,7 +380,7 @@ class RecoderLoop(TBarLoop):
     original = self.state.patch_location_map["original"]
     op = RecoderPatchInfo(original)
     for neg in self.state.d4j_negative_test.copy():
-      compilable, run_result,_,_ = self.run_test(op, neg)
+      compilable, run_result,_,_ = self.run_test(op, neg,get_branch_cov=True)
       if not compilable:
         self.state.logger.warning("Project is not compilable")
         self.state.is_alive = False
@@ -549,7 +545,7 @@ class RecoderLoop(TBarLoop):
                 cov_file=os.path.join(self.state.branch_output,
                                       f'{patch.recoder_case_info.location.replace("/","#")}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt')
                 if not os.path.exists(cov_file):
-                  compilable, run_result,fail_time,cur_cov = self.run_test(patch, test)
+                  compilable, run_result,fail_time,cur_cov = self.run_test(patch, test,get_branch_cov=True)
                 cur_cov=branch_coverage.parse_cov(self.state.logger,cov_file)
                 coverages[test]=cur_cov
           result_handler.update_result_branch(self.state,patch,coverages,is_compilable,each_result,pass_result)
