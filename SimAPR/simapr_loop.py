@@ -62,39 +62,19 @@ class TBarLoop():
     Returns:
         Tuple[bool, bool,float,branch_coverage.BranchCoverage]: _description_
     """
-    have_to_find_branch_data = True if not self.state.optimized_instrumentation or patch.tbar_case_info.location=='original' else False
+    cur_cov=None
     new_env=EnvGenerator.get_new_env_tbar(self.state, patch, test)
-    if self.state.mode == Mode.greybox and self.state.optimized_instrumentation:
-      if self.state.use_simulation_mode:
-        # do just as normal greybox
-        pass
-      else:
-        greybox_target_branches = list(self.state.critical_branch_up_down_manager.upDownDict.keys())
-        greybox_target_branches_str = ""
-        if len(greybox_target_branches)>0:
-          for id in greybox_target_branches:
-            greybox_target_branches_str+=f"{id},"
-          greybox_target_branches_str=greybox_target_branches_str[:-1]
-        else:
-          self.state.logger.debug("There is no critical branches found. Therefore skipping instrumentation")
-          new_env["GREYBOX_BRANCH"] = "0"
-        new_env["GREYBOX_TARGET_BRANCHES"]=greybox_target_branches_str
     start_time=time.time()
     compilable, run_result, is_timeout = run_test.run_fail_test_d4j(self.state, new_env)
+    run_time=time.time()-start_time
     
     if self.state.mode == Mode.greybox and self.state.optimized_instrumentation and run_result:
-      have_to_find_branch_data = True
+      new_env=EnvGenerator.get_new_env_tbar(self.state, patch, test,instrument=True)
       self.state.logger.info("Test passed. Running the test again with full instrumentation.")
-      new_env["GREYBOX_BRANCH"] = "1"
-      new_env["GREYBOX_TARGET_BRANCHES"] = ""
       compilable, run_result, is_timeout = run_test.run_fail_test_d4j(self.state, new_env)
       if not run_result:
         self.state.logger.warning("the result has changed after instrumentation")
-    
-    run_time=time.time()-start_time
 
-    cur_cov=None
-    if self.state.mode==Mode.greybox and self.state.instrumenter_classpath!='' and compilable and have_to_find_branch_data:
       try:
         cur_cov=branch_coverage.parse_cov(self.state.logger,new_env['GREYBOX_RESULT'])
         dest_file_name = os.path.join(self.state.branch_output,f'{patch.tbar_case_info.location.replace("/","#")}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt')
@@ -109,32 +89,7 @@ class TBarLoop():
         self.state.logger.warning(f"Greybox result not found for {patch.tbar_case_info.location} {test}. expected location: {new_env['GREYBOX_RESULT']}")
         
     return compilable, run_result, run_time, cur_cov
-  
-  def run_test_only_for_time_check(self, patch: TbarPatchInfo, test: str) -> Tuple[bool, bool,float]:
-    """
-    used for grybox apr simulation with optimized instrumentation.
-    It is called when there is no measured time of the selected patch with no instrumentation.
-    The measued time data with no instrumentation is needed because the time will be estimated later the experiment based on this data.
-    
-    Args:
-        patch (TbarPatchInfo): _description_
-        test (str): _description_
-
-    Returns:
-        Tuple[bool, bool,float,branch_coverage.BranchCoverage]: _description_
-    """
-    new_env=EnvGenerator.get_new_env_tbar(self.state, patch, test)
-    new_env["GREYBOX_BRANCH"] = "0" # no instrumentation
-
-    self.state.logger.debug("run test with no instrumentation to check time")
-
-    start_time=time.time()
-    compilable, run_result, is_timeout = run_test.run_fail_test_d4j(self.state, new_env)
-    
-    run_time=time.time()-start_time
-
-    return compilable, run_result, run_time
-    
+      
   def run_test_positive(self, patch: TbarPatchInfo) -> Tuple[bool,float]:
     start_time=time.time()
     new_env = EnvGenerator.get_new_env_tbar(self.state, patch, "")
@@ -387,38 +342,19 @@ class RecoderLoop(TBarLoop):
     return self.state.is_alive
   
   def run_test(self, patch: RecoderPatchInfo, test: str) -> Tuple[bool, bool, float, branch_coverage.BranchCoverage]:
-    have_to_find_branch_data = True if not self.state.optimized_instrumentation or patch.recoder_case_info.location=='original' else False
+    cur_cov=None
     new_env=EnvGenerator.get_new_env_recoder(self.state, patch, test)
-    if self.state.mode == Mode.greybox and self.state.optimized_instrumentation:
-      if self.state.use_simulation_mode:
-        # do just as normal greybox
-        pass
-      else:
-        greybox_target_branches = list(self.state.critical_branch_up_down_manager.upDownDict.keys())
-        greybox_target_branches_str = ""
-        if len(greybox_target_branches)>0:
-          for id in greybox_target_branches:
-            greybox_target_branches_str+=f"{id},"
-          greybox_target_branches_str=greybox_target_branches_str[:-1]
-        else:
-          self.state.logger.debug("There is no critical branches found. Therefore skipping instrumentation")
-          new_env["GREYBOX_BRANCH"] = "0"
-        new_env["GREYBOX_TARGET_BRANCHES"]=greybox_target_branches_str
     start_time=time.time()
     compilable, run_result, is_timeout = run_test.run_fail_test_d4j(self.state, new_env)
+    run_time=time.time()-start_time
     
     if self.state.mode == Mode.greybox and self.state.optimized_instrumentation and run_result:
-      have_to_find_branch_data = True
+      new_env=EnvGenerator.get_new_env_recoder(self.state, patch, test,instrument=True)
       self.state.logger.info("Test passed. Running the test again with full instrumentation.")
-      new_env["GREYBOX_TARGET_BRANCHES"] = ""
       compilable, run_result, is_timeout = run_test.run_fail_test_d4j(self.state, new_env)
       if not run_result:
         self.state.logger.warning("the result has changed after instrumentation")
 
-    run_time=time.time() - start_time
-
-    cur_cov=None
-    if self.state.mode==Mode.greybox and self.state.instrumenter_classpath!='' and compilable and have_to_find_branch_data:
       try:
         cur_cov=branch_coverage.parse_cov(self.state.logger,new_env['GREYBOX_RESULT'])
         self.state.logger.info("everything is fine")
@@ -434,6 +370,7 @@ class RecoderLoop(TBarLoop):
         self.state.logger.warning(f"Greybox result not found for {patch.recoder_case_info.location} {test}. expected location: {new_env['GREYBOX_RESULT']}")
 
     return compilable, run_result,run_time,cur_cov
+  
   def run_test_positive(self, patch: RecoderPatchInfo) -> Tuple[bool,float]:
     start_time=time.time()
     run_result = run_test.run_pass_test_d4j(self.state, EnvGenerator.get_new_env_recoder(self.state, patch, ""))

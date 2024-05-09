@@ -383,7 +383,7 @@ class EnvGenerator:
   def __init__(self) -> None:
     pass
   @staticmethod
-  def get_new_env_tbar(state: 'GlobalState', patch: 'TbarPatchInfo', test: str) -> Dict[str, str]:
+  def get_new_env_tbar(state: 'GlobalState', patch: 'TbarPatchInfo', test: str,instrument:bool=False) -> Dict[str, str]:
     """
     TODO: need more description
     generates new dictionary of environment variables
@@ -407,7 +407,7 @@ class EnvGenerator:
     if patch.file_info.class_name != "":
       new_env["SIMAPR_CLASS_NAME"] = patch.file_info.class_name
 
-    if state.mode==Mode.greybox:
+    if state.mode==Mode.greybox and instrument:
       new_env['GREYBOX_BRANCH']='1'
       new_env['GREYBOX_RESULT']=f'/tmp/{state.d4j_buggy_project}-{test.replace("::","#")}.txt'
       new_env['GREYBOX_INSTR_ROOT']=state.instrumenter_classpath
@@ -418,7 +418,7 @@ class EnvGenerator:
     return new_env
   
   @staticmethod
-  def get_new_env_recoder(state: 'GlobalState', patch: 'RecoderPatchInfo', test: str) -> Dict[str, str]:
+  def get_new_env_recoder(state: 'GlobalState', patch: 'RecoderPatchInfo', test: str,instrument:bool=False) -> Dict[str, str]:
     new_env = os.environ.copy()
     new_env["SIMAPR_UUID"] = str(state.uuid)
     new_env["SIMAPR_TEST"] = str(test)
@@ -428,7 +428,7 @@ class EnvGenerator:
     new_env["SIMAPR_BUGGY_PROJECT"] = state.d4j_buggy_project
     new_env["SIMAPR_TIMEOUT"] = str(state.timeout)
 
-    if state.mode==Mode.greybox:
+    if state.mode==Mode.greybox and instrument:
       new_env['GREYBOX_BRANCH']='1'
       new_env['GREYBOX_RESULT']=f'/tmp/{state.d4j_buggy_project}-{test.replace("::","#")}.txt'
       new_env['GREYBOX_INSTR_ROOT']=state.instrumenter_classpath
