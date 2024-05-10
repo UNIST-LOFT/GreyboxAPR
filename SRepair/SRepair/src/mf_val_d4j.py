@@ -43,7 +43,7 @@ def encoding_check(encoding_check_file_path):
 
 
 def checkout_defects4j_project(current_bug, project_dir):
-    project, bug_id = current_bug.split('-')
+    project, bug_id = current_bug.split('_')
     FNULL = open(os.devnull, 'w')
     command = "defects4j checkout " + " -p " + project + " -v " + bug_id + 'b'  + " -w " + project_dir
     print('[CHECKOUT]', command)

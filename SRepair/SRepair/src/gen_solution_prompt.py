@@ -18,14 +18,17 @@ First, analyze the trigger test and error message, and then analyse the root cau
 You suggestions should be in the format 'Suggestion 1: {suggestion title}\\n{detailed description}', etc.'''
 
 
-def sf_construct_prompt(dataset, bug_name):
+def sf_construct_prompt(dataset, bug_name,use_fl=False):
     random_trigger_test = random.choice(list(dataset[bug_name]['trigger_test'].keys()))
     err_msg = dataset[bug_name]['trigger_test'][random_trigger_test]['clean_error_msg']
     err_msg = slim_content_token(err_msg)
     trigger_src = dataset[bug_name]['trigger_test'][random_trigger_test]['src']
 
     comment = dataset[bug_name]['buggy_code_comment']
-    buggy_function = dataset[bug_name]['buggy']
+    if use_fl:
+        buggy_function = dataset[bug_name]['buggy_fl']
+    else:
+        buggy_function = dataset[bug_name]['buggy']
     
     curr_prompt_lst = []
     curr_prompt_lst.append(sf_start_assist_prompt)

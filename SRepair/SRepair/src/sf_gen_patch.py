@@ -84,7 +84,7 @@ class AprInfo():
         return
 
 
-def opensrc_model_apr(apr_info):
+def opensrc_model_apr(apr_info,use_fl=False):
     dataset = apr_info.dataset
     suggestions = apr_info.suggestions
     
@@ -95,7 +95,12 @@ def opensrc_model_apr(apr_info):
 
     patches = {}
     for bug_name in dataset:
-        buggy_token_len = len(tokenizer.encode(dataset[bug_name]['buggy']))
+        if use_fl:
+            buggy_function=dataset[bug_name]['buggy_fl']
+        else:
+            buggy_function=dataset[bug_name]['buggy']
+
+        buggy_token_len = len(tokenizer.encode(buggy_function))
         curr_max_new_token = max(256, 2*buggy_token_len)
 
         curr_patch = {}
@@ -104,7 +109,7 @@ def opensrc_model_apr(apr_info):
 
         for root_cause in suggestions[bug_name].keys():
             for suggestion in suggestions[bug_name][root_cause]:
-                apr_prompt = sf_build_apr_prompt_auto(dataset[bug_name]['buggy'], root_cause, suggestion)
+                apr_prompt = sf_build_apr_prompt_auto(buggy_function, root_cause, suggestion)
                 prompt = model_format_prompt.format(apr_prompt=apr_prompt.strip())
                 prompt_token_len = len(tokenizer.encode(prompt))
                 if prompt_token_len > 4000:
@@ -161,7 +166,7 @@ def main():
         args.o,
         args.bug
     )
-    apr_result = opensrc_model_apr(apr_info)
+    apr_result = opensrc_model_apr(apr_info,args.fl)
     apr_result = extract_patch(apr_info.dataset, apr_result)
     with open(apr_info.out_path, 'w') as f:
         json.dump(apr_result, f, indent=2)
@@ -173,6 +178,7 @@ def parse_arguments():
     parser.add_argument('-s', type=str, required=True, help='suggestions path')
     parser.add_argument('-o', type=str, required=True, help='patch_result path')
     parser.add_argument('-bug', type=str, required=False, help='bug')
+    parser.add_argument('-fl',help='Use FL',action='store_true')
     return parser.parse_args()
 
 

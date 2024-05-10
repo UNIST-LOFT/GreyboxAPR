@@ -93,7 +93,7 @@ def get_solutions(sol_info):
     solutions = {}
     for bug_name in tqdm(sol_info.dataset.keys()):
         solutions[bug_name] = {}
-        prompt = sf_construct_prompt(sol_info.dataset, bug_name)
+        prompt = sf_construct_prompt(sol_info.dataset, bug_name,args.fl)
         solutions[bug_name]['prompt'] = prompt
         solutions[bug_name]['solutions'] = query_model(prompt, sol_info.sample_size)
     return solutions
@@ -139,6 +139,7 @@ def parse_arguments():
     parser.add_argument('-eo', type=str, required=False, help='extracted_solution path')
     parser.add_argument('-s', type=int, required=False, help='sample_size', default=1)
     parser.add_argument('-bug', type=str, required=False, help='bug')
+    parser.add_argument('-fl',help='Use FL',action='store_true')
     return parser.parse_args()
 
 
