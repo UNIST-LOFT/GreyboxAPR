@@ -68,10 +68,11 @@ class TBarLoop():
     compilable, run_result, is_timeout = run_test.run_fail_test_d4j(self.state, new_env)
     run_time=time.time()-start_time
     
-    if self.state.mode == Mode.greybox and (run_result or get_branch_cov) and not self.state.only_get_test_time_data_mode:
-      new_env=EnvGenerator.get_new_env_tbar(self.state, patch, test,instrument=True)
-      self.state.logger.info("Test passed. Running the test again with full instrumentation.")
-      _, _, _ = run_test.run_fail_test_d4j(self.state, new_env)
+    if self.state.mode == Mode.greybox and (run_result or get_branch_cov):
+      if not self.state.only_get_test_time_data_mode:
+        new_env=EnvGenerator.get_new_env_tbar(self.state, patch, test,instrument=True)
+        self.state.logger.info("Test passed. Running the test again with full instrumentation.")
+        _, _, _ = run_test.run_fail_test_d4j(self.state, new_env)
 
       try:
         cur_cov=branch_coverage.parse_cov(self.state.logger,new_env['GREYBOX_RESULT'])
@@ -381,10 +382,11 @@ class RecoderLoop(TBarLoop):
     compilable, run_result, is_timeout = run_test.run_fail_test_d4j(self.state, new_env)
     run_time=time.time()-start_time
     
-    if self.state.mode == Mode.greybox and (run_result or get_branch_cov) and not self.state.only_get_test_time_data_mode:
-      new_env=EnvGenerator.get_new_env_recoder(self.state, patch, test,instrument=True)
-      self.state.logger.info("Test passed. Running the test again with full instrumentation.")
-      _, _, _ = run_test.run_fail_test_d4j(self.state, new_env)
+    if self.state.mode == Mode.greybox and (run_result or get_branch_cov):
+      if not self.state.only_get_test_time_data_mode:
+        new_env=EnvGenerator.get_new_env_recoder(self.state, patch, test,instrument=True)
+        self.state.logger.info("Test passed. Running the test again with full instrumentation.")
+        _, _, _ = run_test.run_fail_test_d4j(self.state, new_env)
 
       try:
         cur_cov=branch_coverage.parse_cov(self.state.logger,new_env['GREYBOX_RESULT'])
