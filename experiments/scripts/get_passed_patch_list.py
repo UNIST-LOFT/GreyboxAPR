@@ -24,7 +24,7 @@ def main(target_list:list[str]):
             result[target] = find_test_name(target, 10)
         except:
             print("error", target)
-    with open("passed_test_list.json", "w") as f:
+    with open("experiments/scripts/data_for_plot/passed_patch_list.json", "w") as f:
         f.write(json.dumps(result, indent=4))
 
 CHART_SIZE=26
