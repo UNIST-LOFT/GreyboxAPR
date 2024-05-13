@@ -57,7 +57,8 @@ public class MethodInfoVisitor extends VoidVisitorAdapter<Void> {
                     }
                 }
                 LocationInfo locationInfo = new LocationInfo(buggyFunc, buggyFuncWithFL, methodSignature, tests,
-                        n.getJavadoc().isPresent()?n.getJavadoc().get().toComment().asString():"");
+                        n.getJavadoc().isPresent()?n.getJavadoc().get().toComment().asString():"",n.getBegin().get().line,
+                        n.getEnd().get().line, filePath);
                 locationInfoMap.put(location, locationInfo);
             }
         }
@@ -89,7 +90,8 @@ public class MethodInfoVisitor extends VoidVisitorAdapter<Void> {
                     }
                 }
                 LocationInfo locationInfo = new LocationInfo(buggyFunc, buggyFuncWithFL, methodSignature, tests,
-                        n.getJavadoc().isPresent()?n.getJavadoc().get().toComment().asString():"");
+                        n.getJavadoc().isPresent()?n.getJavadoc().get().toComment().asString():"",n.getBegin().get().line,
+                        n.getEnd().get().line, filePath);
                 locationInfoMap.put(location, locationInfo);
             }
         }

@@ -27,13 +27,20 @@ public class LocationInfo {
     private MethodSignature methodSignature;
     private JsonObject tests;
     private String javadocString;
+
+    private int startLine;
+    private int endLine;
+    private String filePath;
     public LocationInfo(String buggyFunc, String buggyFuncWithFL, MethodSignature methodSignature, JsonObject tests,
-                        String javadocString) {
+                        String javadocString, int startLine, int endLine, String filePath) {
         this.buggyFunc = buggyFunc.trim();
         this.buggyFuncWithFL = buggyFuncWithFL.trim();
         this.methodSignature = methodSignature;
         this.tests = tests;
         this.javadocString = javadocString.trim();
+        this.startLine = startLine;
+        this.endLine = endLine;
+        this.filePath = filePath;
     }
 
     public JsonObject toJson() {
@@ -43,6 +50,9 @@ public class LocationInfo {
         obj.add("method_signature", methodSignature.toJson());
         obj.add("trigger_test", tests);
         obj.addProperty("buggy_code_comment", javadocString);
+        obj.addProperty("start_line", startLine);
+        obj.addProperty("end_line", endLine);
+        obj.addProperty("file_path", filePath);
         return obj;
     }
 }
