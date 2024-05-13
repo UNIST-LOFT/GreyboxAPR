@@ -2,11 +2,12 @@
 # the list is for the estimate the greybox time result by running them again.
 
 import json
+from sys import argv
 
 def find_test_name(subjects:str, count:int)->list[str]:
     result = []
     for i in range(0,count):
-        file_location = f"./experiments/alpharepair/result/{subjects}-greybox-{i}/simapr-result.json"
+        file_location = f"./experiments/{argv[1]}/result/{subjects}-greybox-{i}/simapr-result.json"
         print(file_location)
         with open(file_location, "r") as f:
             data = json.load(f)
