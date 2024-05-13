@@ -22,17 +22,16 @@ import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.stream.JsonWriter;
 
 public class Main {
     static final Logger LOGGER=Logger.getGlobal();
 
     public static void main(String[] args) {
-        if (args.length != 5) {
-            System.err.println("Usage: java -jar SRepairExtractor.jar [-d] <fl_result_file> <dataset_path> <project> <output_path>");
-            System.exit(1);
-        }
         Options options = new Options();
         options.addOption(new Option("d", "debug", false, "print debug information"));
 
@@ -44,10 +43,14 @@ public class Main {
             e.printStackTrace();
             System.exit(1);
         }
-        if (cmd.hasOption("d")) LOGGER.setLevel(Level.ALL);
+        if (cmd.hasOption("d")) LOGGER.setLevel(Level.FINER);
         else LOGGER.setLevel(Level.INFO);
 
         String[] arguments=cmd.getArgs();
+        if (arguments.length != 5) {
+            System.err.println("Usage: java -jar SRepairExtractor.jar [-d] <fl_result_file> <source path> <dataset_path> <project> <output_path>");
+            System.exit(1);
+        }
 
         try{
             // Parser FL file
@@ -66,23 +69,27 @@ public class Main {
                 locations.add(loc);
             }
 
+            String sourcePath=arguments[1];
+            if (sourcePath.endsWith("/")) sourcePath=sourcePath.substring(0,sourcePath.length()-1);
+            LOGGER.info("Source path: "+sourcePath);
             // Compile suitable source files
             Map<String,CompilationUnit> cuMap=new HashMap<>();
             for (Location loc:locations){
                 String file=loc.file;
                 if (!cuMap.containsKey(file)){
-                    File srcFile = new File(file);
+                    File srcFile = new File(sourcePath+"/"+file+".java");
                     if (!srcFile.exists()) {
-                        System.exit(1);
+                        LOGGER.warning("File not found: "+file+", skipping");
+                        continue;
                     }
                     CompilationUnit cu = StaticJavaParser.parse(new FileReader(srcFile));
-                    cuMap.put(file, cu);
+                    cuMap.put(srcFile.getAbsolutePath(), cu);
                 }
             }
 
             // Read failing tests from SRepair dataset
-            String datasetPath=arguments[1];
-            String project=arguments[2];
+            String datasetPath=arguments[2];
+            String project=arguments[3];
             LOGGER.info("SRepair dataset path: "+datasetPath);
             LOGGER.info("Project: "+project);
 
@@ -103,24 +110,35 @@ public class Main {
             for (Map.Entry<String,CompilationUnit> entry:cuMap.entrySet()){
                 String file=entry.getKey();
                 CompilationUnit cu=entry.getValue();
-                MethodInfoVisitor methodInfoVisitor=new MethodInfoVisitor(locations, file, failingTests);
+                MethodInfoVisitor methodInfoVisitor=new MethodInfoVisitor(locations, file, sourcePath, failingTests);
                 methodInfoVisitor.visit(cu, null);
                 locationInfoMap.putAll(methodInfoVisitor.getLocationInfoMap());
             }
 
             // Save loc info to file
-            String outputFilePath=arguments[3];
+            String outputFilePath=arguments[4];
             LOGGER.info("Output file path: "+outputFilePath);
             if (java.nio.file.Files.notExists(new File(outputFilePath+"/"+project).toPath()))
-                java.nio.file.Files.createDirectory(new File(outputFilePath).toPath());
+                java.nio.file.Files.createDirectory(new File(outputFilePath+"/"+project).toPath());
+            if (java.nio.file.Files.notExists(new File(outputFilePath+"/"+project+"/input").toPath()))
+                java.nio.file.Files.createDirectory(new File(outputFilePath+"/"+project+"/input").toPath());
             
             for (int i=0;i<locations.size();i++){
                 Location loc=locations.get(i);
+                if (!locationInfoMap.containsKey(loc)){
+                    LOGGER.fine("Location not found: "+loc+", it may not in the method");
+                    continue;
+                }
                 LocationInfo locInfo=locationInfoMap.get(loc);
                 JsonObject locObj=locInfo.toJson();
+                JsonObject newObj=new JsonObject();
+                newObj.add(project, locObj);
 
-                FileWriter writer=new FileWriter(outputFilePath+"/"+project+"/"+i+".json");
-                writer.write(locObj.toString());
+                FileWriter writer=new FileWriter(outputFilePath+"/"+project+"/input/"+i+".json");
+                Gson gson=new GsonBuilder().setPrettyPrinting().create();
+                JsonWriter jsonWriter=gson.newJsonWriter(writer);
+                jsonWriter.setIndent("  ");
+                gson.toJson(newObj,jsonWriter);
                 writer.close();
             }
         } catch (IOException e) {

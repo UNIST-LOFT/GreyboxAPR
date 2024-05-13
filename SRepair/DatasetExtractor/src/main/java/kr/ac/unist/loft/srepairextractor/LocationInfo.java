@@ -38,11 +38,11 @@ public class LocationInfo {
 
     public JsonObject toJson() {
         JsonObject obj = new JsonObject();
-        obj.addProperty("buggy_func", buggyFunc);
-        obj.addProperty("buggy_func_with_fl", buggyFuncWithFL);
+        obj.addProperty("buggy", buggyFunc);
+        obj.addProperty("buggy_fl", buggyFuncWithFL);
         obj.add("method_signature", methodSignature.toJson());
-        obj.add("tests", tests);
-        obj.addProperty("javadoc_string", javadocString);
+        obj.add("trigger_test", tests);
+        obj.addProperty("buggy_code_comment", javadocString);
         return obj;
     }
 }
