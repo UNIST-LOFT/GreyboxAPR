@@ -11,6 +11,5 @@
 **/*.pdf
 **/*.log
 
-search.py
 rq1.py
 experiments/yechan/

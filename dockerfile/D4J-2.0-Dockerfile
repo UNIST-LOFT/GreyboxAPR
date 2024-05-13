@@ -87,6 +87,9 @@ RUN mkdir result/cache
 WORKDIR /root/GreyboxAPR/experiments/tbar
 RUN mkdir result
 RUN mkdir result/cache
+WORKDIR /root/GreyboxAPR/experiments/srepair
+RUN mkdir result
+RUN mkdir result/cache
 
 WORKDIR /root/GreyboxAPR/SimAPR
 RUN python3 -m pip install -r requirements.txt
