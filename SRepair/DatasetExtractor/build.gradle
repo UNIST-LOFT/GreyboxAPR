@@ -29,7 +29,7 @@ dependencies {
 
 application {
     // Define the main class for the application.
-    mainClass = 'kr.ac.uniist.loft.srepairextractor.Main'
+    mainClass = 'kr.ac.unist.loft.srepairextractor.Main'
 }
 
 tasks.named('test') {
