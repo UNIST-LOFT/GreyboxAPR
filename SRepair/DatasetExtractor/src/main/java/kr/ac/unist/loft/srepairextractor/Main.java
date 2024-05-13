@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -20,7 +21,6 @@ import org.apache.commons.cli.ParseException;
 
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
-import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -59,7 +59,7 @@ public class Main {
 
             List<Location> locations=new ArrayList<>();
             // Read the FL result file
-            List<String> lines=Files.readLines(new File(flResultPath), Charsets.UTF_8);
+            List<String> lines=Files.readLines(new File(flResultPath), Charset.defaultCharset());
             for (String line : lines) {
                 String[] tokens = line.split("@");
                 String file = tokens[0].replace('.', '/');
@@ -135,7 +135,7 @@ public class Main {
                 newObj.add(project, locObj);
 
                 FileWriter writer=new FileWriter(outputFilePath+"/"+project+"/input/"+i+".json");
-                Gson gson=new GsonBuilder().setPrettyPrinting().create();
+                Gson gson=new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
                 JsonWriter jsonWriter=gson.newJsonWriter(writer);
                 jsonWriter.setIndent("  ");
                 gson.toJson(newObj,jsonWriter);
