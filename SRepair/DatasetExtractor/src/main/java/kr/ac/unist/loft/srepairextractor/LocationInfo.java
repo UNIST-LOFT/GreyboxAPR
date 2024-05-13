@@ -31,8 +31,10 @@ public class LocationInfo {
     private int startLine;
     private int endLine;
     private String filePath;
+
+    private Location location;
     public LocationInfo(String buggyFunc, String buggyFuncWithFL, MethodSignature methodSignature, JsonObject tests,
-                        String javadocString, int startLine, int endLine, String filePath) {
+                        String javadocString, int startLine, int endLine, String filePath, Location location) {
         this.buggyFunc = buggyFunc.trim();
         this.buggyFuncWithFL = buggyFuncWithFL.trim();
         this.methodSignature = methodSignature;
@@ -41,6 +43,7 @@ public class LocationInfo {
         this.startLine = startLine;
         this.endLine = endLine;
         this.filePath = filePath;
+        this.location = location;
     }
 
     public JsonObject toJson() {
@@ -53,6 +56,7 @@ public class LocationInfo {
         obj.addProperty("start_line", startLine);
         obj.addProperty("end_line", endLine);
         obj.addProperty("file_path", filePath);
+        obj.add("location", location.toJson());
         return obj;
     }
 }
