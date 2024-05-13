@@ -1,0 +1,38 @@
+plugins {
+    id 'application'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+    id 'java'
+}
+
+version='0.0.1'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+    // Use Maven Central for resolving dependencies.
+    mavenCentral()
+}
+
+dependencies {
+    // Use JUnit Jupiter for testing.
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.9.1'
+
+    // This dependency is used by the application.
+    implementation 'com.google.guava:guava:31.1-jre'
+    implementation 'com.google.code.gson:gson:2.10.1'
+    implementation 'commons-io:commons-io:2.16.1'
+    implementation 'commons-cli:commons-cli:1.7.0'
+    implementation 'com.github.javaparser:javaparser-core:3.25.10'
+    implementation 'com.github.javaparser:javaparser-symbol-solver-core:3.25.10'
+}
+
+application {
+    // Define the main class for the application.
+    mainClass = 'kr.ac.unist.loft.srepairextractor.Main'
+}
+
+tasks.named('test') {
+    // Use JUnit Platform for unit tests.
+    useJUnitPlatform()
+}
