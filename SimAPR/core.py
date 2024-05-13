@@ -407,7 +407,7 @@ class EnvGenerator:
     if patch.file_info.class_name != "":
       new_env["SIMAPR_CLASS_NAME"] = patch.file_info.class_name
 
-    if state.mode==Mode.greybox and instrument:
+    if state.mode==Mode.greybox and (instrument or state.only_get_test_time_data_mode):
       new_env['GREYBOX_BRANCH']='1'
       new_env['GREYBOX_RESULT']=f'/tmp/{state.d4j_buggy_project}-{test.replace("::","#")}.txt'
       new_env['GREYBOX_INSTR_ROOT']=state.instrumenter_classpath
@@ -821,6 +821,10 @@ class GlobalState(metaclass=SingletonMeta):
     self.new_critical_list:List[int]=[] # get empty when each iteration begins
     self.no_instrumentation_time_data_output = "" # the directory path where the data is going to be saved.
     # self.no_instrumentation_time_data = {} # the data that will be referenced and modified during the experiment
+
+    # only_get_test_time_data_mode
+    self.only_get_test_time_data_mode = False
+    self.test_time_data_location = ""
     
 def patch_ochiai_calculator(state:GlobalState, str):
   valid_branches=0

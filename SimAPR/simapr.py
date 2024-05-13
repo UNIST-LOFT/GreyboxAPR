@@ -36,7 +36,8 @@ def parse_args(argv: list) -> GlobalState:
               'seapr-mode=','top-fl=','ignore-compile-error',
               'finish-correct-patch','not-count-compile-fail','not-use-guide','not-use-epsilon',
               'finish-top-method','instr-cp=','branch-output=', 'use-fl-score-in-greybox',
-              'weight-critical-branch', 'optimized-instrumentation', 'no-instrumentation-time-data-output']
+              'weight-critical-branch', 'optimized-instrumentation', 'only-get-test-time-data-mode',
+              'test-time-data-location=']
   opts, args = getopt.getopt(argv[1:], "ho:w:t:m:c:T:E:k:", longopts)
   state = GlobalState()
   state.critical_branch_up_down_manager = CriticalBranchesUpDownManager(is_this_critical_branches = True)
@@ -151,8 +152,12 @@ def parse_args(argv: list) -> GlobalState:
       state.weight_critical_branch=True
     elif o in ['--optimized-instrumentation']:
       state.optimized_instrumentation = True
-    elif o in ['no-instrumentation-time-data-output']:
-      state.no_instrumentation_time_data_output = a 
+
+    # only-get-test-time-data-mode. you can use this mode when you want to get running time data of some patches.
+    elif o in ['--only-get-test-time-data-mode']:
+      state.only_get_test_time_data_mode = True 
+    elif o in ['--test-time-data-location']:
+      state.test_time_data_location = a
 
   # make output directory if not exists
   if not os.path.exists(state.out_dir):
@@ -177,13 +182,6 @@ def parse_args(argv: list) -> GlobalState:
       os.makedirs(state.branch_output)
   elif state.instrumenter_classpath!='':
     state.branch_output=os.path.join(state.out_dir,'branch')
-
-  
-  # if state.mode == Mode.greybox and state.optimized_instrumentation and state.use_simulation_mode:
-  #   if not os.path.exists(state.no_instrumentation_time_data_output):
-  #     os.makedirs(state.no_instrumentation_time_data_output)
-  #   else:
-  #     raise Exception("You need 'no-instrumentation-time-data-output' option to run the greybox apr simulation with optimized instrumentation")
 
   return state
 

@@ -68,7 +68,7 @@ class TBarLoop():
     compilable, run_result, is_timeout = run_test.run_fail_test_d4j(self.state, new_env)
     run_time=time.time()-start_time
     
-    if self.state.mode == Mode.greybox and (run_result or get_branch_cov):
+    if self.state.mode == Mode.greybox and (run_result or get_branch_cov) and not self.state.only_get_test_time_data_mode:
       new_env=EnvGenerator.get_new_env_tbar(self.state, patch, test,instrument=True)
       self.state.logger.info("Test passed. Running the test again with full instrumentation.")
       _, _, _ = run_test.run_fail_test_d4j(self.state, new_env)
@@ -135,6 +135,10 @@ class TBarLoop():
     """
     
     self.initialize()
+
+    if self.state.only_get_test_time_data_mode:
+      self.get_run_time_data()
+      return
     
     if self.state.use_simulation_mode:
       self.run_sim()
@@ -255,11 +259,6 @@ class TBarLoop():
           if cur_cov is not None:
             coverages[neg]=cur_cov
 
-          # optimized instrumentation greybox things
-          if self.state.mode == Mode.greybox and self.state.use_simulation_mode and self.state.optimized_instrumentation:
-            # not done.
-            pass
-
         #add an entry that maps this patch to its branchess
         if is_compilable:
           self.state.visited_tbar_patch.append(patch.tbar_case_info.location)
@@ -318,6 +317,41 @@ class TBarLoop():
       result_handler.append_result(self.state, [patch], each_result, pass_result, is_compilable,fail_time,pass_time)
       result_handler.remove_patch_tbar(self.state, patch)
       
+  def get_run_time_data(self):
+    self.state.logger.info("get_run_time_data_mode")
+    project_name = self.state.work_dir.split('/')[-1]
+    with open(os.path.join(self.state.test_time_data_location, "passed_patch_list.json"), "r") as f:
+      self.state.logger.info("reading "+os.path.join(self.state.test_time_data_location, "passed_patch_list.json"))
+      patch_list_data = json.load(f)
+      patch_list = patch_list_data[project_name]
+    with open(os.path.join(self.state.test_time_data_location, "test_time_data.json"), "r") as f:
+      self.state.logger.info("reading "+os.path.join(self.state.test_time_data_location, "test_time_data.json"))
+      test_time_data = json.load(f)
+    if self.state.mode.name not in list(test_time_data.keys()):
+      test_time_data[self.state.mode.name] = {}
+    for patch in patch_list:
+      self.state.logger.info("finding patch:"+ patch)
+      if patch not in list(test_time_data[self.state.mode.name].keys()):
+        found_patch = False
+        for fl in list(self.state.java_patch_ranking.keys()):
+          for case_info in self.state.java_patch_ranking[fl]:
+            if case_info.location == patch:
+              found_patch == True
+              test_time_data[self.state.mode.name][patch] = {}
+              for neg in self.state.d4j_negative_test:
+                self.state.logger.info("run test: "+ neg)
+                compilable, run_result,fail_time,cur_cov = self.run_test(TbarPatchInfo(case_info), neg)
+                test_time_data[self.state.mode.name][patch][neg] = fail_time
+              break
+          if found_patch:
+            break
+      else:
+        self.state.logger.info("test time data already exists. "+ patch)
+    with open(os.path.join(self.state.test_time_data_location, "test_time_data.json"), "w") as f:
+      self.state.logger.info("writing "+os.path.join(self.state.test_time_data_location, "passed_patch_list.json"))
+      json.dump(test_time_data, f, indent=2)
+
+
 class RecoderLoop(TBarLoop):
   def is_alive(self) -> bool:
     if len(self.state.file_info_map) == 0:
@@ -347,7 +381,7 @@ class RecoderLoop(TBarLoop):
     compilable, run_result, is_timeout = run_test.run_fail_test_d4j(self.state, new_env)
     run_time=time.time()-start_time
     
-    if self.state.mode == Mode.greybox and (run_result or get_branch_cov):
+    if self.state.mode == Mode.greybox and (run_result or get_branch_cov) and not self.state.only_get_test_time_data_mode:
       new_env=EnvGenerator.get_new_env_recoder(self.state, patch, test,instrument=True)
       self.state.logger.info("Test passed. Running the test again with full instrumentation.")
       _, _, _ = run_test.run_fail_test_d4j(self.state, new_env)
@@ -406,6 +440,9 @@ class RecoderLoop(TBarLoop):
 
   def run(self) -> None:
     self.initialize()
+    if self.state.only_get_test_time_data_mode:
+      self.get_run_time_data()
+      return
     if self.state.use_simulation_mode:
       self.run_sim()
       return
@@ -558,3 +595,38 @@ class RecoderLoop(TBarLoop):
         self.state.iteration += 1
       result_handler.append_result(self.state, [patch], each_result, pass_result, is_compilable,fail_time,pass_time)
       result_handler.remove_patch_recoder(self.state, patch)
+
+  def get_run_time_data(self):
+    self.state.logger.info("get_run_time_data_mode")
+    project_name = self.state.work_dir.split('/')[-1]
+    with open(os.path.join(self.state.test_time_data_location, "passed_patch_list.json"), "r") as f:
+      self.state.logger.info("reading "+os.path.join(self.state.test_time_data_location, "passed_patch_list.json"))
+      patch_list_data = json.load(f)
+      patch_list = patch_list_data[project_name]
+    with open(os.path.join(self.state.test_time_data_location, "test_time_data.json"), "r") as f:
+      self.state.logger.info("reading "+os.path.join(self.state.test_time_data_location, "test_time_data.json"))
+      test_time_data = json.load(f)
+    if self.state.mode.name not in list(test_time_data.keys()):
+      test_time_data[self.state.mode.name] = {}
+    for patch in patch_list:
+      self.state.logger.info("finding patch:"+ patch)
+      if patch not in list(test_time_data[self.state.mode.name].keys()):
+        found_patch = False
+        for fl in list(self.state.java_patch_ranking.keys()):
+          for case_info in self.state.java_patch_ranking[fl]:
+            if case_info.location == patch:
+              found_patch == True
+              test_time_data[self.state.mode.name][patch] = {}
+              for neg in self.state.d4j_negative_test:
+                self.state.logger.info("run test: "+ neg)
+                compilable, run_result,fail_time,cur_cov = self.run_test(RecoderPatchInfo(case_info), neg)
+                test_time_data[self.state.mode.name][patch][neg] = fail_time
+              break
+          if found_patch:
+            break
+      else:
+        self.state.logger.info("test time data already exists. "+ patch)
+    with open(os.path.join(self.state.test_time_data_location, "test_time_data.json"), "w") as f:
+      self.state.logger.info("writing "+os.path.join(self.state.test_time_data_location, "passed_patch_list.json"))
+      json.dump(test_time_data, f, indent=2)
+
