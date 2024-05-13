@@ -325,9 +325,12 @@ class TBarLoop():
       self.state.logger.info("reading "+os.path.join(self.state.test_time_data_location, "passed_patch_list.json"))
       patch_list_data = json.load(f)
       patch_list = patch_list_data[project_name]
-    with open(os.path.join(self.state.test_time_data_location, "test_time_data.json"), "r") as f:
-      self.state.logger.info("reading "+os.path.join(self.state.test_time_data_location, "test_time_data.json"))
-      test_time_data = json.load(f)
+    if os.path.exists(os.path.join(self.state.test_time_data_location, f"{project_name}_test_time_data.json")):
+      with open(os.path.join(self.state.test_time_data_location, f"{project_name}_test_time_data.json"), "r") as f:
+        self.state.logger.info("reading "+os.path.join(self.state.test_time_data_location, f"{project_name}_test_time_data.json"))
+        test_time_data = json.load(f)
+    else:
+      test_time_data = {}
     if self.state.mode.name not in list(test_time_data.keys()):
       test_time_data[self.state.mode.name] = {}
     for patch in patch_list:
@@ -348,8 +351,8 @@ class TBarLoop():
             break
       else:
         self.state.logger.info("test time data already exists. "+ patch)
-    with open(os.path.join(self.state.test_time_data_location, "test_time_data.json"), "w") as f:
-      self.state.logger.info("writing "+os.path.join(self.state.test_time_data_location, "passed_patch_list.json"))
+    with open(os.path.join(self.state.test_time_data_location, f"{project_name}_test_time_data.json"), "w") as f:
+      self.state.logger.info("writing "+os.path.join(self.state.test_time_data_location, f"{project_name}_test_time_data.json"))
       json.dump(test_time_data, f, indent=2)
 
 

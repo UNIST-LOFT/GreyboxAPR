@@ -572,7 +572,8 @@ def main(argv: list):
   """
   sys.setrecursionlimit(2002) # Reset recursion limit, for preventing RecursionError
   state = parse_args(argv) # returns the GlobalState instance, and it is used as a singleton. i.e. It is instantiated only once throughout the entire execution.
-  copy_previous_results(state)
+  if not state.only_get_test_time_data_mode:
+    copy_previous_results(state)
   state.logger = set_logger(state)
   if state.tool_type==ToolType.TEMPLATE:
     read_info_tbar(state)
@@ -608,7 +609,8 @@ def main(argv: list):
   state.logger.info(f'Running time: {state.select_time+state.test_time}')
   state.logger.info(f'Select time: {state.select_time}')
   state.logger.info(f'Test time: {state.test_time}')
-  simapr.save_result()
+  if not state.only_get_test_time_data_mode:
+    simapr.save_result()
 
 if __name__ == "__main__":
   main(sys.argv)
