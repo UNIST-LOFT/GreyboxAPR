@@ -29,11 +29,11 @@ public class LocationInfo {
     private String javadocString;
     public LocationInfo(String buggyFunc, String buggyFuncWithFL, MethodSignature methodSignature, JsonObject tests,
                         String javadocString) {
-        this.buggyFunc = buggyFunc;
-        this.buggyFuncWithFL = buggyFuncWithFL;
+        this.buggyFunc = buggyFunc.trim();
+        this.buggyFuncWithFL = buggyFuncWithFL.trim();
         this.methodSignature = methodSignature;
         this.tests = tests;
-        this.javadocString = javadocString;
+        this.javadocString = javadocString.trim();
     }
 
     public JsonObject toJson() {
