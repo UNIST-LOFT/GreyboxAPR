@@ -143,7 +143,7 @@ for bug in benchmarks.D4J_1_2_0_LIST:
     result=get_result(bug)
     total_result[bug]=result
     if result['compile_time']!=0.:
-        print(f'{bug}: {result["compile_time"]}, {result["instrument_time"]}, {result["test_result"]["branch_count"]}')
+        print(f'{bug}: {result["compile_time"]}, {result["instrument_time"]}, {result["test_result"]}')
 
 with open(f'{getcwd()}/test-time.json','w') as f:
     json.dump(total_result,f)
