@@ -3,6 +3,63 @@ import subprocess
 from os import getcwd,environ,path
 from time import time
 
+def get_src_paths(project):
+    project_name, bug_id = project.split('_')
+    if len(bug_id)>=4:
+        bug_id=bug_id[:-3]
+    bug_id = int(bug_id)
+
+    if project_name=='Math':
+        if bug_id < 85:
+            return '/src/main/java'
+        else:
+            return '/src/java'
+    elif project_name=='Time':
+        return '/src/main/java'
+    elif project_name=='Lang':
+        if bug_id <= 35:
+            return '/src/main/java'
+        else:
+            return '/src/java'
+    elif project_name=='Chart':
+        return '/source'
+    elif project_name=='Closure':
+        return '/src'
+    elif project_name=='Mockito':
+        return '/src'
+    
+    # D4J 2.0
+    elif project_name=='Cli':
+        if 30 <= bug_id <= 40:
+            return '/src/main/java'
+        else:
+            return '/src/java'
+    elif project_name=='Codec':
+        if bug_id <= 10:
+            return '/src/java'
+        else:
+            return '/src/main/java'
+    elif project_name=='Collections':
+        return '/src/main/java'
+    elif project_name=='Compress':
+        return '/src/main/java'
+    elif project_name=='Csv':
+        return '/src/main/java'
+    elif project_name=='Gson':
+        return '/gosn/src/main/java'
+    elif project_name=='JacksonCore':
+        return '/src/main/java'
+    elif project_name=='JacksonDatabind':
+        return '/src/main/java'
+    elif project_name=='JacksonXml':
+        return '/src/main/java'
+    elif project_name=='Jsoup':
+        return '/src/main/java'
+    elif project_name=='JxPath':
+        return '/src/java'
+    else:
+        raise Exception("Unknown project: "+project_name)
+
 def get_target_paths(project):
     project_name, bug_id = project.split('_')
     bug_id = int(bug_id)
@@ -55,12 +112,23 @@ def get_target_paths(project):
 def checkout(project:str):
     subject,version=project.split('_')
     res=subprocess.run(['defects4j','checkout','-p',subject,'-v',f'{version}b','-w',f'{getcwd()}/{project}'])
+    if res.returncode!=0:
+        raise RuntimeError(f'{project} checkout fail!')
     res=subprocess.run(['defects4j','checkout','-p',subject,'-v',f'{version}b','-w',f'{getcwd()}/{project}b'])
+    if res.returncode!=0:
+        raise RuntimeError(f'{project} checkout fail!')
 
 def compile(project:str):
-    res=subprocess.run(['defects4j','compile','-w',f'{getcwd()}/{project}b'])
-    start_time=time()
+    shutil.copytree(f'/root/project/JPatchInst/src/main/resources/kr',f'{getcwd()}/{project}{get_src_paths(project)}/kr',
+                    dirs_exist_ok=True)
     res=subprocess.run(['defects4j','compile','-w',f'{getcwd()}/{project}'])
+    if res.returncode!=0:
+        raise RuntimeError(f'{project} compile fail!')
+    
+    start_time=time()
+    res=subprocess.run(['defects4j','compile','-w',f'{getcwd()}/{project}b'])
+    if res.returncode!=0:
+        raise RuntimeError(f'{project} compile fail!')
     return time()-start_time
 
 def instrument(project:str):
@@ -68,6 +136,8 @@ def instrument(project:str):
     res=subprocess.run(['java','-Xmx100G','-jar','/root/project/JPatchInst/build/libs/JPatchInst.jar',
                         f'{getcwd()}/{project}b{get_target_paths(project)}',
                         f'{getcwd()}/{project}{get_target_paths(project)}'])
+    if res.returncode!=0:
+        raise RuntimeError(f'{project} instrument fail!')
     return time()-start_time
 
 def test(project:str,test:str): # Return (orig time, instrumented time, branch count, branch hit count)
@@ -79,14 +149,10 @@ def test(project:str,test:str): # Return (orig time, instrumented time, branch c
     new_env['GREYBOX_BRANCH']='1'
     new_env['GREYBOX_RESULT']=f'/tmp/{project}-{test.replace("::","#")}.txt'
     start_time=time()
-    res=subprocess.run(['defects4j','test','-w',f'{getcwd()}/{project}','-t',test])
+    res=subprocess.run(['defects4j','test','-t',test],env=new_env,cwd=f'{getcwd()}/{project}')
     new_end_time=time()-start_time
 
     def parse_cov(cov_file: str):
-        """
-        :param cov_file: branch coverage file
-        :return: branch coverage vector
-        """
         branch_cov=dict()
         with open(cov_file, 'r') as f:
             for line in f:
