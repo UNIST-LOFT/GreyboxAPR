@@ -6,6 +6,10 @@ import os
 def run(project, tool):
     cur_dir=os.getcwd()
 
+    if not os.path.exists(f'experiments/{tool.lower()}/result/{project}-greybox-9/simapr-finished.txt'):
+        print(f'{project} not finished')
+        return
+
     print(f"Run {project}")
     result=subprocess.run(['python3',f'{cur_dir}/SimAPR/simapr.py','-o',f'experiments/scripts/output','-m','greybox',
                             '-k',argv[3],'-w',f'{cur_dir}/{tool}/d4j/{project}',
