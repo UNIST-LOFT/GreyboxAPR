@@ -109,7 +109,7 @@ import shutil
 
 def get_result(bug:str):
     global tool
-    if not path.exists(f'/root/project/GreyboxAPR/TBar/d4j/{bug}/switch-info.json'):
+    if not path.exists(f'/root/project/GreyboxAPR/{tool}/d4j/{bug}/switch-info.json'):
         return {
             'compile_time':0.,
             'instrument_time':0.,
