@@ -305,8 +305,11 @@ class TBarLoop():
                                     f'{patch.tbar_case_info.location.replace("/","#")}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt')
               if not os.path.exists(cov_file):
                 compilable, run_result,fail_time,cur_cov = self.run_test(patch, test,get_branch_cov=True)
-              cur_cov=branch_coverage.parse_cov(self.state.logger,cov_file)
-              coverages[test]=cur_cov
+              if os.path.exists(cov_file):
+                cur_cov=branch_coverage.parse_cov(self.state.logger,cov_file)
+                coverages[test]=cur_cov
+              else:
+                self.state.logger.warning(f"Greybox result not found for {patch.tbar_case_info.location} {test}. expected location: {cov_file}")
           result_handler.update_result_branch(self.state,patch,coverages,is_compilable,each_result,pass_result)
 
         if is_compilable or self.state.ignore_compile_error:
@@ -588,8 +591,11 @@ class RecoderLoop(TBarLoop):
                                       f'{patch.recoder_case_info.location.replace("/","#")}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt')
                 if not os.path.exists(cov_file):
                   compilable, run_result,fail_time,cur_cov = self.run_test(patch, test,get_branch_cov=True)
-                cur_cov=branch_coverage.parse_cov(self.state.logger,cov_file)
-                coverages[test]=cur_cov
+                if os.path.exists(cov_file):
+                  cur_cov=branch_coverage.parse_cov(self.state.logger,cov_file)
+                  coverages[test]=cur_cov
+                else:
+                  self.state.logger.warning(f"Greybox result not found for {patch.recoder_case_info.location} {test}. expected location: {cov_file}")
           result_handler.update_result_branch(self.state,patch,coverages,is_compilable,each_result,pass_result)
 
         if is_compilable or self.state.ignore_compile_error:
