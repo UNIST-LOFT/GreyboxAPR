@@ -428,7 +428,7 @@ class EnvGenerator:
     new_env["SIMAPR_BUGGY_PROJECT"] = state.d4j_buggy_project
     new_env["SIMAPR_TIMEOUT"] = str(state.timeout)
 
-    if state.mode==Mode.greybox and instrument:
+    if state.mode==Mode.greybox and (instrument or state.only_get_test_time_data_mode):
       new_env['GREYBOX_BRANCH']='1'
       new_env['GREYBOX_RESULT']=f'/tmp/{state.d4j_buggy_project}-{test.replace("::","#")}.txt'
       new_env['GREYBOX_INSTR_ROOT']=state.instrumenter_classpath

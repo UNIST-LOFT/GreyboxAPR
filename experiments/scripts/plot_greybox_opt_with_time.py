@@ -1,0 +1,248 @@
+from typing import Dict, List
+import json
+import matplotlib.pyplot as plt
+import numpy as np
+import seaborn
+import pandas as pd
+from os import path, listdir
+from sys import argv
+
+from getopt import getopt
+
+import d4j
+
+MAX_EXP=10
+WITH_MOCKITO=False
+MAX_TIME=300
+
+def get_subject_filter_whitelist():
+    directory = 'scripts/data_for_plot'
+    result = []
+    for filename in listdir(directory):
+        if filename.endswith('_test_time_data.json'):
+            result.append(filename[:-len('_test_time_data.json')])
+    return result
+
+def plot_patches_ci_java(mode='tbar'):
+    orig_result:List[int]=[]
+    casino_result:List[List[int]]=[]
+    greybox_result:List[List[int]]=[]
+
+    subject_filter = get_subject_filter_whitelist()
+    print(subject_filter)
+
+    valid_patch_set:Dict[str,set]=dict()
+
+    # Casino
+    for i in range(MAX_EXP):
+        casino_result.append([])
+        for result in d4j.D4J_1_2_LIST:
+            if not path.exists(f'{mode}/result/{result}-greybox-{MAX_EXP-1}/simapr-finished.txt') or result not in subject_filter:
+                # Skip if experiment not end
+                continue
+            if not WITH_MOCKITO and 'Mockito' in result:
+                continue
+            try:
+                result_file=open(f'{mode}/result/{result}-casino-{i}/simapr-result.json','r')
+            except:
+                continue
+            root=json.load(result_file)
+            result_file.close()
+
+            if result not in valid_patch_set:
+                valid_patch_set[result]=set()
+            for res in root:
+                is_hq=res['result']
+                is_plausible=res['pass_result']
+                iteration=res['iteration']
+                time=res['time']
+                loc=res['config'][0]['location']
+
+                if is_plausible:
+                    valid_patch_set[result].add(loc)
+                    casino_result[-1].append(round((time)/60))
+
+                if round((time)/60)>MAX_TIME:
+                    break
+
+    print(np.mean([len(l) for l in casino_result]))
+                    
+    # Greybox
+    
+    for i in range(MAX_EXP):
+        greybox_result.append([])
+        for result in d4j.D4J_1_2_LIST:
+            if not path.exists(f'{mode}/result/{result}-greybox-{MAX_EXP-1}/simapr-finished.txt') or result not in subject_filter:
+                # Skip if experiment not end
+                continue
+            if not WITH_MOCKITO and 'Mockito' in result:
+                continue
+            try:
+                result_file=open(f'{mode}/result/{result}-greybox-{i}/simapr-result.json','r')
+                
+            except:
+                continue
+            root=json.load(result_file)
+            result_file.close()
+
+            time_data_file = open(f"scripts/data_for_plot/{result}_test_time_data.json")
+            time_data = json.load(time_data_file)
+            time_data_file.close()
+
+            additional_time = 0
+            if result not in valid_patch_set:
+                valid_patch_set[result]=set()
+            for res in root:
+                is_hq=res['result']
+                is_plausible=res['pass_result']
+                iteration=res['iteration']
+                loc=res['config'][0]['location']
+                if is_hq:
+                    for config in res['config']:
+                        additional_time+=sum(list(time_data['greybox'][config['location']].values()))
+                        print("additional time:", additional_time)
+                time=res['time'] + additional_time
+
+                if is_plausible:
+                    valid_patch_set[result].add(loc)
+                    greybox_result[-1].append(round((time)/60))
+
+                if round((time)/60)>MAX_TIME:
+                    break
+
+    print(np.mean([len(l) for l in greybox_result]))
+
+    # Original
+    for result in d4j.D4J_1_2_LIST:
+        if not path.exists(f'{mode}/result/{result}-greybox-{MAX_EXP-1}/simapr-finished.txt') or result not in subject_filter:
+            # Skip if experiment not end
+            continue
+        if not WITH_MOCKITO and 'Mockito' in result:
+                continue
+        try:
+            result_file=open(f'{mode}/result/{result}-orig/simapr-result.json','r')
+        except:
+            continue
+        root=json.load(result_file)
+        result_file.close()
+
+        prev_time=0.
+        for res in root:
+            is_hq=res['result']
+            is_plausible=res['pass_result']
+            iteration=res['iteration']
+            time=res['time']
+            loc=res['config'][0]['location']
+
+            if is_plausible:
+                valid_patch_set[result].add(loc)
+                orig_result.append(round((time)/60))
+
+            if round((time)/60)>MAX_TIME:
+                break
+
+    print(len(orig_result))
+
+    # Store valid patch set to csv file
+    # if WITH_MOCKITO:
+    #     f=open(f'rq1-time-valid-patch-count-{mode}-w-mockito.csv','w')
+    # else:
+    #     f=open(f'rq1-time-valid-patch-count-{mode}.csv','w')
+    # f.write('project,# of valid patch\n')
+    # for k,v in valid_patch_set.items():
+    #     f.write(f'{k},{len(v)}\n')
+
+    # Plausible patch plot
+    plt.clf()
+    fig=plt.figure(figsize=(4,3))
+    print(mode)
+
+    # Original tool
+    if mode=='tbar': name='TBar'
+    elif mode=='fixminer': name='Fixminer'
+    elif mode=='kpar': name='kPar'
+    elif mode=='avatar': name='Avatar'
+    elif mode=='recoder': name='Recoder'
+    elif mode=='alpharepair': name='AlphaRepair'
+
+    # Original
+    results=sorted(orig_result)
+    other_list=[0]
+    for i in range(0,MAX_TIME+1):
+        if i in results:
+            other_list.append(other_list[-1]+results.count(i))
+        else:
+            other_list.append(other_list[-1])
+    plt.plot(list(range(0,MAX_TIME+2)),other_list,'-.b',label=name)
+
+    # Casino
+    guided_list:List[List[int]]=[]
+    guided_x=[]
+    guided_y=[]
+    temp_=[[],[],[],[],[]]
+    for j in range(MAX_EXP):
+        cur_result=sorted(casino_result[j])
+        guided_list.append([0])
+        for i in range(0,MAX_TIME+1):
+            if i in cur_result:
+                guided_list[-1].append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
+                guided_x.append(i)
+                if i==0:
+                    guided_y.append(0)
+                else:
+                    guided_y.append(guided_y[-1]+cur_result.count(i))
+            else:
+                guided_list[-1].append(guided_list[-1][-1])
+                guided_x.append(i)
+                if i==0:
+                    guided_y.append(0)
+                else:
+                    guided_y.append(guided_y[-1])
+    guided_df=pd.DataFrame({'Time':guided_x,'Number of valid patches':guided_y})
+    seaborn.lineplot(data=guided_df,x='Time',y='Number of valid patches',color='g',label='Casino')
+
+    # Greybox
+    other_list:List[List[int]]=[]
+    other_x=[]
+    other_y=[]
+    for j in range(MAX_EXP):
+        cur_result=sorted(greybox_result[j])
+        other_list.append([0])
+        for i in range(0,MAX_TIME+1):
+            if i in cur_result:
+                other_list[-1].append(other_list[-1][-1]+cur_result.count(i)/MAX_EXP)
+                other_x.append(i)
+                if i==0:
+                    other_y.append(0)
+                else:
+                    other_y.append(other_y[-1]+cur_result.count(i))
+            else:
+                other_list[-1].append(other_list[-1][-1])
+                other_x.append(i)
+                if i==0:
+                    other_y.append(0)
+                else:
+                    other_y.append(other_y[-1])
+    other_df=pd.DataFrame({'Time':other_x,'Number of valid patches':other_y})
+    seaborn.lineplot(data=other_df,x='Time',y='Number of valid patches',color='r',label='GreyboxOpt',linestyle='dashed')
+
+    plt.legend(fontsize=12)
+    plt.xlabel('Time (min)',fontsize=15)
+    plt.ylabel('# of Valid Patches',fontsize=15)
+    plt.xticks(fontsize=15)
+    plt.yticks(fontsize=15)
+
+    if WITH_MOCKITO:
+        plt.savefig(f'rq1-time-{mode}-w-mockito.pdf',bbox_inches='tight')
+        plt.savefig(f'rq1-time-{mode}-w-mockito.jpg',bbox_inches='tight')
+    else:
+        plt.savefig(f'rq1-time-{mode}.pdf',bbox_inches='tight')
+        plt.savefig(f'rq1-time-{mode}.jpg',bbox_inches='tight')
+
+if __name__=='__main__':
+    o,a=getopt(argv[1:],'',['with-mockito'])
+    for opt,arg in o:
+        if o=='--with-mockito':
+            WITH_MOCKITO=True
+
+    plot_patches_ci_java(a[0])

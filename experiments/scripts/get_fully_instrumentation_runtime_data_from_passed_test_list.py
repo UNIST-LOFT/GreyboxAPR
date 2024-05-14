@@ -8,20 +8,20 @@ def run(project, tool):
 
     print(f"Run {project}")
     result=subprocess.run(['python3',f'{cur_dir}/SimAPR/simapr.py','-o',f'experiments/scripts/output','-m','greybox',
-                            '-k','template','-w',f'{cur_dir}/TBar/d4j/{project}','-t','180000',
+                            '-k',argv[3],'-w',f'{cur_dir}/{tool}/d4j/{project}',
                            '--instr-cp','../JPatchInst',
                            '--branch-output',f'experiments/scripts/output/branch/{project}','--skip-valid','--optimized-instrumentation',
                             "--only-get-test-time-data-mode",
                             "--test-time-data-location", "experiments/scripts/data_for_plot",
-                           '--','python3',f'{cur_dir}/SimAPR/script/d4j_run_test.py',f'{cur_dir}/TBar/buggy'])
+                           '--','python3',f'{cur_dir}/SimAPR/script/d4j_run_test.py',f'{cur_dir}/{tool}/buggy'])
     
     print(f'{project} greybox finish with return code {result.returncode}')
     exit(result.returncode)
 
 from sys import argv
 
-if len(argv)!=3:
-    print(f'Usage: {argv[0]} <num of processes> <tool>')
+if len(argv)!=4:
+    print(f'Usage: {argv[0]} <num of processes> <tool> <template|learning>')
     exit(1)
 
 CHART_SIZE=26
