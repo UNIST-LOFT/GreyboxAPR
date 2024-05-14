@@ -12,13 +12,6 @@ def run(project):
          f.write(result.stdout.decode("utf-8"))
       print(f'Finish {project}-w/o-vertical-{i} with returncode {result.returncode}')
 
-      print(f'Run {project}-w/o-horizontal-{i}')
-      result=subprocess.run(['python3','search-tbar-ablation.py',project,'horizontal',str(seeds.SEEDS[i]),str(i)],
-                            stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
-      with open(f'result/{project}-wo-horizontal-{i}.log','w') as f:
-         f.write(result.stdout.decode("utf-8"))
-      print(f'Finish {project}-w/o-horizontal-{i} with returncode {result.returncode}')
-
 from sys import argv
 
 if len(argv)!=2:
