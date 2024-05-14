@@ -141,7 +141,6 @@ total_patches=0
 def run_solution_and_gen(skip_solution=False,skip_gen_patch=False,skip_postprocess=False):
     global cur_path,project,subj,ver,json_patch_tree
     info_path=f'{cur_path}/d4j/{project}/input'
-    file_info=dict()
     for file in os.listdir(info_path):
         info_file=os.path.join(info_path,file)
         cur_fl_rank=int(file.split('.')[0])
@@ -153,6 +152,9 @@ def run_solution_and_gen(skip_solution=False,skip_gen_patch=False,skip_postproce
             result=subprocess.run(['python3',f'{cur_path}/SRepair/src/sf_gen_solution.py','-d',info_file,
                                 '-o',f'{cur_path}/d4j/{project}/solution/{cur_fl_rank}.json','-s','2','-bug',project,'-fl'])
         
+    for file in os.listdir(info_path):
+        info_file=os.path.join(info_path,file)
+        cur_fl_rank=int(file.split('.')[0])
         if not skip_gen_patch:
             if not os.path.exists(f'{cur_path}/d4j/{project}/patches'):
                 os.makedirs(f'{cur_path}/d4j/{project}/patches')
