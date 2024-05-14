@@ -107,6 +107,13 @@ import benchmarks
 import json
 
 def get_result(bug:str):
+    if not path.exists(f'/root/project/GreyboxAPR/TBar/d4j/{bug}/switch-info.json'):
+        return {
+            'compile_time':0.,
+            'instrument_time':0.,
+            'test_result':{}
+        }
+    
     checkout(bug)
     compile_time=compile(bug)
     instrument_time=instrument(bug)
