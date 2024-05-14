@@ -65,48 +65,48 @@ def get_target_paths(project):
     bug_id = int(bug_id)
 
     if project_name == "Math":
-        return "/target/classes/"
+        return "/target/classes"
     elif project_name == "Time":
         if bug_id < 12:
-            return "/target/classes/"
-        return "/build/classes/", "/build/tests/"
+            return "/target/classes"
+        return "/build/classes"
     elif project_name == "Lang":
         if bug_id <= 20 or 42 <= bug_id <= 65:
-            return "/target/classes/"
+            return "/target/classes"
         elif 21 <= bug_id <= 41:
-            return "/target/classes/"
+            return "/target/classes"
     elif project_name == "Chart":
-        return "/build/"
+        return "/build"
     elif project_name == "Closure":
-        return "/build/classes/"
+        return "/build/classes"
     elif project_name == "Mockito":
-        return "/target/classes/"
+        return "/target/classes"
     
     # D4J 2.0
     elif project_name == "Cli":
-        return '/target/classes/'
+        return '/target/classes'
     elif project_name == "Codec":
         if bug_id <=16:
-            return "/target/classes/"
-        return "/target/classes/"
+            return "/target/classes"
+        return "/target/classes"
     elif project_name == "Collections":
-        return '/target/classes/'
+        return '/target/classes'
     elif project_name == "Compress":
-        return '/target/classes/'
+        return '/target/classes'
     elif project_name == "Csv":
-        return '/target/classes/'
+        return '/target/classes'
     elif project_name == "Gson":
-        return '/target/classes/'
+        return '/target/classes'
     elif project_name == "JacksonCore":
-        return '/target/classes/'
+        return '/target/classes'
     elif project_name == "JacksonDatabind":
-        return '/target/classes/'
+        return '/target/classes'
     elif project_name == "JacksonXml":
-        return '/target/classes/'
+        return '/target/classes'
     elif project_name == "Jsoup":
-        return '/target/classes/'
+        return '/target/classes'
     elif project_name == "JxPath":
-        return '/target/classes/'
+        return '/target/classes'
     raise Exception("Unknown project: "+project_name)
 
 def checkout(project:str):
