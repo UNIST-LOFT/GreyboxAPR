@@ -108,6 +108,7 @@ import json
 import shutil
 
 def get_result(bug:str):
+    global tool
     if not path.exists(f'/root/project/GreyboxAPR/TBar/d4j/{bug}/switch-info.json'):
         return {
             'compile_time':0.,
@@ -119,7 +120,7 @@ def get_result(bug:str):
     compile_time=compile(bug)
     instrument_time=instrument(bug)
     
-    with open(f'/root/project/GreyboxAPR/TBar/d4j/{bug}/switch-info.json') as f:
+    with open(f'/root/project/GreyboxAPR/{tool}/d4j/{bug}/switch-info.json') as f:
         failing_tests=json.load(f)['failing_test_cases']
 
     test_result=dict()
