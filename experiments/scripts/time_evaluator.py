@@ -130,6 +130,7 @@ def get_result(bug:str):
                                 'branch_count':branch_count,'branch_hit_count':branch_hit_count}
     
     shutil.rmtree(f'{getcwd()}/{bug}')
+    shutil.rmtree(f'{getcwd()}/{bug}b')
     return {
         'compile_time':compile_time,
         'instrument_time':instrument_time,
