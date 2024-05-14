@@ -132,7 +132,7 @@ def run_test(work_dir: str, buggy_project: str) -> Tuple[int, List[str]]:
 def extract_input():
     global cur_path,project,subj,ver
     result=subprocess.run(['java','-jar',f'{cur_path}/DatasetExtractor/build/libs/DatasetExtractor-0.0.1-all.jar',
-                    f'{cur_path}/SuspiciousCodePositions_updated/{project}/Ochiai.txt',
+                    f'{cur_path}/SuspiciousCodePositions/{project}/Ochiai.txt',
                     f'{cur_path}/buggy/{project}{get_src_paths(project)}',f'{cur_path}/SRepair/dataset',
                     project,f'{cur_path}/d4j'])
     
@@ -253,7 +253,7 @@ if not args.skip_postprocess:
     json_output_root['failed_passing_tests']=failed_passing_tests
 
     # Store FL result
-    with open(f'{cur_path}/SuspiciousCodePositions_updated/{project}/Ochiai.txt','r') as f:
+    with open(f'{cur_path}/SuspiciousCodePositions/{project}/Ochiai.txt','r') as f:
         fls=[]
         for line in f:
             file,line,score=line.split('@')
