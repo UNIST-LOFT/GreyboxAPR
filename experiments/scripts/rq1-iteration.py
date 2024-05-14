@@ -129,7 +129,7 @@ def plot_patches_ci_java(mode='tbar'):
 
     # Plausible patch plot
     plt.clf()
-    fig=plt.figure(figsize=(4,3))
+    fig=plt.figure(figsize=(5,3))
     print(mode)
 
     # Original tool
