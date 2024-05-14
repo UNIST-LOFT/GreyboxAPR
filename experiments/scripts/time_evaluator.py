@@ -135,7 +135,8 @@ def instrument(project:str):
     start_time=time()
     res=subprocess.run(['java','-Xmx100G','-jar','/root/project/JPatchInst/build/libs/JPatchInst.jar',
                         f'{getcwd()}/{project}b{get_target_paths(project)}',
-                        f'{getcwd()}/{project}{get_target_paths(project)}'])
+                        f'{getcwd()}/{project}{get_target_paths(project)}'],
+                        stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     if res.returncode!=0:
         raise RuntimeError(f'{project} instrument fail!')
     return time()-start_time
