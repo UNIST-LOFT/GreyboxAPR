@@ -131,15 +131,20 @@ def compile(project:str):
         raise RuntimeError(f'{project} compile fail!')
     return time()-start_time
 
-def instrument(project:str):
+def instrument(project:str): # Return (time, branch_instrumented)
     start_time=time()
     res=subprocess.run(['java','-Xmx100G','-jar','/root/project/JPatchInst/build/libs/JPatchInst.jar',
                         f'{getcwd()}/{project}b{get_target_paths(project)}',
                         f'{getcwd()}/{project}{get_target_paths(project)}'],
-                        stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+                        stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
     if res.returncode!=0:
         raise RuntimeError(f'{project} instrument fail!')
-    return time()-start_time
+    
+    lines=res.stdout.decode().splitlines()
+    for line in lines:
+        if 'Total instrumented' in line:
+            instrumented=int(line.split(' ')[-1].strip())
+    return time()-start_time,instrumented
 
 def test(project:str,test:str): # Return (orig time, instrumented time, branch count, branch hit count)
     start_time=time()
@@ -180,12 +185,13 @@ def get_result(bug:str):
         return {
             'compile_time':0.,
             'instrument_time':0.,
+            'instrument_branch':0,
             'test_result':{}
         }
     
     checkout(bug)
     compile_time=compile(bug)
-    instrument_time=instrument(bug)
+    instrument_time,instrumented_branch=instrument(bug)
     
     with open(f'/root/project/GreyboxAPR/{tool}/d4j/{bug}/switch-info.json') as f:
         failing_tests=json.load(f)['failing_test_cases']
@@ -201,6 +207,7 @@ def get_result(bug:str):
     return {
         'compile_time':compile_time,
         'instrument_time':instrument_time,
+        'instrument_branch':instrumented_branch,
         'test_result':test_result
     }
         
