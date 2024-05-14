@@ -1,6 +1,6 @@
 from sys import argv
 import subprocess
-from os import getcwd,environ,path
+from os import getcwd,environ,path,remove
 from time import time
 
 def get_src_paths(project):
@@ -171,6 +171,7 @@ def test(project:str,test:str): # Return (orig time, instrumented time, branch c
 
     if path.exists(new_env['GREYBOX_RESULT']):
         branch_cov=parse_cov(new_env['GREYBOX_RESULT'])
+        remove(new_env['GREYBOX_RESULT'])
         return end_time,new_end_time,len(branch_cov),sum(branch_cov.values())
     else:
         return end_time,new_end_time,0,0
