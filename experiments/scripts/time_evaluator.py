@@ -105,6 +105,7 @@ def test(project:str,test:str): # Return (orig time, instrumented time, branch c
     
 import benchmarks
 import json
+import shutil
 
 def get_result(bug:str):
     if not path.exists(f'/root/project/GreyboxAPR/TBar/d4j/{bug}/switch-info.json'):
@@ -127,6 +128,7 @@ def get_result(bug:str):
         test_result[test_case]={'orig_time':orig_test_time,'instrumented_time':new_test_time,
                                 'branch_count':branch_count,'branch_hit_count':branch_hit_count}
     
+    shutil.rmtree(f'{getcwd()}/{bug}')
     return {
         'compile_time':compile_time,
         'instrument_time':instrument_time,
