@@ -66,7 +66,7 @@ def compile(project:str):
 def instrument(project:str):
     start_time=time()
     res=subprocess.run(['java','-Xmx100G','-jar','/root/project/JPatchInst/build/libs/JPatchInst.jar',
-                        f'{getcwd()}/{project}{get_target_paths(project)}b',
+                        f'{getcwd()}/{project}b{get_target_paths(project)}',
                         f'{getcwd()}/{project}{get_target_paths(project)}'])
     return time()-start_time
 
