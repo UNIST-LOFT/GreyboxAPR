@@ -5,14 +5,14 @@ import seeds
 
 def run(project):
    print(f'Run {project}-orig')
-   result=subprocess.run(['python3','search-alpharepair-orig.py',project],stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+   result=subprocess.run(['python3','search-srepair-orig.py',project],stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
    with open(f'result/{project}-orig.log','w') as f:
       f.write(result.stdout.decode("utf-8"))
    print(f'Finish {project}-orig with returncode {result.returncode}')
 
    for i in range(50):
       print(f'Run {project}-casino-{i}')
-      result=subprocess.run(['python3','search-alpharepair-casino.py',project,str(seeds.SEEDS[i]),str(i)],
+      result=subprocess.run(['python3','search-srepair-casino.py',project,str(seeds.SEEDS[i]),str(i)],
                             stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
       with open(f'result/{project}-casino-{i}.log','w') as f:
          f.write(result.stdout.decode("utf-8"))

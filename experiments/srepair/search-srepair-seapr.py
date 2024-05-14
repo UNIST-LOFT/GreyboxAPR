@@ -5,8 +5,8 @@ import multiprocessing as mp
 
 def run(project):
     cur_dir=os.getcwd()
-    if not cur_dir.endswith('experiments/alpharepair'):
-        print('Please run this script in experiments/alpharepair',file=sys.stderr)
+    if not cur_dir.endswith('experiments/srepair'):
+        print('Please run this script in experiments/srepair',file=sys.stderr)
         sys.exit(1)
 
     cur_dirs=cur_dir.split('/')
@@ -27,7 +27,7 @@ def run(project):
 if __name__ == '__main__':
     args=sys.argv
     if len(args)!=2:
-        print('Usage: python3 search-alpharepair-seapr.py <project>')
+        print('Usage: python3 search-srepair-seapr.py <project>')
         sys.exit(1)
     
     run(args[1])

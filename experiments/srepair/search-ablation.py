@@ -6,14 +6,14 @@ import seeds
 def run(project):
    for i in range(50):
       print(f'Run {project}-w/o-vertical-{i}')
-      result=subprocess.run(['python3','search-alpharepair-ablation.py',project,'vertical',str(seeds.SEEDS[i]),str(i)],
+      result=subprocess.run(['python3','search-srepair-ablation.py',project,'vertical',str(seeds.SEEDS[i]),str(i)],
                             stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
       with open(f'result/{project}-wo-vertical-{i}.log','w') as f:
          f.write(result.stdout.decode("utf-8"))
       print(f'Finish {project}-w/o-vertical-{i} with returncode {result.returncode}')
 
       print(f'Run {project}-w/o-horizontal-{i}')
-      result=subprocess.run(['python3','search-alpharepair-ablation.py',project,'horizontal',str(seeds.SEEDS[i]),str(i)],
+      result=subprocess.run(['python3','search-srepair-ablation.py',project,'horizontal',str(seeds.SEEDS[i]),str(i)],
                             stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
       with open(f'result/{project}-wo-horizontal-{i}.log','w') as f:
          f.write(result.stdout.decode("utf-8"))

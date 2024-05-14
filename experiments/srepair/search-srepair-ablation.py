@@ -5,8 +5,8 @@ import subprocess
 
 def run(project,mode,seed,trial):
     cur_dir=os.getcwd()
-    if not cur_dir.endswith('experiments/alpharepair'):
-        print('Please run this script in experiments/alpharepair',file=sys.stderr)
+    if not cur_dir.endswith('experiments/srepair'):
+        print('Please run this script in experiments/srepair',file=sys.stderr)
         sys.exit(1)
 
     cur_dirs=cur_dir.split('/')
@@ -35,7 +35,7 @@ def run(project,mode,seed,trial):
 if __name__ == '__main__':
     args=sys.argv
     if len(args)!=5:
-        print('Usage: python3 search-alpharepair-ablation.py <project> <vertical|horizontal> <seed> <trial>')
+        print('Usage: python3 search-srepair-ablation.py <project> <vertical|horizontal> <seed> <trial>')
         sys.exit(1)
     
     run(args[1],args[2],args[3],args[4])
