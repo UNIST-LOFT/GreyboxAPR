@@ -71,7 +71,7 @@ class TBarLoop():
     if self.state.mode == Mode.greybox and (run_result or get_branch_cov):
       if not self.state.only_get_test_time_data_mode:
         new_env=EnvGenerator.get_new_env_tbar(self.state, patch, test,instrument=True)
-        self.state.logger.info("Test passed. Running the test again with full instrumentation.")
+        self.state.logger.info("Running the test again with full instrumentation.")
         _, _, _ = run_test.run_fail_test_d4j(self.state, new_env)
 
       try:
@@ -388,7 +388,7 @@ class RecoderLoop(TBarLoop):
     if self.state.mode == Mode.greybox and (run_result or get_branch_cov):
       if not self.state.only_get_test_time_data_mode:
         new_env=EnvGenerator.get_new_env_recoder(self.state, patch, test,instrument=True)
-        self.state.logger.info("Test passed. Running the test again with full instrumentation.")
+        self.state.logger.info("Running the test again with full instrumentation.")
         _, _, _ = run_test.run_fail_test_d4j(self.state, new_env)
 
       try:

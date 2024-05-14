@@ -190,34 +190,34 @@ def run_solution_and_gen(skip_solution=False,skip_gen_patch=False,skip_postproce
                 with open(f'{cur_path}/d4j/{project}/{cur_fl_rank}/{total_patches}/{source_file_path.split("/")[-1]}','w') as f:
                     f.writelines(patched_code)
 
-            # Store patch tree
-            buggy_loc=input_root['location']
-            for file in json_patch_tree:
-                if file['file']==f'{get_src_paths(project)[1:]}/{buggy_loc["file"]}.java':
-                    cur_file=file
-                    break
-            else:
-                cur_file={'file':f'{get_src_paths(project)[1:]}/{buggy_loc["file"]}.java','functions':[]}
-                json_patch_tree.append(cur_file)
-            
-            for func in cur_file['functions']:
-                if func['function']==f'{input_root["method_signature"]["method_name"]}:{input_root["start_line"]}-{input_root["end_line"]}':
-                    cur_func=func
-                    break
-            else:
-                cur_func={'function':f'{input_root["method_signature"]["method_name"]}:{input_root["start_line"]}-{input_root["end_line"]}','lines':[]}
-                cur_file['functions'].append(cur_func)
+                # Store patch tree
+                buggy_loc=input_root['location']
+                for file in json_patch_tree:
+                    if file['file']==f'{get_src_paths(project)[1:]}/{buggy_loc["file"]}.java':
+                        cur_file=file
+                        break
+                else:
+                    cur_file={'file':f'{get_src_paths(project)[1:]}/{buggy_loc["file"]}.java','functions':[]}
+                    json_patch_tree.append(cur_file)
+                
+                for func in cur_file['functions']:
+                    if func['function']==f'{input_root["method_signature"]["method_name"]}:{input_root["start_line"]}-{input_root["end_line"]}':
+                        cur_func=func
+                        break
+                else:
+                    cur_func={'function':f'{input_root["method_signature"]["method_name"]}:{input_root["start_line"]}-{input_root["end_line"]}','lines':[]}
+                    cur_file['functions'].append(cur_func)
 
-            for line in cur_func['lines']:
-                if line['line']==buggy_loc['line']:
-                    cur_line=line
-                    break
-            else:
-                cur_line={'line':buggy_loc['line'],'fl_score':buggy_loc['score'],'file':f'{get_src_paths(project)[1:]}/{buggy_loc["file"]}.java','cases':[]}
-                cur_func['lines'].append(cur_line)
+                for line in cur_func['lines']:
+                    if line['line']==buggy_loc['line']:
+                        cur_line=line
+                        break
+                else:
+                    cur_line={'line':buggy_loc['line'],'fl_score':buggy_loc['score'],'file':f'{get_src_paths(project)[1:]}/{buggy_loc["file"]}.java','cases':[]}
+                    cur_func['lines'].append(cur_line)
 
-            cur_line['cases'].append({'case':total_patches,'location':f'{cur_fl_rank}/{total_patches}/{source_file_path.split("/")[-1]}'})
-            json_original_rank.append(f'{cur_fl_rank}/{total_patches}/{source_file_path.split("/")[-1]}')
+                cur_line['cases'].append({'case':total_patches,'location':f'{cur_fl_rank}/{total_patches}/{source_file_path.split("/")[-1]}'})
+                json_original_rank.append(f'{cur_fl_rank}/{total_patches}/{source_file_path.split("/")[-1]}')
 
 import argparse
 

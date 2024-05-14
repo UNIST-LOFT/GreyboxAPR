@@ -263,7 +263,10 @@ def read_info_recoder(state: GlobalState) -> None:
           for cs in line["cases"]:
             case_id = cs["case"]
             location = cs["location"]
-            prob = cs["prob"]
+            if 'prob' in cs:
+              prob = cs["prob"]
+            else:
+              prob = 0.5
 
             recoder_case_info = RecoderCaseInfo(line_info, location, case_id)
             line_info.recoder_case_info_map[location] = recoder_case_info
