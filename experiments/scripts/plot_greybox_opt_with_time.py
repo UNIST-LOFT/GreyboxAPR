@@ -86,11 +86,14 @@ def plot_patches_ci_java(mode='tbar'):
                 is_hq=res['result']
                 is_plausible=res['pass_result']
                 iteration=res['iteration']
+                new_critical_branch = res['new_critical_branch']
                 loc=res['config'][0]['location']
                 if is_hq:
-                    time=res['time'] + time_data[result]["instrument_time"]
+                    time=res['time'] + additional_time + time_data[result]["instrument_time"]
                     for test_result in list(time_data[result]["test_result"].values()):
-                        additional_time+=test_result["instrumented_time"] - test_result["orig_time"] + inst_time_per_one_branch*test_result["branch_count"]
+                        additional_time+=test_result["instrumented_time"] - test_result["orig_time"]
+                    additional_time += inst_time_per_one_branch*len(new_critical_branch)
+                    print("critical branch len:", len(new_critical_branch))
                 else:
                     time=res['time'] + additional_time
 
