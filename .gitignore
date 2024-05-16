@@ -15,5 +15,6 @@
 rq1.py
 experiments/yechan/
 
+!SRepair/SRepair/**/*.json
 !experiments/scripts/test-time.json
-!SRepair/SRepair/d4j/**/*.json  # Keep SRepair results, it takes too long time and cost to generate them
+!SRepair/d4j/**/*.json  # Keep SRepair results, it takes too long time and cost to generate them
