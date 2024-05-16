@@ -89,7 +89,7 @@ def plot_patches_ci_java(mode='tbar'):
                 new_critical_branch = res['new_critical_branch']
                 loc=res['config'][0]['location']
                 if is_hq:
-                    time=res['time'] + additional_time + time_data[result]["instrument_time"]
+                    time=res['time'] + additional_time + 0.5#time_data[result]["instrument_time"]
                     for test_name, test_result in list(time_data[result]["test_result"].items()):
                         branch_count = 0
                         filename = f"{mode}/result/branch/{result}/{loc.replace('/', '#')}_{test_name.split('.')[-2]}.{test_name.split('.')[-1]}.txt"
@@ -106,7 +106,7 @@ def plot_patches_ci_java(mode='tbar'):
                     additional_time += inst_time_per_one_branch*len(new_critical_branch)
                     # print("critical branch len:", len(new_critical_branch))
                 else:
-                    time=res['time'] + additional_time
+                    time=res['time'] + additional_time 
 
                 if is_plausible:
                     valid_patch_set[result].add(loc)
