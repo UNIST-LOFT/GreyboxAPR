@@ -6800,5 +6800,637 @@
                 "branch_hit_count": 59
             }
         }
+    },
+    "Time_1": {
+        "compile_time": 6.877996921539307,
+        "instrument_time": 1.319779396057129,
+        "instrument_branch": 3549,
+        "test_result": {
+            "org.joda.time.TestPartial_Constructors::testConstructorEx7_TypeArray_intArray": {
+                "orig_time": 2.4217495918273926,
+                "instrumented_time": 38.20863962173462,
+                "branch_count": 623,
+                "branch_hit_count": 104758395
+            }
+        }
+    },
+    "Time_2": {
+        "compile_time": 7.107269287109375,
+        "instrument_time": 2.0435473918914795,
+        "instrument_branch": 3547,
+        "test_result": {
+            "org.joda.time.TestPartial_Basics::testWith_baseAndArgHaveNoRange": {
+                "orig_time": 3.3318521976470947,
+                "instrumented_time": 46.66444182395935,
+                "branch_count": 644,
+                "branch_hit_count": 102284104
+            }
+        }
+    },
+    "Time_3": {
+        "compile_time": 4.821375131607056,
+        "instrument_time": 1.3770787715911865,
+        "instrument_branch": 3537,
+        "test_result": {
+            "org.joda.time.TestMutableDateTime_Adds::testAddYears_int_dstOverlapWinter_addZero": {
+                "orig_time": 2.2544453144073486,
+                "instrumented_time": 41.645967960357666,
+                "branch_count": 617,
+                "branch_hit_count": 144612389
+            },
+            "org.joda.time.TestMutableDateTime_Adds::testAddDays_int_dstOverlapWinter_addZero": {
+                "orig_time": 2.2798850536346436,
+                "instrumented_time": 42.05541491508484,
+                "branch_count": 617,
+                "branch_hit_count": 144612389
+            },
+            "org.joda.time.TestMutableDateTime_Adds::testAddWeeks_int_dstOverlapWinter_addZero": {
+                "orig_time": 2.3014090061187744,
+                "instrumented_time": 44.887946128845215,
+                "branch_count": 617,
+                "branch_hit_count": 144612389
+            },
+            "org.joda.time.TestMutableDateTime_Adds::testAdd_DurationFieldType_int_dstOverlapWinter_addZero": {
+                "orig_time": 2.2818996906280518,
+                "instrumented_time": 46.727842569351196,
+                "branch_count": 617,
+                "branch_hit_count": 144612389
+            },
+            "org.joda.time.TestMutableDateTime_Adds::testAddMonths_int_dstOverlapWinter_addZero": {
+                "orig_time": 2.301095485687256,
+                "instrumented_time": 42.54681587219238,
+                "branch_count": 552,
+                "branch_hit_count": 115089020
+            }
+        }
+    },
+    "Time_4": {
+        "compile_time": 4.784408092498779,
+        "instrument_time": 1.4683613777160645,
+        "instrument_branch": 3537,
+        "test_result": {
+            "org.joda.time.TestPartial_Basics::testWith3": {
+                "orig_time": 2.302098274230957,
+                "instrumented_time": 42.64832592010498,
+                "branch_count": 617,
+                "branch_hit_count": 144612389
+            }
+        }
+    },
+    "Time_5": {
+        "compile_time": 4.703299522399902,
+        "instrument_time": 1.5671985149383545,
+        "instrument_branch": 3520,
+        "test_result": {
+            "org.joda.time.TestPeriod_Basics::testNormalizedStandard_periodType_months1": {
+                "orig_time": 2.306058645248413,
+                "instrumented_time": 46.76172089576721,
+                "branch_count": 624,
+                "branch_hit_count": 139070511
+            },
+            "org.joda.time.TestPeriod_Basics::testNormalizedStandard_periodType_months2": {
+                "orig_time": 2.271434783935547,
+                "instrumented_time": 41.339746952056885,
+                "branch_count": 624,
+                "branch_hit_count": 139070511
+            },
+            "org.joda.time.TestPeriod_Basics::testNormalizedStandard_periodType_monthsWeeks": {
+                "orig_time": 2.3336973190307617,
+                "instrumented_time": 60.34422039985657,
+                "branch_count": 624,
+                "branch_hit_count": 139070511
+            }
+        }
+    },
+    "Time_6": {
+        "compile_time": 7.561671733856201,
+        "instrument_time": 1.423482894897461,
+        "instrument_branch": 3513,
+        "test_result": {
+            "org.joda.time.chrono.TestGJDate::test_cutoverPreZero": {
+                "orig_time": 2.318570852279663,
+                "instrumented_time": 47.85715961456299,
+                "branch_count": 629,
+                "branch_hit_count": 145860411
+            },
+            "org.joda.time.chrono.TestGJDate::test_plusWeekyears_positiveToNegative_crossCutover": {
+                "orig_time": 2.3042924404144287,
+                "instrumented_time": 41.90946698188782,
+                "branch_count": 570,
+                "branch_hit_count": 125078235
+            },
+            "org.joda.time.chrono.TestGJDate::test_plusYears_positiveToZero_crossCutover": {
+                "orig_time": 2.282785415649414,
+                "instrumented_time": 45.56465148925781,
+                "branch_count": 629,
+                "branch_hit_count": 145860411
+            },
+            "org.joda.time.chrono.TestGJDate::test_plusYears_positiveToNegative_crossCutover": {
+                "orig_time": 2.3268792629241943,
+                "instrumented_time": 42.43220520019531,
+                "branch_count": 629,
+                "branch_hit_count": 145860411
+            },
+            "org.joda.time.chrono.TestGJDate::test_plusWeekyears_positiveToZero_crossCutover": {
+                "orig_time": 2.2713472843170166,
+                "instrumented_time": 41.94156861305237,
+                "branch_count": 629,
+                "branch_hit_count": 145860411
+            }
+        }
+    },
+    "Time_7": {
+        "compile_time": 7.602641344070435,
+        "instrument_time": 1.4054360389709473,
+        "instrument_branch": 3510,
+        "test_result": {
+            "org.joda.time.format.TestDateTimeFormatter::testParseInto_monthDay_feb29_newYork_startOfYear": {
+                "orig_time": 2.2809486389160156,
+                "instrumented_time": 28.29199528694153,
+                "branch_count": 558,
+                "branch_hit_count": 50762971
+            },
+            "org.joda.time.format.TestDateTimeFormatter::testParseInto_monthDay_feb29_tokyo_endOfYear": {
+                "orig_time": 2.331759452819824,
+                "instrumented_time": 28.39810585975647,
+                "branch_count": 560,
+                "branch_hit_count": 94947041
+            }
+        }
+    },
+    "Time_8": {
+        "compile_time": 8.113983631134033,
+        "instrument_time": 1.378021001815796,
+        "instrument_branch": 3483,
+        "test_result": {
+            "org.joda.time.TestDateTimeZone::testForOffsetHoursMinutes_int_int": {
+                "orig_time": 2.293750286102295,
+                "instrumented_time": 32.26973080635071,
+                "branch_count": 567,
+                "branch_hit_count": 107074176
+            }
+        }
+    },
+    "Time_9": {
+        "compile_time": 8.041504621505737,
+        "instrument_time": 1.369251012802124,
+        "instrument_branch": 3479,
+        "test_result": {
+            "org.joda.time.TestDateTimeZone::testForOffsetHoursMinutes_int_int": {
+                "orig_time": 2.2831947803497314,
+                "instrumented_time": 39.04590678215027,
+                "branch_count": 566,
+                "branch_hit_count": 131389097
+            }
+        }
+    },
+    "Time_10": {
+        "compile_time": 7.7797393798828125,
+        "instrument_time": 1.4042866230010986,
+        "instrument_branch": 3479,
+        "test_result": {
+            "org.joda.time.TestDays::testFactory_daysBetween_RPartial_MonthDay": {
+                "orig_time": 2.299067974090576,
+                "instrumented_time": 44.578304052352905,
+                "branch_count": 566,
+                "branch_hit_count": 131389097
+            },
+            "org.joda.time.TestMonths::testFactory_monthsBetween_RPartial_MonthDay": {
+                "orig_time": 2.3055360317230225,
+                "instrumented_time": 47.40604877471924,
+                "branch_count": 566,
+                "branch_hit_count": 131389097
+            }
+        }
+    },
+    "Time_11": {
+        "compile_time": 7.979990243911743,
+        "instrument_time": 1.335984230041504,
+        "instrument_branch": 3475,
+        "test_result": {
+            "org.joda.time.tz.TestCompiler::testDateTimeZoneBuilder": {
+                "orig_time": 2.2993199825286865,
+                "instrumented_time": 47.41709327697754,
+                "branch_count": 551,
+                "branch_hit_count": 135054183
+            }
+        }
+    },
+    "Time_12": {
+        "compile_time": 4.762043476104736,
+        "instrument_time": 1.5467338562011719,
+        "instrument_branch": 3451,
+        "test_result": {
+            "org.joda.time.TestLocalDateTime_Constructors::testFactory_fromDateFields_beforeYearZero1": {
+                "orig_time": 2.360541582107544,
+                "instrumented_time": 22.259387016296387,
+                "branch_count": 548,
+                "branch_hit_count": 72255982
+            },
+            "org.joda.time.TestLocalDateTime_Constructors::testFactory_fromDateFields_beforeYearZero3": {
+                "orig_time": 2.3623340129852295,
+                "instrumented_time": 22.27827262878418,
+                "branch_count": 548,
+                "branch_hit_count": 72255982
+            },
+            "org.joda.time.TestLocalDateTime_Constructors::testFactory_fromCalendarFields_beforeYearZero1": {
+                "orig_time": 2.3539490699768066,
+                "instrumented_time": 23.329299688339233,
+                "branch_count": 548,
+                "branch_hit_count": 72255982
+            },
+            "org.joda.time.TestLocalDateTime_Constructors::testFactory_fromCalendarFields_beforeYearZero3": {
+                "orig_time": 2.334716558456421,
+                "instrumented_time": 25.432203769683838,
+                "branch_count": 538,
+                "branch_hit_count": 51704200
+            },
+            "org.joda.time.TestLocalDate_Constructors::testFactory_fromDateFields_beforeYearZero1": {
+                "orig_time": 2.3377718925476074,
+                "instrumented_time": 23.607359886169434,
+                "branch_count": 548,
+                "branch_hit_count": 72255982
+            },
+            "org.joda.time.TestLocalDate_Constructors::testFactory_fromDateFields_beforeYearZero3": {
+                "orig_time": 2.371558904647827,
+                "instrumented_time": 24.24475932121277,
+                "branch_count": 548,
+                "branch_hit_count": 72255982
+            },
+            "org.joda.time.TestLocalDate_Constructors::testFactory_fromCalendarFields_beforeYearZero1": {
+                "orig_time": 2.3602988719940186,
+                "instrumented_time": 23.15686273574829,
+                "branch_count": 548,
+                "branch_hit_count": 72255982
+            },
+            "org.joda.time.TestLocalDate_Constructors::testFactory_fromCalendarFields_beforeYearZero3": {
+                "orig_time": 2.3420052528381348,
+                "instrumented_time": 22.721169471740723,
+                "branch_count": 530,
+                "branch_hit_count": 55808728
+            }
+        }
+    },
+    "Time_13": {
+        "compile_time": 4.678470849990845,
+        "instrument_time": 1.4042978286743164,
+        "instrument_branch": 3448,
+        "test_result": {
+            "org.joda.time.format.TestISOPeriodFormat::testFormatStandard_negative": {
+                "orig_time": 2.2973430156707764,
+                "instrumented_time": 36.78838777542114,
+                "branch_count": 525,
+                "branch_hit_count": 105189606
+            }
+        }
+    },
+    "Time_14": {
+        "compile_time": 4.849549770355225,
+        "instrument_time": 1.3501064777374268,
+        "instrument_branch": 3442,
+        "test_result": {
+            "org.joda.time.TestMonthDay_Basics::testPlusMonths_int_negativeFromLeap": {
+                "orig_time": 2.3331732749938965,
+                "instrumented_time": 48.99343228340149,
+                "branch_count": 567,
+                "branch_hit_count": 153483383
+            },
+            "org.joda.time.TestMonthDay_Basics::testMinusDays_int_negativeFromLeap": {
+                "orig_time": 2.3118391036987305,
+                "instrumented_time": 48.766273736953735,
+                "branch_count": 571,
+                "branch_hit_count": 103271214
+            },
+            "org.joda.time.TestMonthDay_Basics::testPlusMonths_int_fromLeap": {
+                "orig_time": 2.33317232131958,
+                "instrumented_time": 48.064712047576904,
+                "branch_count": 567,
+                "branch_hit_count": 153483383
+            },
+            "org.joda.time.TestMonthDay_Basics::testPlusMonths_int_negativeEndOfMonthAdjust": {
+                "orig_time": 2.310426712036133,
+                "instrumented_time": 49.676185607910156,
+                "branch_count": 567,
+                "branch_hit_count": 153483383
+            },
+            "org.joda.time.TestMonthDay_Basics::testMinusMonths_int_endOfMonthAdjust": {
+                "orig_time": 2.3541996479034424,
+                "instrumented_time": 47.191877603530884,
+                "branch_count": 567,
+                "branch_hit_count": 153483383
+            },
+            "org.joda.time.TestMonthDay_Basics::testMinusMonths_int_negativeFromLeap": {
+                "orig_time": 2.299618721008301,
+                "instrumented_time": 53.378209590911865,
+                "branch_count": 567,
+                "branch_hit_count": 153483383
+            },
+            "org.joda.time.TestMonthDay_Basics::testMinusMonths_int_fromLeap": {
+                "orig_time": 2.3177695274353027,
+                "instrumented_time": 48.73345422744751,
+                "branch_count": 567,
+                "branch_hit_count": 153483383
+            },
+            "org.joda.time.TestMonthDay_Basics::testPlusDays_int_fromLeap": {
+                "orig_time": 2.333310127258301,
+                "instrumented_time": 44.273725748062134,
+                "branch_count": 570,
+                "branch_hit_count": 103271612
+            }
+        }
+    },
+    "Time_15": {
+        "compile_time": 4.898526430130005,
+        "instrument_time": 1.4209535121917725,
+        "instrument_branch": 3441,
+        "test_result": {
+            "org.joda.time.field.TestFieldUtils::testSafeMultiplyLongInt": {
+                "orig_time": 2.274116039276123,
+                "instrumented_time": 38.39593291282654,
+                "branch_count": 573,
+                "branch_hit_count": 118139325
+            }
+        }
+    },
+    "Time_16": {
+        "compile_time": 4.712045192718506,
+        "instrument_time": 1.3481345176696777,
+        "instrument_branch": 3441,
+        "test_result": {
+            "org.joda.time.format.TestDateTimeFormatter::testParseInto_monthOnly_baseStartYear": {
+                "orig_time": 2.2999491691589355,
+                "instrumented_time": 34.97965455055237,
+                "branch_count": 573,
+                "branch_hit_count": 117935196
+            },
+            "org.joda.time.format.TestDateTimeFormatter::testParseInto_monthOnly_parseStartYear": {
+                "orig_time": 2.3577144145965576,
+                "instrumented_time": 35.13067841529846,
+                "branch_count": 573,
+                "branch_hit_count": 117935196
+            },
+            "org.joda.time.format.TestDateTimeFormatter::testParseInto_monthOnly_baseEndYear": {
+                "orig_time": 2.343963384628296,
+                "instrumented_time": 39.13965439796448,
+                "branch_count": 573,
+                "branch_hit_count": 117935196
+            },
+            "org.joda.time.format.TestDateTimeFormatter::testParseInto_monthOnly": {
+                "orig_time": 2.30171799659729,
+                "instrumented_time": 40.25373077392578,
+                "branch_count": 573,
+                "branch_hit_count": 117935196
+            },
+            "org.joda.time.format.TestDateTimeFormatter::testParseInto_monthDay_withDefaultYear_feb29": {
+                "orig_time": 2.319409132003784,
+                "instrumented_time": 37.311617851257324,
+                "branch_count": 580,
+                "branch_hit_count": 74800036
+            },
+            "org.joda.time.format.TestDateTimeFormatter::testParseInto_monthDay_feb29": {
+                "orig_time": 2.302809953689575,
+                "instrumented_time": 37.853919982910156,
+                "branch_count": 573,
+                "branch_hit_count": 117935196
+            },
+            "org.joda.time.format.TestDateTimeFormatter::testParseInto_monthOnly_parseEndYear": {
+                "orig_time": 2.3459055423736572,
+                "instrumented_time": 40.79991149902344,
+                "branch_count": 573,
+                "branch_hit_count": 117935196
+            }
+        }
+    },
+    "Time_17": {
+        "compile_time": 4.666901588439941,
+        "instrument_time": 1.377469539642334,
+        "instrument_branch": 3428,
+        "test_result": {
+            "org.joda.time.TestDateTimeZoneCutover::testBug3476684_adjustOffset": {
+                "orig_time": 2.285381317138672,
+                "instrumented_time": 24.180349349975586,
+                "branch_count": 572,
+                "branch_hit_count": 81256529
+            }
+        }
+    },
+    "Time_18": {
+        "compile_time": 4.6673524379730225,
+        "instrument_time": 1.3239250183105469,
+        "instrument_branch": 3422,
+        "test_result": {
+            "org.joda.time.chrono.TestGJChronology::testLeapYearRulesConstruction": {
+                "orig_time": 2.29575252532959,
+                "instrumented_time": 27.887308597564697,
+                "branch_count": 574,
+                "branch_hit_count": 97095409
+            }
+        }
+    },
+    "Time_19": {
+        "compile_time": 4.668713092803955,
+        "instrument_time": 1.3144583702087402,
+        "instrument_branch": 3417,
+        "test_result": {
+            "org.joda.time.TestDateTimeZoneCutover::testDateTimeCreation_london": {
+                "orig_time": 2.284698963165283,
+                "instrumented_time": 33.430203914642334,
+                "branch_count": 541,
+                "branch_hit_count": 113537858
+            }
+        }
+    },
+    "Time_20": {
+        "compile_time": 4.663070917129517,
+        "instrument_time": 1.3771367073059082,
+        "instrument_branch": 3415,
+        "test_result": {
+            "org.joda.time.format.TestDateTimeFormatterBuilder::test_printParseZoneDawsonCreek": {
+                "orig_time": 2.317025661468506,
+                "instrumented_time": 27.314941883087158,
+                "branch_count": 550,
+                "branch_hit_count": 95121223
+            }
+        }
+    },
+    "Time_21": {
+        "compile_time": 4.654309988021851,
+        "instrument_time": 1.4220101833343506,
+        "instrument_branch": 3411,
+        "test_result": {}
+    },
+    "Time_22": {
+        "compile_time": 4.615037202835083,
+        "instrument_time": 1.4028687477111816,
+        "instrument_branch": 3367,
+        "test_result": {
+            "org.joda.time.TestDuration_Basics::testToPeriod_fixedZone": {
+                "orig_time": 2.3042328357696533,
+                "instrumented_time": 39.2295606136322,
+                "branch_count": 567,
+                "branch_hit_count": 134936496
+            },
+            "org.joda.time.TestPeriod_Constructors::testConstructor_long_fixedZone": {
+                "orig_time": 2.237309694290161,
+                "instrumented_time": 39.04133582115173,
+                "branch_count": 567,
+                "branch_hit_count": 134936496
+            }
+        }
+    },
+    "Time_23": {
+        "compile_time": 4.766854763031006,
+        "instrument_time": 1.4167225360870361,
+        "instrument_branch": 3367,
+        "test_result": {
+            "org.joda.time.TestDateTimeZone::testForID_String_old": {
+                "orig_time": 2.236133337020874,
+                "instrumented_time": 29.94803237915039,
+                "branch_count": 584,
+                "branch_hit_count": 103051955
+            }
+        }
+    },
+    "Time_24": {
+        "compile_time": 4.625288248062134,
+        "instrument_time": 1.3545777797698975,
+        "instrument_branch": 3360,
+        "test_result": {
+            "org.joda.time.format.TestDateTimeFormatter::testParseLocalDate_weekyear_month_week_2010": {
+                "orig_time": 2.2906179428100586,
+                "instrumented_time": 27.246365785598755,
+                "branch_count": 581,
+                "branch_hit_count": 93677405
+            },
+            "org.joda.time.format.TestDateTimeFormatter::testParseLocalDate_weekyear_month_week_2011": {
+                "orig_time": 2.29331374168396,
+                "instrumented_time": 27.128241777420044,
+                "branch_count": 581,
+                "branch_hit_count": 93677405
+            },
+            "org.joda.time.format.TestDateTimeFormatter::testParseLocalDate_weekyear_month_week_2012": {
+                "orig_time": 2.287086248397827,
+                "instrumented_time": 27.111581563949585,
+                "branch_count": 581,
+                "branch_hit_count": 93677405
+            },
+            "org.joda.time.format.TestDateTimeFormatter::testParseLocalDate_year_month_week_2010": {
+                "orig_time": 2.2851150035858154,
+                "instrumented_time": 27.125401973724365,
+                "branch_count": 581,
+                "branch_hit_count": 93677405
+            },
+            "org.joda.time.format.TestDateTimeFormatter::testParseLocalDate_year_month_week_2011": {
+                "orig_time": 2.278684139251709,
+                "instrumented_time": 27.527700185775757,
+                "branch_count": 585,
+                "branch_hit_count": 52076897
+            },
+            "org.joda.time.format.TestDateTimeFormatter::testParseLocalDate_year_month_week_2012": {
+                "orig_time": 2.282163143157959,
+                "instrumented_time": 27.35301446914673,
+                "branch_count": 584,
+                "branch_hit_count": 52076926
+            },
+            "org.joda.time.format.TestDateTimeFormatter::testParseLocalDate_year_month_week_2016": {
+                "orig_time": 2.290639877319336,
+                "instrumented_time": 26.951419830322266,
+                "branch_count": 584,
+                "branch_hit_count": 52046287
+            }
+        }
+    },
+    "Time_25": {
+        "compile_time": 4.605230093002319,
+        "instrument_time": 1.370673656463623,
+        "instrument_branch": 3348,
+        "test_result": {
+            "org.joda.time.TestDateTimeZoneCutover::test_DateTime_constructor_Moscow_Autumn": {
+                "orig_time": 2.281106472015381,
+                "instrumented_time": 27.554786682128906,
+                "branch_count": 540,
+                "branch_hit_count": 94216848
+            },
+            "org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Moscow_Autumn_overlap_mins": {
+                "orig_time": 2.276949405670166,
+                "instrumented_time": 27.26917839050293,
+                "branch_count": 540,
+                "branch_hit_count": 94216848
+            },
+            "org.joda.time.TestDateTimeZoneCutover::test_getOffsetFromLocal_Moscow_Autumn": {
+                "orig_time": 2.289787769317627,
+                "instrumented_time": 28.299535036087036,
+                "branch_count": 540,
+                "branch_hit_count": 94216848
+            }
+        }
+    },
+    "Time_26": {
+        "compile_time": 4.614017724990845,
+        "instrument_time": 1.3503801822662354,
+        "instrument_branch": 3348,
+        "test_result": {
+            "org.joda.time.TestDateTimeZoneCutover::testWithSecondOfMinuteInDstChange": {
+                "orig_time": 2.280715227127075,
+                "instrumented_time": 27.42282009124756,
+                "branch_count": 540,
+                "branch_hit_count": 94216848
+            },
+            "org.joda.time.TestDateTimeZoneCutover::testWithMinuteOfHourInDstChange": {
+                "orig_time": 2.2756810188293457,
+                "instrumented_time": 27.585442304611206,
+                "branch_count": 555,
+                "branch_hit_count": 53870562
+            },
+            "org.joda.time.TestDateTimeZoneCutover::testWithMinuteOfHourInDstChange_mockZone": {
+                "orig_time": 2.2825253009796143,
+                "instrumented_time": 27.172062873840332,
+                "branch_count": 540,
+                "branch_hit_count": 94216848
+            },
+            "org.joda.time.TestDateTimeZoneCutover::testBug2182444_usCentral": {
+                "orig_time": 2.2311172485351562,
+                "instrumented_time": 27.345523595809937,
+                "branch_count": 540,
+                "branch_hit_count": 94216848
+            },
+            "org.joda.time.TestDateTimeZoneCutover::testWithMillisOfSecondInDstChange_Paris_summer": {
+                "orig_time": 2.2760753631591797,
+                "instrumented_time": 27.40139079093933,
+                "branch_count": 540,
+                "branch_hit_count": 94216848
+            },
+            "org.joda.time.TestDateTimeZoneCutover::testWithHourOfDayInDstChange": {
+                "orig_time": 2.280428886413574,
+                "instrumented_time": 27.558588981628418,
+                "branch_count": 540,
+                "branch_hit_count": 94216848
+            },
+            "org.joda.time.TestDateTimeZoneCutover::testWithMillisOfSecondInDstChange_NewYork_winter": {
+                "orig_time": 2.2654974460601807,
+                "instrumented_time": 27.344851970672607,
+                "branch_count": 540,
+                "branch_hit_count": 94216848
+            },
+            "org.joda.time.TestDateTimeZoneCutover::testBug2182444_ausNSW": {
+                "orig_time": 2.301809549331665,
+                "instrumented_time": 27.335673809051514,
+                "branch_count": 540,
+                "branch_hit_count": 94216848
+            }
+        }
+    },
+    "Time_27": {
+        "compile_time": 4.570128679275513,
+        "instrument_time": 1.3556885719299316,
+        "instrument_branch": 3346,
+        "test_result": {
+            "org.joda.time.format.TestPeriodFormatterBuilder::testBug2495455": {
+                "orig_time": 2.301830768585205,
+                "instrumented_time": 35.56690430641174,
+                "branch_count": 571,
+                "branch_hit_count": 120840408
+            }
+        }
     }
 }
