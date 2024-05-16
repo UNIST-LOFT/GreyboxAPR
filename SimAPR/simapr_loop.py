@@ -34,10 +34,10 @@ class TBarLoop():
           self.state.time_limit > 0 and (self.state.select_time+self.state.test_time) > self.state.time_limit:
       self.state.logger.info("finish because of cycle limit and time limit")
       self.state.is_alive = False
-    elif self.state.cycle_limit > 0 and self.state.iteration >= self.state.cycle_limit:
+    elif self.state.time_limit <= 0 and self.state.cycle_limit > 0 and self.state.iteration >= self.state.cycle_limit:
       self.state.logger.info("finish because of cycle limit")
       self.state.is_alive = False
-    elif self.state.time_limit > 0 and (self.state.select_time+self.state.test_time) > self.state.time_limit:
+    elif self.state.time_limit > 0 and self.state.cycle_limit <= 0 and (self.state.select_time+self.state.test_time) > self.state.time_limit:
       self.state.logger.info("finish because of time limit")
       self.state.is_alive = False
     elif len(self.state.patch_ranking) == 0:
@@ -374,10 +374,10 @@ class RecoderLoop(TBarLoop):
           self.state.time_limit > 0 and (self.state.select_time+self.state.test_time) > self.state.time_limit:
       self.state.logger.info("finish because of cycle limit and time limit")
       self.state.is_alive = False
-    elif self.state.cycle_limit > 0 and self.state.iteration >= self.state.cycle_limit:
+    elif self.state.cycle_limit > 0 and self.state.time_limit <= 0 and self.state.iteration >= self.state.cycle_limit:
       self.state.logger.info("finish because of cycle limit")
       self.state.is_alive = False
-    elif self.state.time_limit > 0 and (self.state.select_time+self.state.test_time) > self.state.time_limit:
+    elif self.state.time_limit > 0 and self.state.cycle_limit <= 0 and (self.state.select_time+self.state.test_time) > self.state.time_limit:
       self.state.logger.info("finish because of time limit")
       self.state.is_alive = False
     elif len(self.state.patch_ranking) == 0:
