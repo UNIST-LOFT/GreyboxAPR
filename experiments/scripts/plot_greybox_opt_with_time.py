@@ -15,21 +15,11 @@ MAX_EXP=10
 WITH_MOCKITO=False
 MAX_TIME=300
 
-def get_subject_filter_whitelist():
-    directory = 'scripts/data_for_plot'
-    result = []
-    for filename in listdir(directory):
-        if filename.endswith('_test_time_data.json'):
-            result.append(filename[:-len('_test_time_data.json')])
-    return result
-
 def plot_patches_ci_java(mode='tbar'):
     orig_result:List[int]=[]
     casino_result:List[List[int]]=[]
     greybox_result:List[List[int]]=[]
 
-    subject_filter = get_subject_filter_whitelist()
-    print(subject_filter)
 
     valid_patch_set:Dict[str,set]=dict()
 
@@ -37,7 +27,7 @@ def plot_patches_ci_java(mode='tbar'):
     for i in range(MAX_EXP):
         casino_result.append([])
         for result in d4j.D4J_1_2_LIST:
-            if not path.exists(f'{mode}/result/{result}-greybox-{MAX_EXP-1}/simapr-finished.txt') or result not in subject_filter:
+            if not path.exists(f'{mode}/result/{result}-greybox-{MAX_EXP-1}/simapr-finished.txt'):
                 # Skip if experiment not end
                 continue
             if not WITH_MOCKITO and 'Mockito' in result:
@@ -68,11 +58,13 @@ def plot_patches_ci_java(mode='tbar'):
     print(np.mean([len(l) for l in casino_result]))
                     
     # Greybox
-    
+    time_data_file = open(f"scripts/test-time.json")
+    time_data = json.load(time_data_file)
+    time_data_file.close()
     for i in range(MAX_EXP):
         greybox_result.append([])
         for result in d4j.D4J_1_2_LIST:
-            if not path.exists(f'{mode}/result/{result}-greybox-{MAX_EXP-1}/simapr-finished.txt') or result not in subject_filter:
+            if not path.exists(f'{mode}/result/{result}-greybox-{MAX_EXP-1}/simapr-finished.txt'):
                 # Skip if experiment not end
                 continue
             if not WITH_MOCKITO and 'Mockito' in result:
@@ -85,9 +77,7 @@ def plot_patches_ci_java(mode='tbar'):
             root=json.load(result_file)
             result_file.close()
 
-            time_data_file = open(f"scripts/data_for_plot/{result}_test_time_data.json")
-            time_data = json.load(time_data_file)
-            time_data_file.close()
+            inst_time_per_one_branch = float(time_data[result]["instrument_time"]) / float(time_data[result]["instrument_branch"]) if (float(time_data[result]["instrument_branch"])!=0) else 0
 
             additional_time = 0
             if result not in valid_patch_set:
@@ -98,10 +88,11 @@ def plot_patches_ci_java(mode='tbar'):
                 iteration=res['iteration']
                 loc=res['config'][0]['location']
                 if is_hq:
-                    for config in res['config']:
-                        additional_time+=sum(list(time_data['greybox'][config['location']].values()))
-                        print("additional time:", additional_time)
-                time=res['time'] + additional_time
+                    time=res['time'] + time_data[result]["instrument_time"]
+                    for test_result in list(time_data[result]["test_result"].values()):
+                        additional_time+=test_result["instrumented_time"] - test_result["orig_time"] + inst_time_per_one_branch*test_result["branch_count"]
+                else:
+                    time=res['time'] + additional_time
 
                 if is_plausible:
                     valid_patch_set[result].add(loc)
@@ -114,7 +105,7 @@ def plot_patches_ci_java(mode='tbar'):
 
     # Original
     for result in d4j.D4J_1_2_LIST:
-        if not path.exists(f'{mode}/result/{result}-greybox-{MAX_EXP-1}/simapr-finished.txt') or result not in subject_filter:
+        if not path.exists(f'{mode}/result/{result}-greybox-{MAX_EXP-1}/simapr-finished.txt'):
             # Skip if experiment not end
             continue
         if not WITH_MOCKITO and 'Mockito' in result:
