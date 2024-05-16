@@ -30,7 +30,11 @@ class TBarLoop():
     if len(self.state.file_info_map) == 0:
       self.state.logger.info("finish because of len(self.state.file_info_map) == 0")
       self.state.is_alive = False
-    if self.state.cycle_limit > 0 and self.state.iteration >= self.state.cycle_limit:
+    elif self.state.cycle_limit > 0 and self.state.iteration >= self.state.cycle_limit and \
+          self.state.time_limit > 0 and (self.state.select_time+self.state.test_time) > self.state.time_limit:
+      self.state.logger.info("finish because of cycle limit and time limit")
+      self.state.is_alive = False
+    elif self.state.cycle_limit > 0 and self.state.iteration >= self.state.cycle_limit:
       self.state.logger.info("finish because of cycle limit")
       self.state.is_alive = False
     elif self.state.time_limit > 0 and (self.state.select_time+self.state.test_time) > self.state.time_limit:
@@ -366,7 +370,11 @@ class RecoderLoop(TBarLoop):
     if len(self.state.file_info_map) == 0:
       self.state.logger.info("finish because of len(self.state.file_info_map) == 0")
       self.state.is_alive = False
-    if self.state.cycle_limit > 0 and self.state.iteration >= self.state.cycle_limit:
+    elif self.state.cycle_limit > 0 and self.state.iteration >= self.state.cycle_limit and \
+          self.state.time_limit > 0 and (self.state.select_time+self.state.test_time) > self.state.time_limit:
+      self.state.logger.info("finish because of cycle limit and time limit")
+      self.state.is_alive = False
+    elif self.state.cycle_limit > 0 and self.state.iteration >= self.state.cycle_limit:
       self.state.logger.info("finish because of cycle limit")
       self.state.is_alive = False
     elif self.state.time_limit > 0 and (self.state.select_time+self.state.test_time) > self.state.time_limit:
