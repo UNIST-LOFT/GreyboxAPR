@@ -16,3 +16,4 @@ rq1.py
 experiments/yechan/
 
 !SRepair/SRepair/**/*.json
+!experiments/scripts/test-time-backup.json
