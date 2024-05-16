@@ -866,5 +866,10 @@ def append_java_cache_result(state:GlobalState,case:Union[TbarCaseInfo,RecoderCa
     current['compilable']=compilable
     current['fail_time']=fail_time
     current['pass_time']=pass_time
-
     state.simulation_data[id]=current
+  elif state.mode==Mode.greybox and 'fail_time_branch' not in state.simulation_data[id]:
+    current=state.simulation_data[id]
+    current['fail_time_branch']=fail_time
+  elif state.mode!=Mode.greybox and 'fail_time' not in state.simulation_data[id]:
+    current=state.simulation_data[id]
+    current['fail_time']=fail_time
