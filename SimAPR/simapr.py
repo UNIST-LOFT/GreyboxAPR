@@ -243,6 +243,8 @@ def read_info_recoder(state: GlobalState) -> None:
             continue
           line_info=LineInfo(func_info, int(line['line']))
           func_info.line_info_map[line_info.uuid] = line_info
+          fl_score = line["fl_score"]
+          line_info.fl_score = fl_score
 
           for cs in line["cases"]:
             case_id = cs["case"]
@@ -270,35 +272,29 @@ def read_info_recoder(state: GlobalState) -> None:
 
           if len(line_info.recoder_case_info_map) == 0:
             del func_info.line_info_map[line_info.uuid]
-            state.line_list.remove(line_info)
             del line_info
-            continue
+          else:
+            state.line_list.append(line_info)
+            func_info.fl_score_list.append(fl_score)
+            file_info.fl_score_list.append(fl_score)
 
-          fl_score = line["fl_score"]
-          state.line_list.append(line_info)
-          line_info.fl_score = fl_score
-          func_info.fl_score_list.append(fl_score)
-          file_info.fl_score_list.append(fl_score)
-
-          if fl_score not in state.score_remain_line_map:
-            state.score_remain_line_map[fl_score]=[]
-          state.score_remain_line_map[fl_score].append(line_info)
-          if fl_score not in file_info.remain_lines_by_score:
-            file_info.remain_lines_by_score[fl_score]=[]
-          file_info.remain_lines_by_score[fl_score].append(line_info)
-          if fl_score not in func_info.remain_lines_by_score:
-            func_info.remain_lines_by_score[fl_score]=[]
-          func_info.remain_lines_by_score[fl_score].append(line_info)
+            if fl_score not in state.score_remain_line_map:
+              state.score_remain_line_map[fl_score]=[]
+            state.score_remain_line_map[fl_score].append(line_info)
+            if fl_score not in file_info.remain_lines_by_score:
+              file_info.remain_lines_by_score[fl_score]=[]
+            file_info.remain_lines_by_score[fl_score].append(line_info)
+            if fl_score not in func_info.remain_lines_by_score:
+              func_info.remain_lines_by_score[fl_score]=[]
+            func_info.remain_lines_by_score[fl_score].append(line_info)
         
         if len(func_info.line_info_map) == 0:
           del file_info.func_info_map[func['function']]
           state.func_list.remove(func_info)
           del func_info
-          continue
       if len(file_info.func_info_map) == 0:
         del state.file_info_map[file_name]
         del file_info
-        continue
 
   state.d4j_buggy_project = info["project_name"]
   if state.d4j_buggy_project.startswith('Mockito'):
