@@ -1,6 +1,7 @@
 from core import *
 from typing import List
 import json
+import signal
 
 def get_ochiai(s_h: float, s_l: float, d_h: float, d_l: float) -> float:
   if s_h == 0.0:
@@ -10,6 +11,8 @@ def get_ochiai(s_h: float, s_l: float, d_h: float, d_l: float) -> float:
 def save_result(state: GlobalState) -> None:
   state.last_save_time = time.time()
   result_file = os.path.join(state.out_dir, "simapr-result.json")
+
+  signal.signal(signal.SIGINT, signal.SIG_IGN)
   state.logger.info(f"Saving result to {result_file}")
   with open(result_file, 'w') as f:
     json.dump(state.simapr_result, f, indent=2)
@@ -18,6 +21,7 @@ def save_result(state: GlobalState) -> None:
     # Save cached result to file
     with open(state.prev_data, "w") as f:
       json.dump(state.simulation_data, f, indent=2)
+  signal.signal(signal.SIGINT, signal.SIG_DFL)
 
   # if (state.mode == Mode.greybox and state.optimized_instrumentation and state.use_simulation_mode) or (state.mode == Mode.casino and state.no_instrumentation_time_data != ""):
   #   file_path = os.path.join(state.no_instrumentation_time_data_output, "no_instrumentation_time_data.json")
