@@ -3,6 +3,7 @@ import os
 from sys import argv
 
 def remove_branch_time(file):
+    print(file)
     with open(file) as f:
         data = json.load(f)
     for patch_id in data:

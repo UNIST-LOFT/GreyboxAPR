@@ -101,7 +101,8 @@ def plot_patches_ci_java(mode='tbar'):
                             # print(test_result["branch_hit_count"],",", branch_count)
                             branch_file.close()
                         except:
-                            print("branch file not found", filename)
+                            # print("branch file not found", filename)
+                            pass
                         additional_time+=(test_result["instrumented_time"] - test_result["orig_time"])/test_result["branch_hit_count"]*branch_count if test_result["branch_hit_count"]!=0 else 0
                     additional_time += inst_time_per_one_branch*len(new_critical_branch)
                     # print("critical branch len:", len(new_critical_branch))
