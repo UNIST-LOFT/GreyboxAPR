@@ -70,6 +70,7 @@ class TBarLoop():
     new_env=EnvGenerator.get_new_env_tbar(self.state, patch, test)
     start_time=time.time()
     compilable, run_result, is_timeout = run_test.run_fail_test_d4j(self.state, new_env)
+    run_time=time.time()-start_time
     
     if self.state.mode == Mode.greybox and (run_result or get_branch_cov):
       if not self.state.only_get_test_time_data_mode:
@@ -90,7 +91,6 @@ class TBarLoop():
       except OSError as e:
         self.state.logger.warning(f"Greybox result not found for {patch.tbar_case_info.location} {test}. expected location: {new_env['GREYBOX_RESULT']}")
         
-    run_time=time.time()-start_time
     return compilable, run_result, run_time, cur_cov
       
   def run_test_positive(self, patch: TbarPatchInfo) -> Tuple[bool,float]:
@@ -243,9 +243,7 @@ class TBarLoop():
       key = patch.tbar_case_info.location
       self.state.new_critical_list = []
       # checks if there is a cached data
-      if key not in self.state.simulation_data or \
-          (self.state.mode==Mode.greybox and 'fail_time_branch' not in self.state.simulation_data[key]) or \
-          (self.state.mode!=Mode.greybox and 'fail_time' not in self.state.simulation_data[key]):
+      if key not in self.state.simulation_data or 'fail_time' not in self.state.simulation_data[key]:
         each_result=dict()
         coverages:Dict[str,branch_coverage.BranchCoverage]=dict()
         for neg in self.state.d4j_negative_test:
@@ -288,11 +286,7 @@ class TBarLoop():
         pass_exists = True in each_result.values()
         result = simapr_result['pass_all_fail']
         pass_result = simapr_result['plausible']
-        if self.state.mode!=Mode.greybox:
-          fail_time=simapr_result['fail_time']
-        else:
-          fail_time=simapr_result['fail_time_branch']
-          simapr_result['fail_time']=fail_time
+        fail_time=simapr_result['fail_time']
         self.state.test_time+=fail_time
         self.state.test_time+=pass_time
         pass_time=simapr_result['pass_time']
@@ -396,6 +390,7 @@ class RecoderLoop(TBarLoop):
     new_env=EnvGenerator.get_new_env_recoder(self.state, patch, test)
     start_time=time.time()
     compilable, run_result, is_timeout = run_test.run_fail_test_d4j(self.state, new_env)
+    run_time=time.time()-start_time
     
     if self.state.mode == Mode.greybox and (run_result or get_branch_cov):
       if not self.state.only_get_test_time_data_mode:
@@ -417,7 +412,6 @@ class RecoderLoop(TBarLoop):
         self.state.logger.error(e)
         self.state.logger.warning(f"Greybox result not found for {patch.recoder_case_info.location} {test}. expected location: {new_env['GREYBOX_RESULT']}")
 
-    run_time=time.time()-start_time
     return compilable, run_result,run_time,cur_cov
   
   def run_test_positive(self, patch: RecoderPatchInfo) -> Tuple[bool,float]:
@@ -533,9 +527,7 @@ class RecoderLoop(TBarLoop):
       pass_time=0
       key = patch.recoder_case_info.location
       self.state.new_critical_list = []
-      if key not in self.state.simulation_data or \
-          (self.state.mode==Mode.greybox and 'fail_time_branch' not in self.state.simulation_data[key]) or \
-          (self.state.mode!=Mode.greybox and 'fail_time' not in self.state.simulation_data[key]):
+      if key not in self.state.simulation_data or 'fail_time' not in self.state.simulation_data[key]:
         if not self.is_initialized:
           self.initialize()
         
@@ -579,11 +571,7 @@ class RecoderLoop(TBarLoop):
         pass_exists = True in each_result.values()
         run_result = simapr_result['pass_all_fail']
         pass_result = simapr_result['plausible']
-        if self.state.mode!=Mode.greybox:
-          fail_time=simapr_result['fail_time']
-        else:
-          fail_time=simapr_result['fail_time_branch']
-          simapr_result['fail_time']=fail_time
+        fail_time=simapr_result['fail_time']
         pass_time=simapr_result['pass_time']
         self.state.test_time+=fail_time
         self.state.test_time+=pass_time
