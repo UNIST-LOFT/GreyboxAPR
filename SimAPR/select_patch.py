@@ -123,7 +123,7 @@ def filter_children_list_by_fl_score(state:GlobalState, source:PatchTreeNode, gi
       if max_score == highest_fl_score:
         new_map[func] = func_info
   elif isinstance(source, FuncInfo):
-    new_map = dict(filter(lambda patchNode: highest_fl_score == patchNode[1].fl_score, given_map.items()))
+    new_map = dict()
     for line in source.line_info_map:
       if source.line_info_map[line].fl_score == highest_fl_score:
         new_map[line] = source.line_info_map[line]
