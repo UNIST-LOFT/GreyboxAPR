@@ -17,7 +17,7 @@ def run(project):
     print(f"Run {project}-original")
     result=subprocess.run(['python3',f'{new_cur_dir}/SimAPR/simapr.py','-o',f'result/{project}-orig','-m','orig',
                            '-k','learning','-w',f'{new_cur_dir}/AlphaRepair/d4j/{project}','-t','180000',
-                           '--use-simulation-mode',f'result/cache/{project}-cache.json','-E','3000','-T','18000','--skip-valid',
+                           '--use-simulation-mode',f'result/cache/{project}-cache.json','-E','3000','--skip-valid',
                            '--','python3',f'{new_cur_dir}/SimAPR/script/d4j_run_test.py',f'{new_cur_dir}/AlphaRepair/buggy'])
     
     print(f'{project} original finish with return code {result.returncode}')
