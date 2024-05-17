@@ -89,13 +89,24 @@ def plot_patches_ci_java(mode='tbar'):
                 new_critical_branch = res['new_critical_branch']
                 loc=res['config'][0]['location']
                 if is_hq:
-                    time=res['time'] + additional_time + time_data[result]["instrument_time"]
-                    for test_result in list(time_data[result]["test_result"].values()):
-                        additional_time+=test_result["instrumented_time"] - test_result["orig_time"]
+                    time=res['time'] + additional_time + 0.5#time_data[result]["instrument_time"]
+                    for test_name, test_result in list(time_data[result]["test_result"].items()):
+                        branch_count = 0
+                        filename = f"{mode}/result/branch/{result}/{loc.replace('/', '#')}_{test_name.split('.')[-2]}.{test_name.split('.')[-1]}.txt"
+                        try:
+                            branch_file = open(filename, "r")
+                            for line in branch_file.readlines():
+                                if line[-1]=="\n":
+                                    branch_count += int(line.split(":")[1][:-1])
+                            # print(test_result["branch_hit_count"],",", branch_count)
+                            branch_file.close()
+                        except:
+                            print("branch file not found", filename)
+                        additional_time+=(test_result["instrumented_time"] - test_result["orig_time"])/test_result["branch_hit_count"]*branch_count if test_result["branch_hit_count"]!=0 else 0
                     additional_time += inst_time_per_one_branch*len(new_critical_branch)
-                    print("critical branch len:", len(new_critical_branch))
+                    # print("critical branch len:", len(new_critical_branch))
                 else:
-                    time=res['time'] + additional_time
+                    time=res['time'] + additional_time 
 
                 if is_plausible:
                     valid_patch_set[result].add(loc)
