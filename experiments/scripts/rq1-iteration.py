@@ -72,6 +72,8 @@ def plot_patches_ci_java(mode='tbar'):
             root=json.load(result_file)
             result_file.close()
 
+            if result not in valid_patch_set:
+                valid_patch_set[result]=set()
             for res in root:
                 is_hq=res['result']
                 is_plausible=res['pass_result']
@@ -102,6 +104,8 @@ def plot_patches_ci_java(mode='tbar'):
         root=json.load(result_file)
         result_file.close()
 
+        if result not in valid_patch_set:
+            valid_patch_set[result]=set()
         for res in root:
             is_hq=res['result']
             is_plausible=res['pass_result']
