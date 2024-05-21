@@ -869,3 +869,5 @@ def append_java_cache_result(state:GlobalState,case:Union[TbarCaseInfo,RecoderCa
     current['done_greybox']=is_greybox
     
     state.simulation_data[id]=current
+  elif 'done_greybox' not in state.simulation_data[id]:
+    state.simulation_data[id]['done_greybox']=is_greybox
