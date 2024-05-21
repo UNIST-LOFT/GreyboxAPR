@@ -1,4 +1,3 @@
-from statistics import mean
 from typing import Dict, List
 import json
 import matplotlib.pyplot as plt
@@ -23,7 +22,6 @@ def plot_patches_ci_java(mode='tbar'):
     greybox_result:List[List[int]]=[]
 
     valid_patch_set:Dict[str,set]=dict()
-    baseline_patch_set:Dict[str,set]=dict()
 
     # Casino
     for i in range(MAX_EXP):
@@ -43,8 +41,6 @@ def plot_patches_ci_java(mode='tbar'):
 
             if result not in valid_patch_set:
                 valid_patch_set[result]=set()
-            if result not in baseline_patch_set:
-                baseline_patch_set[result]=set()
 
             for res in root:
                 is_hq=res['result']
@@ -57,7 +53,6 @@ def plot_patches_ci_java(mode='tbar'):
 
                 if is_plausible:
                     valid_patch_set[result].add(loc)
-                    baseline_patch_set[result].add(loc)
                     casino_result[-1].append(round((time)/60))
 
                 # if round((time)/60)>MAX_TIME:
@@ -81,8 +76,6 @@ def plot_patches_ci_java(mode='tbar'):
 
         if result not in valid_patch_set:
             valid_patch_set[result]=set()
-        if result not in baseline_patch_set:
-            baseline_patch_set[result]=set()
 
         prev_time=0.
         for res in root:
@@ -96,7 +89,6 @@ def plot_patches_ci_java(mode='tbar'):
 
             if is_plausible:
                 valid_patch_set[result].add(loc)
-                baseline_patch_set[result].add(loc)
                 orig_result.append(round((time)/60))
 
             # if round((time)/60)>MAX_TIME:
@@ -138,54 +130,15 @@ def plot_patches_ci_java(mode='tbar'):
                     file_instrument_time[file]=float(time)
 
             total_time=0.
-            not_comp_time_list=[]
-            fail_time_list=[]
-            pass_time_list=[]
             for res in root:
                 is_hq=res['result']
                 is_plausible=res['pass_result']
                 iteration=res['iteration']
-                compilable=res['compilable']
                 loc=res['config'][0]['location']
-                if result not in baseline_patch_set or loc not in baseline_patch_set[result]:
-                    if compilable and len(fail_time_list)!=0:
-                        total_time+=mean(fail_time_list)+mean(pass_time_list)
-                    elif len(not_comp_time_list)!=0:
-                        total_time+=mean(not_comp_time_list)+mean(pass_time_list)
-                    else:
-                        if 'fail_time' in cache[loc]:
-                            total_time+=cache[loc]['fail_time']+cache[loc]['pass_time']
-                        elif 'fail_time_branch' in cache[loc]:
-                            total_time+=cache[loc]['fail_time_branch']+cache[loc]['pass_time']
-                        else:
-                            total_time+=5.+cache[loc]['pass_time']
+                if 'fail_time' in cache[loc]:
+                    total_time+=cache[loc]['fail_time']+cache[loc]['pass_time']
                 else:
-                    if 'fail_time' in cache[loc]:
-                        total_time+=cache[loc]['fail_time']+cache[loc]['pass_time']
-
-                        if compilable:
-                            fail_time_list.append(cache[loc]['fail_time'])
-                        else:
-                            not_comp_time_list.append(cache[loc]['fail_time'])
-
-                        if cache[loc]['pass_time']>0.:
-                            pass_time_list.append(cache[loc]['pass_time'])
-                    else:
-                        if compilable and len(fail_time_list)!=0:
-                            total_time+=mean(fail_time_list)+cache[loc]['pass_time']
-                        elif len(not_comp_time_list)!=0:
-                            total_time+=mean(not_comp_time_list)+cache[loc]['pass_time']
-                        else:
-                            if 'fail_time' in cache[loc]:
-                                total_time+=cache[loc]['fail_time']+cache[loc]['pass_time']
-                            elif 'fail_time_branch' in cache[loc]:
-                                total_time+=cache[loc]['fail_time_branch']+cache[loc]['pass_time']
-                            else:
-                                total_time+=5.+cache[loc]['pass_time']
-
-                        if cache[loc]['pass_time']>0.:
-                            pass_time_list.append(cache[loc]['pass_time'])
-
+                    total_time+=cache[loc]['fail_time_branch']+cache[loc]['pass_time']
                 if is_hq:
                     # Instrumentation time
                     total_time+=file_instrument_time[loc.split('/')[-1]]
