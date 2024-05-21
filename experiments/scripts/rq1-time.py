@@ -40,24 +40,31 @@ def plot_patches_ci_java(mode='tbar'):
             root=json.load(result_file)
             result_file.close()
 
+            # Read cache to get baseline time
+            try:
+                cache_file=open(f'{mode}/result/cache/{result}-cache.json','r')
+            except:
+                continue
+            cache=json.load(cache_file)
+            cache_file.close()
+
             if result not in valid_patch_set:
                 valid_patch_set[result]=set()
 
+            total_time=0.
             for res in root:
                 is_hq=res['result']
                 is_plausible=res['pass_result']
                 iteration=res['iteration']
-                time=res['time']
+                # time=res['time']
                 loc=res['config'][0]['location']
+                total_time+=cache[loc]['fail_time']+cache[loc]['pass_time']
 
                 if is_plausible:
-                    if MAX_TIME<round((time)/60):
-                        MAX_TIME=round((time)/60)
+                    if MAX_TIME<round((total_time)/60):
+                        MAX_TIME=round((total_time)/60)
                     valid_patch_set[result].add(loc)
-                    casino_result[-1].append(round((time)/60))
-
-                # if round((time)/60)>MAX_TIME:
-                #     break
+                    casino_result[-1].append(round((total_time)/60))
 
     print(np.mean([len(l) for l in casino_result]))
 
@@ -75,25 +82,31 @@ def plot_patches_ci_java(mode='tbar'):
         root=json.load(result_file)
         result_file.close()
 
+        # Read cache to get baseline time
+        try:
+            cache_file=open(f'{mode}/result/cache/{result}-cache.json','r')
+        except:
+            continue
+        cache=json.load(cache_file)
+        cache_file.close()
+
         if result not in valid_patch_set:
             valid_patch_set[result]=set()
 
-        prev_time=0.
+        total_time=0.
         for res in root:
             is_hq=res['result']
             is_plausible=res['pass_result']
             iteration=res['iteration']
-            time=res['time']
+            # time=res['time']
+            total_time+=cache[loc]['fail_time']+cache[loc]['pass_time']
             loc=res['config'][0]['location']
 
             if is_plausible:
-                if MAX_TIME<round((time)/60):
-                    MAX_TIME=round((time)/60)
+                if MAX_TIME<round((total_time)/60):
+                    MAX_TIME=round((total_time)/60)
                 valid_patch_set[result].add(loc)
-                orig_result.append(round((time)/60))
-
-            # if round((time)/60)>MAX_TIME:
-            #     break
+                orig_result.append(round((total_time)/60))
 
     print(len(orig_result))
 
@@ -151,9 +164,6 @@ def plot_patches_ci_java(mode='tbar'):
                         MAX_TIME=round((total_time)/60)
                     valid_patch_set[result].add(loc)
                     greybox_result[-1].append(round((total_time)/60))
-
-                # if round((time)/60)>MAX_TIME:
-                #     break
 
     print(np.mean([len(l) for l in greybox_result]))
 
