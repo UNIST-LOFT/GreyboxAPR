@@ -40,6 +40,7 @@ def plot_patches_ci_java(mode='tbar'):
 
             if result not in valid_patch_set:
                 valid_patch_set[result]=set()
+
             for res in root:
                 is_hq=res['result']
                 is_plausible=res['pass_result']
@@ -80,19 +81,23 @@ def plot_patches_ci_java(mode='tbar'):
             cache=json.load(cache_file)
             cache_file.close()
 
+            file_instrument_time:Dict[str,float]=dict()
+            with open(f'scripts/file-instrument-time/{result}.txt','r') as f:
+                for line in f:
+                    file,time=line.strip().split(',')
+                    file_instrument_time[file]=float(time)
+
             total_time=0.
             prev_time=0.
             for res in root:
                 is_hq=res['result']
                 is_plausible=res['pass_result']
                 iteration=res['iteration']
-                if 'fail_time' not in cache[res['config'][0]['location']]:
-                    # If Casino mode did not try this pacth
-                    total_time+=prev_time
-                else:
-                    prev_time=cache[res['config'][0]['location']]['fail_time']+cache[res['config'][0]['location']]['pass_time']
-                    total_time+=prev_time
                 loc=res['config'][0]['location']
+                total_time+=cache[loc]['fail_time']+cache[loc]['pass_time']
+                if is_hq:
+                    # Instrumentation time
+                    total_time+=file_instrument_time[loc.split('/')[-1]]
 
                 if is_plausible:
                     valid_patch_set[result].add(loc)
