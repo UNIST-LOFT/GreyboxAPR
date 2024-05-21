@@ -137,6 +137,7 @@ def extract_input():
                     project,f'{cur_path}/d4j'])
     
 total_patches=0
+MAX_FL_RANK=40
 
 def run_solution_and_gen(skip_solution=False,skip_gen_patch=False,skip_postprocess=False):
     global cur_path,project,subj,ver,json_patch_tree
@@ -144,6 +145,8 @@ def run_solution_and_gen(skip_solution=False,skip_gen_patch=False,skip_postproce
     for file in os.listdir(info_path):
         info_file=os.path.join(info_path,file)
         cur_fl_rank=int(file.split('.')[0])
+        if cur_fl_rank>MAX_FL_RANK:
+            break
 
         if not skip_solution:
             if not os.path.exists(f'{cur_path}/d4j/{project}/solution'):
@@ -155,6 +158,9 @@ def run_solution_and_gen(skip_solution=False,skip_gen_patch=False,skip_postproce
     for file in os.listdir(info_path):
         info_file=os.path.join(info_path,file)
         cur_fl_rank=int(file.split('.')[0])
+        if cur_fl_rank>MAX_FL_RANK:
+            break
+        
         if not skip_gen_patch:
             if not os.path.exists(f'{cur_path}/d4j/{project}/patches'):
                 os.makedirs(f'{cur_path}/d4j/{project}/patches')
