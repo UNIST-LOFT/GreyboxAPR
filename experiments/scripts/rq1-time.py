@@ -58,7 +58,11 @@ def plot_patches_ci_java(mode='tbar'):
                 iteration=res['iteration']
                 # time=res['time']
                 loc=res['config'][0]['location']
-                total_time+=cache[loc]['fail_time']+cache[loc]['pass_time']
+                if loc in cache:
+                    total_time+=cache[loc]['fail_time']+cache[loc]['pass_time']
+                else:
+                    if res['time']-total_time>0:
+                        total_time+=(res['time']-total_time)
 
                 if is_plausible:
                     if MAX_TIME<round((total_time)/60):
@@ -99,7 +103,11 @@ def plot_patches_ci_java(mode='tbar'):
             is_plausible=res['pass_result']
             iteration=res['iteration']
             # time=res['time']
-            total_time+=cache[loc]['fail_time']+cache[loc]['pass_time']
+            if loc in cache:
+                total_time+=cache[loc]['fail_time']+cache[loc]['pass_time']
+            else:
+                if res['time']-total_time>0:
+                    total_time+=(res['time']-total_time)
             loc=res['config'][0]['location']
 
             if is_plausible:
