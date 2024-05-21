@@ -16,6 +16,7 @@ WITH_MOCKITO=False
 MAX_TIME=300
 
 def plot_patches_ci_java(mode='tbar'):
+    global MAX_TIME,MAX_EXP,WITH_MOCKITO
     orig_result:List[int]=[]
     casino_result:List[List[int]]=[]
     greybox_result:List[List[int]]=[]
