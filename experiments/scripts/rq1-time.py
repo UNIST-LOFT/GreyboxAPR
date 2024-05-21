@@ -48,11 +48,11 @@ def plot_patches_ci_java(mode='tbar'):
                 is_plausible=res['pass_result']
                 iteration=res['iteration']
                 time=res['time']
-                if MAX_TIME<round((time)/60):
-                    MAX_TIME=round((time)/60)
                 loc=res['config'][0]['location']
 
                 if is_plausible:
+                    if MAX_TIME<round((time)/60):
+                        MAX_TIME=round((time)/60)
                     valid_patch_set[result].add(loc)
                     casino_result[-1].append(round((time)/60))
 
@@ -84,11 +84,11 @@ def plot_patches_ci_java(mode='tbar'):
             is_plausible=res['pass_result']
             iteration=res['iteration']
             time=res['time']
-            if MAX_TIME<round((time)/60):
-                MAX_TIME=round((time)/60)
             loc=res['config'][0]['location']
 
             if is_plausible:
+                if MAX_TIME<round((time)/60):
+                    MAX_TIME=round((time)/60)
                 valid_patch_set[result].add(loc)
                 orig_result.append(round((time)/60))
 
@@ -146,10 +146,9 @@ def plot_patches_ci_java(mode='tbar'):
                     # Instrumentation time
                     total_time+=file_instrument_time[loc.split('/')[-1]]
 
-                if MAX_TIME<round((total_time)/60):
-                    MAX_TIME=round((total_time)/60)
-
                 if is_plausible:
+                    if MAX_TIME<round((total_time)/60):
+                        MAX_TIME=round((total_time)/60)
                     valid_patch_set[result].add(loc)
                     greybox_result[-1].append(round((total_time)/60))
 
