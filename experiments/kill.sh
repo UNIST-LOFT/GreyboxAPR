@@ -2,6 +2,6 @@
 
 while :
 do
-    killall -s SIGKILL -o 5m java
-    sleep 1m
+    killall -s SIGKILL -o 3m java
+    sleep 10s
 done
