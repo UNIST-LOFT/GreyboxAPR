@@ -291,6 +291,7 @@ class TBarLoop():
         self.state.test_time+=pass_time
         pass_time=simapr_result['pass_time']
         is_compilable=simapr_result['compilable']
+        greybox_done=simapr_result['done_greybox'] if 'done_greybox' in simapr_result else False
         
         #add an entry that maps this patch to its branchess
         if is_compilable:
@@ -303,7 +304,8 @@ class TBarLoop():
             for test in each_result.keys():
               cov_file=os.path.join(self.state.branch_output,
                                     f'{patch.tbar_case_info.location.replace("/","#")}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt')
-              if not os.path.exists(cov_file):
+              if not os.path.exists(cov_file) and not greybox_done:
+                # Retry if greybox not done yet
                 compilable, run_result,fail_time,cur_cov = self.run_test(patch, test,get_branch_cov=True)
               if os.path.exists(cov_file):
                 cur_cov=branch_coverage.parse_cov(self.state.logger,cov_file)
@@ -576,6 +578,7 @@ class RecoderLoop(TBarLoop):
         self.state.test_time+=fail_time
         self.state.test_time+=pass_time
         is_compilable=simapr_result['compilable']
+        greybox_done=simapr_result['done_greybox'] if 'done_greybox' in simapr_result else False
 
         #add an entry that maps this patch to its branchess
         if is_compilable:
@@ -589,7 +592,8 @@ class RecoderLoop(TBarLoop):
               if each_result[test]:
                 cov_file=os.path.join(self.state.branch_output,
                                       f'{patch.recoder_case_info.location.replace("/","#")}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt')
-                if not os.path.exists(cov_file):
+                if not os.path.exists(cov_file) and not greybox_done:
+                  # Retry if greybox not done yet
                   compilable, run_result,fail_time,cur_cov = self.run_test(patch, test,get_branch_cov=True)
                 if os.path.exists(cov_file):
                   cur_cov=branch_coverage.parse_cov(self.state.logger,cov_file)

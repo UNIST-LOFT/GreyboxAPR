@@ -55,7 +55,7 @@ def append_result(state: GlobalState, selected_patch: List[Union[TbarPatchInfo,R
         case_info = patch.tbar_case_info
       else:
         case_info = patch.recoder_case_info
-      append_java_cache_result(state,case_info,test_result,pass_test_result,compilable,fail_time,pass_time)
+      append_java_cache_result(state,case_info,test_result,pass_test_result,compilable,fail_time,pass_time,state.mode==Mode.greybox)
   
   if (tm - state.last_save_time) > save_interval:
     save_result(state)
