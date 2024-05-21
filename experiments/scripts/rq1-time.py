@@ -1,3 +1,4 @@
+from statistics import mean
 from typing import Dict, List
 import json
 import matplotlib.pyplot as plt
@@ -130,6 +131,7 @@ def plot_patches_ci_java(mode='tbar'):
                     file_instrument_time[file]=float(time)
 
             total_time=0.
+            fail_time_list=[]
             for res in root:
                 is_hq=res['result']
                 is_plausible=res['pass_result']
@@ -137,8 +139,9 @@ def plot_patches_ci_java(mode='tbar'):
                 loc=res['config'][0]['location']
                 if 'fail_time' in cache[loc]:
                     total_time+=cache[loc]['fail_time']+cache[loc]['pass_time']
+                    fail_time_list.append(cache[loc]['fail_time'])
                 else:
-                    total_time+=cache[loc]['fail_time_branch']+cache[loc]['pass_time']
+                    total_time+=mean(fail_time_list)+cache[loc]['pass_time']
                 if is_hq:
                     # Instrumentation time
                     total_time+=file_instrument_time[loc.split('/')[-1]]
