@@ -182,7 +182,6 @@ def plot_patches_ci_java(mode='tbar'):
     print(np.mean([len(l) for l in greybox_result]))
 
     plt.clf()
-    fig=plt.figure(figsize=(5,3))
     print(mode)
 
     # Original tool
@@ -193,7 +192,10 @@ def plot_patches_ci_java(mode='tbar'):
     elif mode=='recoder': name='Recoder'
     elif mode=='alpharepair': name='AlphaRepair'
 
-    plt.boxplot([orig_result,casino_result,greybox_result],labels=[name,'Casino','Greybox'],showmeans=True)
+    plt.ylabel('Time (m)')
+
+    plt.boxplot([np.array(greybox_time_until_finish),np.array(casino_time_until_finish),np.array(orig_time_until_finish)],
+                labels=['Greybox','Casino',name],showmeans=True)
     plt.savefig(f'max-time-{mode}-box.pdf',bbox_inches='tight')
     plt.savefig(f'max-time-{mode}-box.jpg',bbox_inches='tight')
 
