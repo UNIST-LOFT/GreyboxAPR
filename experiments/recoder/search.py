@@ -41,9 +41,9 @@ for i in range(1,d4j_recoder.LANG_SIZE+1):
    pool.apply_async(run,(f'Lang_{i}',))
 for i in range(1,d4j_recoder.MATH_SIZE+1):
    pool.apply_async(run,(f'Math_{i}',))
-for i in range(1,d4j_recoder.MOCKITO_SIZE+1):
-   if i in d4j_recoder.MOCKITO_SKIP: continue
-   pool.apply_async(run,(f'Mockito_{i}',))
+# for i in range(1,d4j_recoder.MOCKITO_SIZE+1):
+#    if i in d4j_recoder.MOCKITO_SKIP: continue
+#    pool.apply_async(run,(f'Mockito_{i}',))
 for i in range(1,d4j_recoder.TIME_SIZE+1):
    pool.apply_async(run,(f'Time_{i}',))
 

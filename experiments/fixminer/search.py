@@ -41,9 +41,9 @@ for i in range(1,d4j_fixminer.LANG_SIZE+1):
    pool.apply_async(run,(f'Lang_{i}',))
 for i in range(1,d4j_fixminer.MATH_SIZE+1):
    pool.apply_async(run,(f'Math_{i}',))
-for i in range(1,d4j_fixminer.MOCKITO_SIZE+1):
-   if i in d4j_fixminer.MOCKITO_SKIP: continue
-   pool.apply_async(run,(f'Mockito_{i}',))
+# for i in range(1,d4j_fixminer.MOCKITO_SIZE+1):
+#    if i in d4j_fixminer.MOCKITO_SKIP: continue
+#    pool.apply_async(run,(f'Mockito_{i}',))
 for i in range(1,d4j_fixminer.TIME_SIZE+1):
    pool.apply_async(run,(f'Time_{i}',))
 

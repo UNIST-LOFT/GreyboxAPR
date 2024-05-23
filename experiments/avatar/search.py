@@ -41,9 +41,9 @@ for i in range(1,d4j_avatar.LANG_SIZE+1):
    pool.apply_async(run,(f'Lang_{i}',))
 for i in range(1,d4j_avatar.MATH_SIZE+1):
    pool.apply_async(run,(f'Math_{i}',))
-for i in range(1,d4j_avatar.MOCKITO_SIZE+1):
-   if i in d4j_avatar.MOCKITO_SKIP: continue
-   pool.apply_async(run,(f'Mockito_{i}',))
+# for i in range(1,d4j_avatar.MOCKITO_SIZE+1):
+#    if i in d4j_avatar.MOCKITO_SKIP: continue
+#    pool.apply_async(run,(f'Mockito_{i}',))
 for i in range(1,d4j_avatar.TIME_SIZE+1):
    pool.apply_async(run,(f'Time_{i}',))
 
