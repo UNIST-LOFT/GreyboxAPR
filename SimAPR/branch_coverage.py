@@ -1,5 +1,5 @@
 from logging import Logger
-from typing import Dict, Set, Tuple
+from typing import Dict, Set, Tuple, List
 
 
 class BranchCoverage:
@@ -12,8 +12,8 @@ class BranchCoverage:
         else:
             self.branch_coverage[line]=1
     
-    def diff(self,other:'BranchCoverage')->list[Tuple[int,int]]:
-        diff:list[Tuple[int,int]]=[]
+    def diff(self,other:'BranchCoverage')->List[Tuple[int,int]]:
+        diff:List[Tuple[int,int]]=[]
         for line in self.branch_coverage:
             if line in other.branch_coverage:
                 if self.branch_coverage[line]!=other.branch_coverage[line]:
