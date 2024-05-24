@@ -1,3 +1,6 @@
+from getopt import getopt
+from os import path
+from sys import argv
 from typing import Dict, List
 import json
 import matplotlib.pyplot as plt
@@ -7,107 +10,90 @@ import pandas as pd
 
 import d4j
 
+MAX_EXP=10
+WITH_MOCKITO=False
+MAX_ITERATION=3000
+
 orig_result:List[int]=[]
-casino_result:List[List[int]]=[[] for _ in range(50)]
+casino_result:List[List[int]]=[[] for _ in range(MAX_EXP)]
+greybox_result:List[List[int]]=[[] for _ in range(MAX_EXP)]
 
-def plot_patches_ci_java(mode='tbar'):
-    global orig_result,casino_result
-    dl = mode in {'recoder', 'alpharepair'}
+o,a=getopt(argv[1:],'',['with-mockito'])
+for opt,arg in o:
+    if o=='--with-mockito':
+        WITH_MOCKITO=True
 
-    # Casino
-    for i in range(50):
-        for result in d4j.D4J_2_LIST:
-            try:
-                if dl:
-                    result = result.replace('_', '-')
-                result_file=open(f'{mode}/result/{result}-casino-{i}/simapr-result.json','r')
-            except:
-                continue
-            root=json.load(result_file)
-            result_file.close()
+def get_tool_data(tool:str):
+    global orig_result,greybox_result,casino_result
+    with open(f'rq4-{tool}.json','r') as f:
+        root=json.load(f)
+    
+    orig_result+=root['orig']
 
-            prev_time=0.
-            for res in root:
-                is_hq=res['result']
-                is_plausible=res['pass_result']
-                iteration=res['iteration']
-                time=res['time']
-                loc=res['config'][0]['location']
+    for i in range(MAX_EXP):
+        greybox_result[i]+=root['greybox'][i]
+        casino_result[i]+=root['casino'][i]
 
-                if is_plausible:
-                    casino_result[i].append(round((time)/60))
+get_tool_data('tbar')
+get_tool_data('alpharepair')
+get_tool_data('avatar')
+get_tool_data('kpar')
+get_tool_data('fixminer')
+get_tool_data('recoder')
+get_tool_data('srepair')
+get_tool_data('selfapr')
 
-                # if time>3600:
-                #     break
-
-    # Original
-    for result in d4j.D4J_2_LIST:
-        try:
-            if dl:
-                result = result.replace('_', '-')
-            result_file=open(f'{mode}/result/{result}-orig/simapr-result.json','r')
-        except:
-            continue
-        root=json.load(result_file)
-        result_file.close()
-
-        prev_time=0.
-        for res in root:
-            is_hq=res['result']
-            is_plausible=res['pass_result']
-            iteration=res['iteration']
-            time=res['time']
-            loc=res['config'][0]['location']
-
-            if is_plausible:
-                orig_result.append(round((time)/60))
-
-            # if time>3600:
-            #     break
-
-plot_patches_ci_java('tbar')
-plot_patches_ci_java('avatar')
-plot_patches_ci_java('kpar')
-plot_patches_ci_java('fixminer')
-plot_patches_ci_java('recoder')
-plot_patches_ci_java('alpharepair')
 # Plausible patch plot
 plt.clf()
-fig=plt.figure(figsize=(4,3))
+fig=plt.figure(figsize=(5,3))
 
 # Original
 results=sorted(orig_result)
 other_list=[0]
-for i in range(0,300):
+for i in range(0,MAX_ITERATION):
     if i in results:
         other_list.append(other_list[-1]+results.count(i))
     else:
         other_list.append(other_list[-1])
-plt.plot(list(range(0,301)),other_list,'-.b',label='Orig')
+plt.plot(list(range(0,MAX_ITERATION+1)),other_list,'-.b',label='Orig')
 
 # Casino
 guided_list:List[List[int]]=[]
 guided_x=[]
 guided_y=[]
-temp_=[[],[],[],[],[]]
-for j in range(50):
+for j in range(MAX_EXP):
     cur_result=sorted(casino_result[j])
     guided_list.append([0])
-    for i in range(0,300):
+    for i in range(0,MAX_ITERATION):
         if i in cur_result:
-            guided_list[-1].append((50*guided_list[-1][-1]+cur_result.count(i))/50)
+            guided_list[-1].append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
             guided_x.append(i)
-            guided_y.append((50*guided_list[-1][-1]+cur_result.count(i))/50)
+            guided_y.append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
         else:
             guided_list[-1].append(guided_list[-1][-1])
             guided_x.append(i)
             guided_y.append(guided_list[-1][-1])
-        if i%60==0:
-            temp_[i//60].append(guided_list[-1][-1])
-guided_df=pd.DataFrame({'Time':guided_x,'Number of valid patches':guided_y})
-seaborn.lineplot(data=guided_df,x='Time',y='Number of valid patches',color='r',label='Casino')
-for i in range(5):
-    print(f'{i*60}: {np.std(temp_[i])}')
+guided_df=pd.DataFrame({'Iteration':guided_x,'# of valid patches':guided_y})
+seaborn.lineplot(data=guided_df,x='Iteration',y='# of valid patches',color='g',label='Casino')
+
+# Greybox
+guided_list:List[List[int]]=[]
+guided_x=[]
+guided_y=[]
+for j in range(MAX_EXP):
+    cur_result=sorted(greybox_result[j])
+    guided_list.append([0])
+    for i in range(0,MAX_ITERATION):
+        if i in cur_result:
+            guided_list[-1].append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
+            guided_x.append(i)
+            guided_y.append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
+        else:
+            guided_list[-1].append(guided_list[-1][-1])
+            guided_x.append(i)
+            guided_y.append(guided_list[-1][-1])
+guided_df=pd.DataFrame({'Iteration':guided_x,'# of valid patches':guided_y})
+seaborn.lineplot(data=guided_df,x='Iteration',y='# of valid patches',color='r',label='Greybox',linestyle='dashed')
 
 plt.legend(fontsize=12)
 plt.xlabel('Time (min)',fontsize=15)

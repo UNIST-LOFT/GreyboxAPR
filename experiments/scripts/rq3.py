@@ -75,8 +75,8 @@ for j in range(MAX_EXP):
             guided_list[-1].append(guided_list[-1][-1])
             guided_x.append(i)
             guided_y.append(guided_list[-1][-1])
-guided_df=pd.DataFrame({'Time':guided_x,'Number of valid patches':guided_y})
-seaborn.lineplot(data=guided_df,x='Time',y='Number of valid patches',color='r',label='Casino')
+guided_df=pd.DataFrame({'Iteration':guided_x,'# of valid patches':guided_y})
+seaborn.lineplot(data=guided_df,x='Iteration',y='# of valid patches',color='g',label='Casino')
 
 # w/o vertical
 guided_list:List[List[int]]=[]
@@ -94,8 +94,8 @@ for j in range(MAX_EXP):
             guided_list[-1].append(guided_list[-1][-1])
             guided_x.append(i)
             guided_y.append(guided_list[-1][-1])
-guided_df=pd.DataFrame({'Time':guided_x,'Number of valid patches':guided_y})
-seaborn.lineplot(data=guided_df,x='Time',y='Number of valid patches',color='g',label='w/o vertical')
+guided_df=pd.DataFrame({'Iteration':guided_x,'# of valid patches':guided_y})
+seaborn.lineplot(data=guided_df,x='Iteration',y='# of valid patches',color='r',label='w/o 1st vert.')
 
 # greybox
 other_list:List[List[int]]=[]
@@ -113,8 +113,8 @@ for j in range(MAX_EXP):
             other_list[-1].append(other_list[-1][-1])
             other_x.append(i)
             other_y.append(other_list[-1][-1])
-other_df=pd.DataFrame({'Time':other_x,'Number of valid patches':other_y})
-seaborn.lineplot(data=other_df,x='Time',y='Number of valid patches',color='y',label='w/o horizontal',linestyle='dashed')
+other_df=pd.DataFrame({'Iteration':other_x,'# of valid patches':other_y})
+seaborn.lineplot(data=other_df,x='Iteration',y='# of valid patches',color='y',label='Greybox',linestyle='dashed')
 
 plt.legend(fontsize=12)
 plt.xlabel('Time (min)',fontsize=15)
