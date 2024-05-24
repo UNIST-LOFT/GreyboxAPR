@@ -4,7 +4,7 @@ import multiprocessing as mp
 import seeds
 
 def run(project):
-   for i in range(50):
+   for i in range(10):
       print(f'Run {project}-w/o-vertical-{i}')
       result=subprocess.run(['python3','search-kpar-ablation.py',project,'vertical',str(seeds.SEEDS[i]),str(i)],
                             stdout=subprocess.PIPE,stderr=subprocess.STDOUT)

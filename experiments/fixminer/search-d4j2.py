@@ -4,19 +4,26 @@ import multiprocessing as mp
 import seeds
 
 def run(project):
-   print(f'Run {project}-orig')
-   result=subprocess.run(['python3','search-fixminer-orig.py',project],stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
-   with open(f'result/{project}-orig.log','w') as f:
-      f.write(result.stdout.decode("utf-8"))
-   print(f'Finish {project}-orig with returncode {result.returncode}')
+    print(f'Run {project}-orig')
+    result=subprocess.run(['python3','search-fixminer-orig.py',project],stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+    with open(f'result/{project}-orig.log','w') as f:
+        f.write(result.stdout.decode("utf-8"))
+    print(f'Finish {project}-orig with returncode {result.returncode}')
 
-   for i in range(50):
-      print(f'Run {project}-casino-{i}')
-      result=subprocess.run(['python3','search-fixminer-casino.py',project,str(seeds.SEEDS[i]),str(i)],
-                            stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
-      with open(f'result/{project}-casino-{i}.log','w') as f:
-         f.write(result.stdout.decode("utf-8"))
-      print(f'Finish {project}-casino-{i} with returncode {result.returncode}')
+    for i in range(10):
+        print(f'Run {project}-casino-{i}')
+        result=subprocess.run(['python3','search-fixminer-casino.py',project,str(seeds.SEEDS[i]),str(i)],
+                                stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+        with open(f'result/{project}-casino-{i}.log','w') as f:
+            f.write(result.stdout.decode("utf-8"))
+        print(f'Finish {project}-casino-{i} with returncode {result.returncode}')
+
+        print(f'Run {project}-greybox-{i}')
+        result=subprocess.run(['python3','search-fixminer-greybox.py',project,str(seeds.SEEDS[i]),str(i)],
+                                stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+        with open(f'result/{project}-greybox-{i}.log','w') as f:
+            f.write(result.stdout.decode("utf-8"))
+        print(f'Finish {project}-greybox-{i} with returncode {result.returncode}')
 
 from sys import argv
 
