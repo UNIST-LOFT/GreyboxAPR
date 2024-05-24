@@ -123,6 +123,11 @@ if __name__ == '__main__':
 
     
     FL_file = os.path.join("SuspiciousCodePositions", bug_id, "Ochiai.txt")
+    if not os.path.exists(FL_file):
+        FL_file = os.path.join("SuspiciousCodePositions", bug_id, "ochiai.txt")
+        if not os.path.exists(FL_file):
+            print(f"ERROR!!! {FL_file} does not exists")
+            sys.exit
     TEST_file = "./projects/"+project+bug+"/build/sfl/txt/tests.csv"
     if not os.path.exists(FL_file):
         print("This path does not exist: " + FL_file)
@@ -132,7 +137,7 @@ if __name__ == '__main__':
         os.system(f"rm -rf {bug_representation_path}")
         if not os.path.exists(bug_representation_path):
             os.system("mkdir -p "+bug_representation_path)
-        os.system("cp "+FL_file + " "+bug_representation_path)
+        os.system(f"cp {FL_file} {bug_representation_path}/Ochiai.txt")
         os.system("cp "+TEST_file + " "+bug_representation_path)
 
         failing_test_number, diagnosis = getDiagnosis_fromFL(TEST_file)
