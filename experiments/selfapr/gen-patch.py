@@ -1,12 +1,16 @@
 import d4j_selfapr
 import subprocess
 import multiprocessing as mp
+import os
+
+EXP_DIR = os.path.dirname(os.path.abspath(__file__))
 
 def run(project_queue,core):
     while not project_queue.empty():
         project=project_queue.get()
         print(f'Run {project}')
-        result=subprocess.run(['python3','selfapr.py',project,str(core)],stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+        result=subprocess.run(['python3','selfapr.py',project,str(core)],stdout=subprocess.PIPE,stderr=subprocess.STDOUT, cwd=EXP_DIR)
+        os.makedirs('result', exist_ok=True)
         with open(f'result/{project}-selfapr.log','w') as f:
             f.write(result.stdout.decode("utf-8"))
         print(f'Finish {project} with returncode {result.returncode}')

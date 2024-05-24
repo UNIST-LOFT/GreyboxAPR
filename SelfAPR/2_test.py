@@ -27,7 +27,7 @@ def getBugName(bugid):
         for l in lines:
             bid=l.split('\t')[0]
             bid=bid.replace(' ','')
-            if bid in bugid and bugid in bid:
+            if bid == bugid:
                 buginfo=l.split('\t')[3]
                 buginfo=buginfo.replace('\n','').replace('\t','').replace('\r','')
                 startNo=l.split('\t')[4]
@@ -100,6 +100,11 @@ def test(model, tokenizer, device, loader, model_iter):
 def getGeneratorDataLoader(filepatch,tokenizer,batchsize):
     df = pd.read_csv(filepatch,encoding='latin-1',delimiter='\t')
     print(df.head(1))
+    with open(filepatch, 'r') as f:
+        for line in f.readlines():
+            tokens = line.split('\t')
+            if len(tokens) != 7:
+                print(f'Error(len {len(tokens)}): ', tokens)
     
     df = df[['bugid','patch','buggy']]
 

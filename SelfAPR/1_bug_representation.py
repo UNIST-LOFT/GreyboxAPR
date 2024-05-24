@@ -194,7 +194,9 @@ if __name__ == '__main__':
                     # endbuggycode=int(buggy_line)+int(endbuggycode)
                     remove_lines = int(endbuggycode)
                     buggycode = buggycode.replace("  "," ")
-                    buggycode = buggycode.replace("  "," ")
+                    buggycode = buggycode.replace("\t"," ")
+                    buggycode = buggycode.replace("\r"," ")
+                    buggycode = buggycode.replace("\n"," ")
                     
                     #representation of replace
                     if 'NullPointerException' in diagnosis:
