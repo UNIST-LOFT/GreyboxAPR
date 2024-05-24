@@ -22,7 +22,7 @@ def main(argv):
     cmd = f"conda run -n selfapr python3 2_test.py {bugid}"
     result=subprocess.run(cmd, env=new_env, shell=True, executable='/bin/bash')
     print(f"SelfAPR finished raw patch gen {bugid} with return code {result.returncode}")
-    f"conda run -n selfapr python3 3_evaluate_patch.py {bugid}"
+    cmd = f"conda run -n selfapr python3 3_evaluate_patch.py {bugid}"
     result = subprocess.run(cmd, shell=True, executable='/bin/bash')
     exit(result.returncode)
 
