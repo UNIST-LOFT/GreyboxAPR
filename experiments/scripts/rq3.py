@@ -19,120 +19,31 @@ wo_vertical:List[List[int]]=[[] for _ in range(MAX_EXP)]
 greybox_result:List[List[int]]=[[] for _ in range(MAX_EXP)]
 casino_result:List[List[int]]=[[] for _ in range(MAX_EXP)]
 
-def plot_patches_ci_java(mode='tbar'):
-    global orig_result,wo_vertical,greybox_result,casino_result
-    # Casino
-    for i in range(MAX_EXP):
-        for result in d4j.D4J_1_2_LIST:
-            try:
-                result_file=open(f'{mode}/result/{result}-casino-{i}/simapr-result.json','r')
-            except:
-                continue
-            root=json.load(result_file)
-            result_file.close()
-
-            prev_time=0.
-            for res in root:
-                is_hq=res['result']
-                is_plausible=res['pass_result']
-                iteration=res['iteration']
-                time=res['time']
-                loc=res['config'][0]['location']
-
-                if is_plausible:
-                    # casino_result[i].append(round((time)/60))
-                    casino_result[i].append(iteration)
-
-                # if time>3600:
-                #     break
-
-    # w/o vertical
-    for i in range(MAX_EXP):
-        for result in d4j.D4J_1_2_LIST:
-            try:
-                result_file=open(f'{mode}/result/{result}-wo-vertical-{i}/simapr-result.json','r')
-            except:
-                continue
-            root=json.load(result_file)
-            result_file.close()
-
-            prev_time=0.
-            for res in root:
-                is_hq=res['result']
-                is_plausible=res['pass_result']
-                iteration=res['iteration']
-                time=res['time']
-                loc=res['config'][0]['location']
-
-                if is_plausible:
-                    # wo_vertical[i].append(round((time)/60))
-                    wo_vertical[i].append(iteration)
-
-                # if time>3600:
-                #     break
-
-    # greybox
-    for i in range(MAX_EXP):
-        for result in d4j.D4J_1_2_LIST:
-            try:
-                result_file=open(f'{mode}/result/{result}-greybox-{i}/simapr-result.json','r')
-            except:
-                continue
-            root=json.load(result_file)
-            result_file.close()
-
-            prev_time=0.
-            for res in root:
-                is_hq=res['result']
-                is_plausible=res['pass_result']
-                iteration=res['iteration']
-                time=res['time']
-                loc=res['config'][0]['location']
-
-                if is_plausible:
-                    # greybox_result[i].append(round((time)/60))
-                    greybox_result[i].append(iteration)
-
-                # if time>3600:
-                #     break
-
-    # Original
-    for result in d4j.D4J_1_2_LIST:
-        try:
-            result_file=open(f'{mode}/result/{result}-orig/simapr-result.json','r')
-        except:
-            continue
-        root=json.load(result_file)
-        result_file.close()
-
-        prev_time=0.
-        for res in root:
-            is_hq=res['result']
-            is_plausible=res['pass_result']
-            iteration=res['iteration']
-            time=res['time']
-            loc=res['config'][0]['location']
-
-            if is_plausible:
-                # orig_result.append(round((time)/60))
-                orig_result.append(iteration)
-
-            # if time>3600:
-            #     break
-
 o,a=getopt(argv[1:],'',['with-mockito'])
 for opt,arg in o:
     if o=='--with-mockito':
         WITH_MOCKITO=True
 
-plot_patches_ci_java('tbar')
-plot_patches_ci_java('avatar')
-plot_patches_ci_java('kpar')
-plot_patches_ci_java('fixminer')
-plot_patches_ci_java('recoder')
-plot_patches_ci_java('alpharepair')
-plot_patches_ci_java('srepair')
-plot_patches_ci_java('selfapr')
+def get_tool_data(tool:str):
+    global orig_result,wo_vertical,greybox_result,casino_result
+    with open(f'rq3-{tool}.json','r') as f:
+        root=json.load(f)
+    
+    orig_result+=root['orig']
+
+    for i in range(MAX_EXP):
+        wo_vertical[i]+=root['wo_vertical'][i]
+        greybox_result[i]+=root['greybox'][i]
+        casino_result[i]+=root['casino'][i]
+
+get_tool_data('tbar')
+get_tool_data('alpharepair')
+get_tool_data('avatar')
+get_tool_data('kpar')
+get_tool_data('fixminer')
+get_tool_data('recoder')
+get_tool_data('srepair')
+get_tool_data('selfapr')
 
 # Plausible patch plot
 plt.clf()
