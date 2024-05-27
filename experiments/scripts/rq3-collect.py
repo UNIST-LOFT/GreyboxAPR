@@ -5,6 +5,7 @@ from typing import Dict, List
 import json
 
 from matplotlib import pyplot as plt
+import numpy as np
 import pandas as pd
 import seaborn
 
@@ -19,7 +20,7 @@ def plot_patches_ci_java(mode='tbar'):
     wo_vertical:List[List[int]]=[[] for _ in range(MAX_EXP)]
     greybox_result:List[List[int]]=[[] for _ in range(MAX_EXP)]
     casino_result:List[List[int]]=[[] for _ in range(MAX_EXP)]
-    
+
     # Casino
     for i in range(MAX_EXP):
         for result in d4j.D4J_1_2_LIST:
@@ -52,6 +53,8 @@ def plot_patches_ci_java(mode='tbar'):
                 # if time>3600:
                 #     break
 
+    print(np.mean([len(l) for l in casino_result]))
+
     # w/o vertical
     for i in range(MAX_EXP):
         for result in d4j.D4J_1_2_LIST:
@@ -83,6 +86,8 @@ def plot_patches_ci_java(mode='tbar'):
                 # if time>3600:
                 #     break
 
+    print(np.mean([len(l) for l in wo_vertical]))
+
     # greybox
     for i in range(MAX_EXP):
         for result in d4j.D4J_1_2_LIST:
@@ -113,6 +118,8 @@ def plot_patches_ci_java(mode='tbar'):
 
                 # if time>3600:
                 #     break
+    
+    print(np.mean([len(l) for l in greybox_result]))
 
     # Original
     for result in d4j.D4J_1_2_LIST:
@@ -143,6 +150,8 @@ def plot_patches_ci_java(mode='tbar'):
 
             # if time>3600:
             #     break
+
+    print(len(orig_result))
 
     with open(f'rq3-{mode}.json','w') as f:
         json.dump({
@@ -214,7 +223,7 @@ def plot_patches_ci_java(mode='tbar'):
                 else:
                     guided_y.append(guided_y[-1])
     guided_df=pd.DataFrame({'Iteration':guided_x,'# of valid patches':guided_y})
-    seaborn.lineplot(data=guided_df,x='Iteration',y='# of valid patches',color='r',label='w/o 1st vert.')
+    seaborn.lineplot(data=guided_df,x='Iteration',y='# of valid patches',color='y',label='w/o 1st vert.')
 
     # greybox
     other_list:List[List[int]]=[]
@@ -239,7 +248,7 @@ def plot_patches_ci_java(mode='tbar'):
                 else:
                     other_y.append(other_y[-1])
     other_df=pd.DataFrame({'Iteration':other_x,'# of valid patches':other_y})
-    seaborn.lineplot(data=other_df,x='Iteration',y='# of valid patches',color='y',label='Greybox',linestyle='dashed')
+    seaborn.lineplot(data=other_df,x='Iteration',y='# of valid patches',color='r',label='Greybox',linestyle='dashed')
 
     plt.legend(fontsize=12)
     plt.xlabel('Time (min)',fontsize=15)
