@@ -5,6 +5,7 @@ from typing import Dict, List
 import json
 
 from matplotlib import pyplot as plt
+import numpy as np
 import pandas as pd
 import seaborn
 
@@ -53,6 +54,8 @@ def plot_patches_ci_java(mode='tbar'):
                 # if time>3600:
                 #     break
 
+    print(np.mean([len(l) for l in casino_result]))
+    
     # w/o vertical
     for i in range(MAX_EXP):
         for result in d4j.D4J_1_2_LIST:
@@ -83,6 +86,8 @@ def plot_patches_ci_java(mode='tbar'):
 
                 # if time>3600:
                 #     break
+
+    print(np.mean([len(l) for l in wo_vertical]))
 
     # greybox
     for i in range(MAX_EXP):
@@ -115,6 +120,8 @@ def plot_patches_ci_java(mode='tbar'):
                 # if time>3600:
                 #     break
 
+    print(np.mean([len(l) for l in greybox_result]))
+
     # Original
     for result in d4j.D4J_1_2_LIST:
         if not os.path.exists(f'{mode}/result/{result}-greybox-{MAX_EXP-1}/simapr-finished.txt') or \
@@ -144,6 +151,8 @@ def plot_patches_ci_java(mode='tbar'):
 
             # if time>3600:
             #     break
+    
+    print(len(orig_result))
 
 o,a=getopt(argv[1:],'',['with-mockito'])
 for opt,arg in o:
