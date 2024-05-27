@@ -247,7 +247,12 @@ def plot_patches_ci_java(mode='tbar'):
     plt.ylabel('# of Valid Patches',fontsize=15)
     plt.xticks(fontsize=15)
     plt.yticks(fontsize=15)
-    plt.savefig(f'rq3-{mode}.pdf',bbox_inches='tight')
+    if WITH_MOCKITO:
+        plt.savefig(f'rq3-{mode}-w-mockito.pdf',bbox_inches='tight')
+        plt.savefig(f'rq3-{mode}-w-mockito.jpg',bbox_inches='tight')
+    else:
+        plt.savefig(f'rq3-{mode}.pdf',bbox_inches='tight')
+        plt.savefig(f'rq3-{mode}.jpg',bbox_inches='tight')
 
 o,a=getopt(argv[1:],'',['with-mockito'])
 for opt,arg in o:

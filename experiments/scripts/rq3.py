@@ -66,15 +66,21 @@ guided_y=[]
 for j in range(MAX_EXP):
     cur_result=sorted(casino_result[j])
     guided_list.append([0])
-    for i in range(0,MAX_ITERATION):
+    for i in range(0,MAX_ITERATION+1):
         if i in cur_result:
             guided_list[-1].append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
             guided_x.append(i)
-            guided_y.append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
+            if i==0:
+                guided_y.append(0)
+            else:
+                guided_y.append(guided_y[-1]+cur_result.count(i))
         else:
             guided_list[-1].append(guided_list[-1][-1])
             guided_x.append(i)
-            guided_y.append(guided_list[-1][-1])
+            if i==0:
+                guided_y.append(0)
+            else:
+                guided_y.append(guided_y[-1])
 guided_df=pd.DataFrame({'Iteration':guided_x,'# of valid patches':guided_y})
 seaborn.lineplot(data=guided_df,x='Iteration',y='# of valid patches',color='g',label='Casino')
 
@@ -85,15 +91,21 @@ guided_y=[]
 for j in range(MAX_EXP):
     cur_result=sorted(wo_vertical[j])
     guided_list.append([0])
-    for i in range(0,MAX_ITERATION):
+    for i in range(0,MAX_ITERATION+1):
         if i in cur_result:
             guided_list[-1].append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
             guided_x.append(i)
-            guided_y.append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
+            if i==0:
+                guided_y.append(0)
+            else:
+                guided_y.append(guided_y[-1]+cur_result.count(i))
         else:
             guided_list[-1].append(guided_list[-1][-1])
             guided_x.append(i)
-            guided_y.append(guided_list[-1][-1])
+            if i==0:
+                guided_y.append(0)
+            else:
+                guided_y.append(guided_y[-1])
 guided_df=pd.DataFrame({'Iteration':guided_x,'# of valid patches':guided_y})
 seaborn.lineplot(data=guided_df,x='Iteration',y='# of valid patches',color='r',label='w/o 1st vert.')
 
@@ -104,15 +116,21 @@ other_y=[]
 for j in range(MAX_EXP):
     cur_result=sorted(greybox_result[j])
     other_list.append([0])
-    for i in range(0,MAX_ITERATION):
+    for i in range(0,MAX_ITERATION+1):
         if i in cur_result:
             other_list[-1].append(other_list[-1][-1]+cur_result.count(i)/MAX_EXP)
             other_x.append(i)
-            other_y.append(other_list[-1][-1]+cur_result.count(i)/MAX_EXP)
+            if i==0:
+                other_y.append(0)
+            else:
+                other_y.append(other_y[-1]+cur_result.count(i))
         else:
             other_list[-1].append(other_list[-1][-1])
             other_x.append(i)
-            other_y.append(other_list[-1][-1])
+            if i==0:
+                other_y.append(0)
+            else:
+                other_y.append(other_y[-1])
 other_df=pd.DataFrame({'Iteration':other_x,'# of valid patches':other_y})
 seaborn.lineplot(data=other_df,x='Iteration',y='# of valid patches',color='y',label='Greybox',linestyle='dashed')
 
@@ -121,4 +139,9 @@ plt.xlabel('Time (min)',fontsize=15)
 plt.ylabel('# of Valid Patches',fontsize=15)
 plt.xticks(fontsize=15)
 plt.yticks(fontsize=15)
-plt.savefig(f'rq3.pdf',bbox_inches='tight')
+if WITH_MOCKITO:
+    plt.savefig(f'rq3-w-mockito.pdf',bbox_inches='tight')
+    plt.savefig(f'rq3-w-mockito.jpg',bbox_inches='tight')
+else:
+    plt.savefig(f'rq3.pdf',bbox_inches='tight')
+    plt.savefig(f'rq3.jpg',bbox_inches='tight')
