@@ -26,7 +26,7 @@ def run(tool:str):
         return
     
     # Copy output to scripts folder
-    shutil.copyfile(f'{tool}/result/prediction.csv',f'scripts/ods-{tool}.csv')
+    shutil.copyfile(f'../{tool}/result/prediction.csv',f'ods-{tool}.csv')
 
     print(f'Finished ODS with {tool} with return code {result.returncode}!')
 
