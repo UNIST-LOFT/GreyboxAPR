@@ -20,6 +20,11 @@ def run(tool:str):
                             '--buggy_projects_path',f'../{tool_capital}/buggy','--output',f'../experiments/{tool}/result','--coming_tool_path','.'],cwd='../../ODS',
                             stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
     
+    if result.returncode!=0:
+        print(f'Error running ODS with {tool}!')
+        print(result.stdout.decode('utf-8'))
+        return
+    
     # Copy output to scripts folder
     shutil.copyfile(f'{tool}/result/prediction.csv',f'scripts/ods-{tool}.csv')
 
