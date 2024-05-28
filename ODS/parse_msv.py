@@ -41,12 +41,12 @@ def mkdir(path):
 def get_plausible_results(msv_results_path, output):
     mkdir(output)
     for directory in os.listdir(f'{msv_results_path}/cache'):
-        plausibles = []
+        plausibles = dict()
         with open(f"{msv_results_path}/cache/{directory}") as f:
             history = json.load(f)
             for patch in history.keys():
                 if history[patch]["plausible"]:
-                    plausibles.append({patch: history[patch]})
+                    plausibles[patch]=history[patch]
 
         with open(f"{output}/{directory}", "w+") as f:
             json.dump(plausibles, f,indent=2)
