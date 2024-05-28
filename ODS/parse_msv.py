@@ -228,7 +228,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    # parse_msv(args.msv_results_path, args.patches_path, args.buggy_projects_path, args.output)
+    parse_msv(args.msv_results_path, args.patches_path, args.buggy_projects_path, args.output)
 
     coming_representation = args.output + "/" + "coming_rep"
     run_coming(args.coming_tool_path, coming_representation, args.output)
