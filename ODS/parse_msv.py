@@ -36,7 +36,7 @@ import glob
 
 def mkdir(path):
     if not os.path.exists(path):
-        os.mkdir(path)
+        os.makedirs(path,exist_ok=True)
 
 def get_plausible_results(msv_results_path, output):
     mkdir(output)
@@ -62,14 +62,10 @@ def copy_patches(msv_results_path_parsed, patch_results_path, output):
         mkdir(f"{output}/{project_name}")
 
         for candidate in candidates:
-            path = next(iter(candidate.keys()))
-            path = path.split("/")[1]
-
-            for patch in os.listdir(f"{patch_results_path}/{project_name}"):
-                if patch != path:
-                    continue
-                shutil.copytree(f"{patch_results_path}/{project_name}/{patch}",
-                           f"{output}/{project_name}/{patch}", dirs_exist_ok=True)
+            path = candidate.split("/")[:-1]
+            mkdir(f"{output}/{project_name}/{path}")
+            shutil.copytree(f"{patch_results_path}/{project_name}/{candidate}",
+                        f"{output}/{project_name}/{candidate}", dirs_exist_ok=True)
 
 def parse_for_coming(plausible_patches, output):
     for project in os.listdir(plausible_patches):
