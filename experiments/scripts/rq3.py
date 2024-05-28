@@ -132,7 +132,7 @@ for j in range(MAX_EXP):
             else:
                 other_y.append(other_y[-1])
 other_df=pd.DataFrame({'Iteration':other_x,'# of valid patches':other_y})
-seaborn.lineplot(data=other_df,x='Iteration',y='# of valid patches',color='r',label='Greybox',linestyle='dashed')
+seaborn.lineplot(data=other_df,x='Iteration',y='# of valid patches',color='r',label='Gasino',linestyle='dashed')
 
 plt.legend(fontsize=12)
 plt.xlabel('Time (min)',fontsize=15)

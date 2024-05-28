@@ -195,7 +195,7 @@ def plot_patches_ci_java(mode='tbar'):
     plt.ylabel('Time (m)')
 
     plt.boxplot([np.array(greybox_time_until_finish),np.array(casino_time_until_finish),np.array(orig_time_until_finish)],
-                labels=['Greybox','Casino',name],showmeans=True)
+                labels=['Gasino','Casino',name],showmeans=True)
     plt.savefig(f'max-time-{mode}-box.pdf',bbox_inches='tight')
     plt.savefig(f'max-time-{mode}-box.jpg',bbox_inches='tight')
 

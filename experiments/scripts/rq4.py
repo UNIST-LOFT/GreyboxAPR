@@ -93,7 +93,7 @@ for j in range(MAX_EXP):
             guided_x.append(i)
             guided_y.append(guided_list[-1][-1])
 guided_df=pd.DataFrame({'Iteration':guided_x,'# of valid patches':guided_y})
-seaborn.lineplot(data=guided_df,x='Iteration',y='# of valid patches',color='r',label='Greybox',linestyle='dashed')
+seaborn.lineplot(data=guided_df,x='Iteration',y='# of valid patches',color='r',label='Gasino',linestyle='dashed')
 
 plt.legend(fontsize=12)
 plt.xlabel('Time (min)',fontsize=15)
