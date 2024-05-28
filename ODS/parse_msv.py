@@ -36,7 +36,7 @@ import glob
 
 def mkdir(path):
     if not os.path.exists(path):
-        os.makedirs(path)
+        os.mkdir(path)
 
 def get_plausible_results(msv_results_path, output):
     mkdir(output)
@@ -49,7 +49,7 @@ def get_plausible_results(msv_results_path, output):
                     plausibles.append({patch: history[patch]})
 
         with open(f"{output}/{directory}", "w+") as f:
-            json.dump(plausibles, f)
+            json.dump(plausibles, f,indent=2)
 
 def copy_patches(msv_results_path_parsed, patch_results_path, output):
     for project in os.listdir(msv_results_path_parsed):
