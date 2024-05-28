@@ -40,16 +40,22 @@ def mkdir(path):
 
 def get_plausible_results(msv_results_path, output):
     mkdir(output)
-    for directory in os.listdir(f'{msv_results_path}/cache'):
-        plausibles = dict()
-        with open(f"{msv_results_path}/cache/{directory}") as f:
-            history = json.load(f)
-            for patch in history.keys():
-                if history[patch]["plausible"]:
-                    plausibles[patch]=history[patch]
+    for directory in os.listdir(f'{msv_results_path}'):
+        if len(directory.split("-"))>=2:
+            project_name = directory.split("-")[0]
+            if os.path.exists(f'{output}/{project_name}.json'):
+                with open(f'{output}/{project_name}.json') as f:
+                    plausibles = json.load(f)
+            else:
+                plausibles = dict()
+            with open(f"{msv_results_path}/{directory}/simapr-result.json") as f:
+                history = json.load(f)
+                for patch in history:
+                    if patch["plausible"]:
+                        plausibles[patch['config'][0]['location']]=patch
 
-        with open(f"{output}/{directory}", "w+") as f:
-            json.dump(plausibles, f,indent=2)
+            with open(f"{output}/{project_name}.json", "w") as f:
+                json.dump(plausibles, f,indent=2)
 
 def copy_patches(msv_results_path_parsed, patch_results_path, output):
     for project in os.listdir(msv_results_path_parsed):
