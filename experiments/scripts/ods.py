@@ -30,5 +30,7 @@ def run(tool:str):
 
     print(f'Finished ODS with {tool} with return code {result.returncode}!')
 
-for tool in ['tbar','avatar','kpar','fixminer','recoder','alpharepair']:
-    run(tool)
+from sys import argv
+
+if __name__=='__main__':
+    run(argv[1])
