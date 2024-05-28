@@ -48,6 +48,8 @@ def get_plausible_results(msv_results_path, output):
                     plausibles = json.load(f)
             else:
                 plausibles = dict()
+            if not os.path.exists(f"{msv_results_path}/{directory}/simapr-result.json"):
+                continue
             with open(f"{msv_results_path}/{directory}/simapr-result.json") as f:
                 history = json.load(f)
                 for patch in history:
