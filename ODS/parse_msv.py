@@ -41,7 +41,7 @@ def mkdir(path):
 def get_plausible_results(msv_results_path, output):
     mkdir(output)
     for directory in os.listdir(f'{msv_results_path}'):
-        if len(directory.split("-"))>=2:
+        if os.path.isfile(f'{msv_results_path}/{directory}') and len(directory.split("-"))>=2:
             project_name = directory.split("-")[0]
             if os.path.exists(f'{output}/{project_name}.json'):
                 with open(f'{output}/{project_name}.json') as f:
