@@ -182,7 +182,7 @@ def parse_msv(msv_results_path, patch_results_path, buggy_projects_path, output)
 
 ## Run Coming tool
 def run_coming(coming_path, pairs_path, output):
-    command = f"java -classpath {coming_path}/coming-0-SNAPSHOT-jar-with-dependencies.jar fr.inria.coming.main.ComingMain -input files -mode features -location {pairs_path} -output {output}/out_features"
+    command = f"java -classpath {coming_path}/coming-0-SNAPSHOT-jar-with-dependencies.jar fr.inria.coming.main.ComingMain -input files -mode features --parameters max_nb_commit_analyze:10000:max_nb_hunks:10000 -location {pairs_path} -output {output}/out_features"
     process = subprocess.run(command, stderr=subprocess.STDOUT, stdout=subprocess.PIPE,shell=True)
 
     if process.returncode != 0:
