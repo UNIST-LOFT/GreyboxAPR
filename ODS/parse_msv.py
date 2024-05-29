@@ -36,24 +36,36 @@ import glob
 
 def mkdir(path):
     if not os.path.exists(path):
-        os.makedirs(path)
+        os.makedirs(path,exist_ok=True)
 
 def get_plausible_results(msv_results_path, output):
     mkdir(output)
-    for directory in os.listdir(f'{msv_results_path}/cache'):
-        plausibles = []
-        with open(f"{msv_results_path}/cache/{directory}") as f:
-            history = json.load(f)
-            for patch in history.keys():
-                if history[patch]["plausible"]:
-                    plausibles.append({patch: history[patch]})
+    for directory in os.listdir(f'{msv_results_path}'):
+        if directory.startswith('Mockito'):
+            continue
+        if os.path.isdir(f'{msv_results_path}/{directory}') and len(directory.split("-"))>=2:
+            project_name = directory.split("-")[0]
+            if os.path.exists(f'{output}/{project_name}.json'):
+                with open(f'{output}/{project_name}.json') as f:
+                    plausibles = json.load(f)
+            else:
+                plausibles = dict()
+            if not os.path.exists(f"{msv_results_path}/{directory}/simapr-result.json"):
+                continue
+            with open(f"{msv_results_path}/{directory}/simapr-result.json") as f:
+                history = json.load(f)
+                for patch in history:
+                    if patch["pass_result"]:
+                        plausibles[patch['config'][0]['location']]=patch
 
-        with open(f"{output}/{directory}", "w+") as f:
-            json.dump(plausibles, f)
+            with open(f"{output}/{project_name}.json", "w") as f:
+                json.dump(plausibles, f,indent=2)
 
 def copy_patches(msv_results_path_parsed, patch_results_path, output):
     for project in os.listdir(msv_results_path_parsed):
-        project_name = project.split("-")[0]
+        project_name = project.split(".")[0]
+        if project_name.startswith('Mockito'):
+            continue
         candidates = json.load(open(f"{msv_results_path_parsed}/{project}"))
 
         if project_name not in os.listdir(patch_results_path):
@@ -62,14 +74,10 @@ def copy_patches(msv_results_path_parsed, patch_results_path, output):
         mkdir(f"{output}/{project_name}")
 
         for candidate in candidates:
-            path = next(iter(candidate.keys()))
-            path = path.split("/")[1]
-
-            for patch in os.listdir(f"{patch_results_path}/{project_name}"):
-                if patch != path:
-                    continue
-                shutil.copytree(f"{patch_results_path}/{project_name}/{patch}",
-                           f"{output}/{project_name}/{patch}", dirs_exist_ok=True)
+            path = candidate.split("/")[:-1]
+            mkdir(f"{output}/{project_name}/{'/'.join(path)}")
+            shutil.copy(f"{patch_results_path}/{project_name}/{candidate}",
+                        f"{output}/{project_name}/{'/'.join(path)}")
 
 def parse_for_coming(plausible_patches, output):
     for project in os.listdir(plausible_patches):
@@ -151,6 +159,8 @@ def get_src_path(project):
 def fetch_buggy_files(buggy_projects_path, coming_rep):
     for project in os.listdir(coming_rep):
         project_name = project.split("#")[0]
+        if project_name.startswith('Mockito'):
+            continue
         src_path = get_src_path(project_name)
         src_file = os.listdir(f"{coming_rep}/{project}")[0]
         target_file = os.listdir(f"{coming_rep}/{project}/{src_file}")[0]
@@ -182,15 +192,12 @@ def parse_msv(msv_results_path, patch_results_path, buggy_projects_path, output)
 
 ## Run Coming tool
 def run_coming(coming_path, pairs_path, output):
-    command = f"java -classpath {coming_path}/coming-0-SNAPSHOT-jar-with-dependencies.jar fr.inria.coming.main.ComingMain -input files -mode features -location {pairs_path} -output {output}/out_features"
-    process = subprocess.Popen(shlex.split(command), stderr=subprocess.PIPE, stdout=subprocess.PIPE)
-    stdout, stderr = process.communicate()
+    command = f"java -classpath {coming_path}/coming-0-SNAPSHOT-jar-with-dependencies.jar fr.inria.coming.main.ComingMain -input files -mode features --parameters max_nb_commit_analyze:10000:max_nb_hunks:10000 -location {pairs_path} -output {output}/out_features"
+    process = subprocess.run(command, stderr=subprocess.STDOUT, stdout=subprocess.PIPE,shell=True)
 
     if process.returncode != 0:
-        print(stderr.decode('utf-8'))
+        print(process.stdout.decode('utf-8'))
         print("Something wrong with Coming")
-
-    print(stdout.decode('utf-8'))
 
     shutil.move(f"test.csv", f"{output}/test.csv")
 

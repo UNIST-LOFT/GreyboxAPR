@@ -126,7 +126,7 @@ RUN python3 -m pip install xgboost scikit-learn imblearn matplotlib
 WORKDIR /root
 RUN mkdir .config; exit 0
 RUN mkdir .config/matplotlib; exit 0
-RUN echo -e "ps.fonttype:  42\npdf.fonttype: 42" > .config/matplotlib/matplotlibrc
+RUN echo "ps.fonttype:  42\npdf.fonttype: 42" > .config/matplotlib/matplotlibrc
 
 WORKDIR /root
 CMD ["/usr/sbin/sshd","-D"]

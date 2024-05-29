@@ -204,7 +204,7 @@ def plot_patches_ci_java(mode='tbar'):
                 else:
                     guided_y.append(guided_y[-1])
     guided_df=pd.DataFrame({'Time':guided_x,'Number of valid patches':guided_y})
-    seaborn.lineplot(data=guided_df,x='Time',y='Number of valid patches',color='r',label='Greybox',linestyle='dashed')
+    seaborn.lineplot(data=guided_df,x='Time',y='Number of valid patches',color='r',label='Gresino',linestyle='dashed')
 
     plt.legend(fontsize=12)
     plt.xlabel('Iteration',fontsize=15)

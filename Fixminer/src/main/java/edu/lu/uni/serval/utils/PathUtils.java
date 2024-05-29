@@ -107,7 +107,7 @@ public class PathUtils {
 				path.add("/target/classes/");
 				path.add("/target/test-classes/");
 				path.add("/src/main/java/");
-				path.add("/src/test/jav/a");
+				path.add("/src/test/java/");
 			}
 		} else if (projectName.equals("Collections")) {
 			path.add("/target/classes/");

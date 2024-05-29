@@ -19,120 +19,31 @@ wo_vertical:List[List[int]]=[[] for _ in range(MAX_EXP)]
 greybox_result:List[List[int]]=[[] for _ in range(MAX_EXP)]
 casino_result:List[List[int]]=[[] for _ in range(MAX_EXP)]
 
-def plot_patches_ci_java(mode='tbar'):
-    global orig_result,wo_vertical,greybox_result,casino_result
-    # Casino
-    for i in range(MAX_EXP):
-        for result in d4j.D4J_1_2_LIST:
-            try:
-                result_file=open(f'{mode}/result/{result}-casino-{i}/simapr-result.json','r')
-            except:
-                continue
-            root=json.load(result_file)
-            result_file.close()
-
-            prev_time=0.
-            for res in root:
-                is_hq=res['result']
-                is_plausible=res['pass_result']
-                iteration=res['iteration']
-                time=res['time']
-                loc=res['config'][0]['location']
-
-                if is_plausible:
-                    # casino_result[i].append(round((time)/60))
-                    casino_result[i].append(iteration)
-
-                # if time>3600:
-                #     break
-
-    # w/o vertical
-    for i in range(MAX_EXP):
-        for result in d4j.D4J_1_2_LIST:
-            try:
-                result_file=open(f'{mode}/result/{result}-wo-vertical-{i}/simapr-result.json','r')
-            except:
-                continue
-            root=json.load(result_file)
-            result_file.close()
-
-            prev_time=0.
-            for res in root:
-                is_hq=res['result']
-                is_plausible=res['pass_result']
-                iteration=res['iteration']
-                time=res['time']
-                loc=res['config'][0]['location']
-
-                if is_plausible:
-                    # wo_vertical[i].append(round((time)/60))
-                    wo_vertical[i].append(iteration)
-
-                # if time>3600:
-                #     break
-
-    # greybox
-    for i in range(MAX_EXP):
-        for result in d4j.D4J_1_2_LIST:
-            try:
-                result_file=open(f'{mode}/result/{result}-greybox-{i}/simapr-result.json','r')
-            except:
-                continue
-            root=json.load(result_file)
-            result_file.close()
-
-            prev_time=0.
-            for res in root:
-                is_hq=res['result']
-                is_plausible=res['pass_result']
-                iteration=res['iteration']
-                time=res['time']
-                loc=res['config'][0]['location']
-
-                if is_plausible:
-                    # greybox_result[i].append(round((time)/60))
-                    greybox_result[i].append(iteration)
-
-                # if time>3600:
-                #     break
-
-    # Original
-    for result in d4j.D4J_1_2_LIST:
-        try:
-            result_file=open(f'{mode}/result/{result}-orig/simapr-result.json','r')
-        except:
-            continue
-        root=json.load(result_file)
-        result_file.close()
-
-        prev_time=0.
-        for res in root:
-            is_hq=res['result']
-            is_plausible=res['pass_result']
-            iteration=res['iteration']
-            time=res['time']
-            loc=res['config'][0]['location']
-
-            if is_plausible:
-                # orig_result.append(round((time)/60))
-                orig_result.append(iteration)
-
-            # if time>3600:
-            #     break
-
 o,a=getopt(argv[1:],'',['with-mockito'])
 for opt,arg in o:
     if o=='--with-mockito':
         WITH_MOCKITO=True
 
-plot_patches_ci_java('tbar')
-plot_patches_ci_java('avatar')
-plot_patches_ci_java('kpar')
-plot_patches_ci_java('fixminer')
-plot_patches_ci_java('recoder')
-plot_patches_ci_java('alpharepair')
-plot_patches_ci_java('srepair')
-plot_patches_ci_java('selfapr')
+def get_tool_data(tool:str):
+    global orig_result,wo_vertical,greybox_result,casino_result
+    with open(f'rq3-{tool}.json','r') as f:
+        root=json.load(f)
+    
+    orig_result+=root['orig']
+
+    for i in range(MAX_EXP):
+        wo_vertical[i]+=root['wo_vertical'][i]
+        greybox_result[i]+=root['greybox'][i]
+        casino_result[i]+=root['casino'][i]
+
+get_tool_data('tbar')
+get_tool_data('alpharepair')
+get_tool_data('avatar')
+get_tool_data('kpar')
+get_tool_data('fixminer')
+get_tool_data('recoder')
+get_tool_data('srepair')
+get_tool_data('selfapr')
 
 # Plausible patch plot
 plt.clf()
@@ -155,17 +66,23 @@ guided_y=[]
 for j in range(MAX_EXP):
     cur_result=sorted(casino_result[j])
     guided_list.append([0])
-    for i in range(0,MAX_ITERATION):
+    for i in range(0,MAX_ITERATION+1):
         if i in cur_result:
             guided_list[-1].append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
             guided_x.append(i)
-            guided_y.append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
+            if i==0:
+                guided_y.append(0)
+            else:
+                guided_y.append(guided_y[-1]+cur_result.count(i))
         else:
             guided_list[-1].append(guided_list[-1][-1])
             guided_x.append(i)
-            guided_y.append(guided_list[-1][-1])
-guided_df=pd.DataFrame({'Time':guided_x,'Number of valid patches':guided_y})
-seaborn.lineplot(data=guided_df,x='Time',y='Number of valid patches',color='r',label='Casino')
+            if i==0:
+                guided_y.append(0)
+            else:
+                guided_y.append(guided_y[-1])
+guided_df=pd.DataFrame({'Iteration':guided_x,'# of valid patches':guided_y})
+seaborn.lineplot(data=guided_df,x='Iteration',y='# of valid patches',color='g',label='Casino')
 
 # w/o vertical
 guided_list:List[List[int]]=[]
@@ -174,17 +91,23 @@ guided_y=[]
 for j in range(MAX_EXP):
     cur_result=sorted(wo_vertical[j])
     guided_list.append([0])
-    for i in range(0,MAX_ITERATION):
+    for i in range(0,MAX_ITERATION+1):
         if i in cur_result:
             guided_list[-1].append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
             guided_x.append(i)
-            guided_y.append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
+            if i==0:
+                guided_y.append(0)
+            else:
+                guided_y.append(guided_y[-1]+cur_result.count(i))
         else:
             guided_list[-1].append(guided_list[-1][-1])
             guided_x.append(i)
-            guided_y.append(guided_list[-1][-1])
-guided_df=pd.DataFrame({'Time':guided_x,'Number of valid patches':guided_y})
-seaborn.lineplot(data=guided_df,x='Time',y='Number of valid patches',color='g',label='w/o vertical')
+            if i==0:
+                guided_y.append(0)
+            else:
+                guided_y.append(guided_y[-1])
+guided_df=pd.DataFrame({'Iteration':guided_x,'# of valid patches':guided_y})
+seaborn.lineplot(data=guided_df,x='Iteration',y='# of valid patches',color='y',label='w/o 1st vert.')
 
 # greybox
 other_list:List[List[int]]=[]
@@ -193,21 +116,32 @@ other_y=[]
 for j in range(MAX_EXP):
     cur_result=sorted(greybox_result[j])
     other_list.append([0])
-    for i in range(0,MAX_ITERATION):
+    for i in range(0,MAX_ITERATION+1):
         if i in cur_result:
             other_list[-1].append(other_list[-1][-1]+cur_result.count(i)/MAX_EXP)
             other_x.append(i)
-            other_y.append(other_list[-1][-1]+cur_result.count(i)/MAX_EXP)
+            if i==0:
+                other_y.append(0)
+            else:
+                other_y.append(other_y[-1]+cur_result.count(i))
         else:
             other_list[-1].append(other_list[-1][-1])
             other_x.append(i)
-            other_y.append(other_list[-1][-1])
-other_df=pd.DataFrame({'Time':other_x,'Number of valid patches':other_y})
-seaborn.lineplot(data=other_df,x='Time',y='Number of valid patches',color='y',label='w/o horizontal',linestyle='dashed')
+            if i==0:
+                other_y.append(0)
+            else:
+                other_y.append(other_y[-1])
+other_df=pd.DataFrame({'Iteration':other_x,'# of valid patches':other_y})
+seaborn.lineplot(data=other_df,x='Iteration',y='# of valid patches',color='r',label='Gresino',linestyle='dashed')
 
 plt.legend(fontsize=12)
 plt.xlabel('Time (min)',fontsize=15)
 plt.ylabel('# of Valid Patches',fontsize=15)
 plt.xticks(fontsize=15)
 plt.yticks(fontsize=15)
-plt.savefig(f'rq3.pdf',bbox_inches='tight')
+if WITH_MOCKITO:
+    plt.savefig(f'rq3-w-mockito.pdf',bbox_inches='tight')
+    plt.savefig(f'rq3-w-mockito.jpg',bbox_inches='tight')
+else:
+    plt.savefig(f'rq3.pdf',bbox_inches='tight')
+    plt.savefig(f'rq3.jpg',bbox_inches='tight')

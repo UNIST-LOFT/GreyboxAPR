@@ -29,6 +29,9 @@ def run(project):
     if not ('Chart' in project or 'Closure' in project or 'Lang' in project or 'Math' in project or 'Mockito' in project or 'Time' in project):
         with open(f'FailedTestCases/{project}.txt','w') as f:
             f.write(result.stdout.decode('utf-8'))
+    elif 'Closure' in project and 133<=int(project.split('_')[-1])<175:
+        with open(f'FailedTestCases/{project}.txt','w') as f:
+            f.write(result.stdout.decode('utf-8'))
     
     result=subprocess.run(['java','-Xmx100G','-cp', 'lib/JavaCodeParser-1.0.jar:target/FixMiner-0.0.1-SNAPSHOT-jar-with-dependencies.jar',
                 'edu.lu.uni.serval.fixminer.main.Main',

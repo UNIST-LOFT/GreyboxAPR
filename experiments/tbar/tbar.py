@@ -28,6 +28,9 @@ def run(project):
     if not ('Chart' in project or 'Closure' in project or 'Lang' in project or 'Math' in project or 'Mockito' in project or 'Time' in project):
         with open(f'FailedTestCases/{project}.txt','w') as f:
             f.write(result.stdout.decode('utf-8'))
+    elif 'Closure' in project and 133<=int(project.split('_')[-1])<175:
+        with open(f'FailedTestCases/{project}.txt','w') as f:
+            f.write(result.stdout.decode('utf-8'))
     
     result=subprocess.run(['./TBarFixRunner.sh',
             'buggy/',project,'/defects4j/',
