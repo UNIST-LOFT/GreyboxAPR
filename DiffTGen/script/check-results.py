@@ -2,15 +2,12 @@ import os
 import sys
 import json
 
-ROOTDIR = "/root/SimAPR/DiffTGen"
+ROOTDIR = "/root/project/GreyboxAPR/DiffTGen"
 
 def sort_bugids(bugids):
     proj_dict = dict()
     for bugid in bugids:
-        if '_' in bugid:
-            proj, id = bugid.split("_")
-        else:
-            proj, id = bugid.split("-")
+        proj, id = bugid.split("_")
         if proj not in proj_dict:
             proj_dict[proj] = list()
         proj_dict[proj].append(int(id))
@@ -20,10 +17,7 @@ def sort_bugids(bugids):
         ids = proj_dict[proj]
         ids.sort()
         for id in ids:
-            if '_' in bugids[0]:
-                result.append(f"{proj}_{id}")
-            else:
-                result.append(f"{proj}-{id}")
+          result.append(f"{proj}_{id}")
     return result
 
 def main(args: list) -> None:
@@ -76,10 +70,7 @@ def main(args: list) -> None:
   for bugid in bugids:
     line = f"{bugid},"
     for testcase in bugmap[bugid]:
-      if tool in {'recoder', 'alpharepair'}:
-        line += f"{testcase['id']},"
-      else:
-        line += f"{testcase['location']},"
+      line += f"{testcase['location']},"
     line = line[:-1]
     csv_content.append(line + "\n")
   with open(os.path.join(ROOTDIR, "out", f"{tool}.csv"), "w") as f:
