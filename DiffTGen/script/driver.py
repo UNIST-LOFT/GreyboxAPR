@@ -692,7 +692,7 @@ def sort_bugids(bugids: List[str]) -> List[str]:
             result.append(f"{proj}_{id}")
     return result
 
-def main(tool: str, patchdir: str) -> None:
+def main(tool: str, patchdir: str, procs: int) -> None:
   if tool=='prapr':
     basedir = os.path.abspath(patchdir)
     cmd_list = list()
@@ -719,20 +719,24 @@ def main(tool: str, patchdir: str) -> None:
         result = prepare(basedir, os.path.join(dir, f"{bugid}.json"), tool)
         cmd_list.extend(result)
         break
-    pool = mp.Pool(processes=1)
+    pool = mp.Pool(processes=procs)
     pool.map(execute, cmd_list)
     pool.close()
     pool.join()
 
 if __name__ == "__main__":
-  if len(sys.argv) < 4:
-    print("Usage: python3 driver.py <rootdir> <tool> <patchdir>")
-    print("ex) python3 driver.py /root/project/GreyboxAPR recoder patches/recoder")
+  if len(sys.argv) < 5:
+    print("Usage: python3 driver.py <rootdir> <tool> <patchdir> <process>")
+    print("ex) python3 driver.py /root/project/GreyboxAPR recoder patches/recoder 96")
     exit(1)
     
   ROOTDIR = os.path.join(sys.argv[1], "DiffTGen")
   tool_name = sys.argv[2]
+  
+  procs = 96
+  if len(sys.argv) > 4:
+    procs = int(sys.argv[4])
   # get_diff_lines("d4j/Closure-115f/src/com/google/javascript/jscomp/FunctionInjector.java", "/root/DiffTGen/patches/alpharepair/Closure-115/7/100/FunctionInjector.java")
   # get_diff_lines("/root/DiffTGen/examples/before", "/root/DiffTGen/examples/after")
   # tool_name in ["recoder", "alpharepair", "avatar", "tbar", "kpar", "fixminer"]:
-  main(tool_name, sys.argv[3])
+  main(tool_name, sys.argv[3], procs)
