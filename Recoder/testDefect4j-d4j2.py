@@ -496,11 +496,11 @@ lst = ['Chart-1', 'Chart-8', 'Chart-9', 'Chart-11', 'Chart-12', 'Chart-20', 'Cha
 model = test()
 import sys
 bugid = sys.argv[1]
-prlist = [bugid.split("-")[0]]
-ids = [[int(bugid.split("-")[1])]]
+prlist = [bugid.split("_")[0]]
+ids = [[int(bugid.split("_")[1])]]
 for i, xss in enumerate(prlist):
     for idx in ids[i]:
-        idss = xss + "-" + str(idx)
+        idss = xss + "_" + str(idx)
         #if idss not in lst:
         #    continue
         if idss != bugid:
