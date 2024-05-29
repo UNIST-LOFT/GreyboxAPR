@@ -97,6 +97,7 @@ public class ModifyPrimitiveType extends FixTemplate {
 						}
 		    			int prevPos = positionsList.get(s - 1) + typeStr.length();
 		    			endPos = lastStmt.getPos() + lastStmt.getLength();
+						if (prevPos<0 || endPos<0) continue;
 		    			patch += this.getSuspJavaFileCode().substring(prevPos, endPos);
 		    			this.generatePatch(endPos, endPos, patch, "");
 		    		}
