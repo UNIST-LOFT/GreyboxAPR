@@ -385,8 +385,8 @@ def prepare(basedir: str, conf_file: str, tool: str) -> List[List[str]]:
     cmd_list = list()
     conf: dict = json.load(c)
     bugid: str = conf["bugid"]
-    if filter_bugid(bugid,tool):
-      return cmd_list
+    # if filter_bugid(bugid,tool):
+    #   return cmd_list
     plau_patch_list = conf["plausible_patches"]
     d4j_dir = os.path.join(ROOTDIR, "d4j", bugid)
     d4j_fixed_dir = os.path.join(ROOTDIR, "d4j", bugid + "f")
