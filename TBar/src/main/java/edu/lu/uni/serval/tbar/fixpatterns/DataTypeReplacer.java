@@ -96,7 +96,7 @@ public class DataTypeReplacer extends FixTemplate {
 						}
 		    			int prevPos = positionsList.get(s - 1) + dataType.length();
 		    			endPos = lastStmt.getPos() + lastStmt.getLength();
-						if (prevPos < 0 || endPos < 0) continue;
+						if (prevPos < 0 || endPos < 0 || endPos-prevPos<0) continue;
 		    			patch += this.suspJavaFileCode.substring(prevPos, endPos);
 		    			this.generatePatch(endPos, endPos, patch, "");
 		    		}
