@@ -10,7 +10,7 @@ import multiprocessing as mp
 import javalang
 import javalang.tree
 
-ROOTDIR = "/root/SimAPR/DiffTGen"
+ROOTDIR = "/root/project/GreyboxAPR/DiffTGen"
 manager = mp.Manager()
 global_cmd_queue = manager.Queue()
 tool_name = ""
@@ -241,7 +241,7 @@ def unzip_jar(cwd: str, jar_file: str) -> None:
   run_cmd(["jar", "-xf", jar_file], cwd)
 
 def init_d4j(bugid: str, loc: str, fixed = False) -> None:
-  proj, bid = bugid.split("-")
+  proj, bid = bugid.split("_")
   if int(bid) > 1000:
     bid = bid[:-3]
   print(f"Checkout {bugid}")
@@ -317,7 +317,7 @@ def write_deltas(deltas: Tuple[List[str], List[str]], patch_file: str, oracle_fi
       p.write(d)
 
 def get_groundtruth(bugid: str, d4j_dir: str) -> list:
-  proj, bid = bugid.split("-")
+  proj, bid = bugid.split("_")
   if int(bid) > 1000:
     bid = bid[:-3]
   files = set()
@@ -435,7 +435,7 @@ def prepare(basedir: str, conf_file: str, tool: str) -> List[List[str]]:
     return cmd_list
 
 def get_src_path(project):
-    project_name, bug_id = project.split("-")
+    project_name, bug_id = project.split("_")
     if len(bug_id)>=4: bug_id=bug_id[:-3]
     bug_id = int(bug_id)
     if project_name == "Math":
@@ -457,7 +457,7 @@ def get_src_path(project):
     return None
 
 def get_target_path(project):
-    project_name, bug_id = project.split("-")
+    project_name, bug_id = project.split("_")
     if len(bug_id)>=4: bug_id=bug_id[:-3]
     bug_id = int(bug_id)
     if project_name == "Math":
@@ -675,7 +675,7 @@ def sort_bugids(bugids: List[str]) -> List[str]:
     proj_dict = dict()
     for bugid in bugids:
         if bugid in ['bin','closure-repo','installation']: continue  # Skip PraPR files
-        splitted = bugid.split("-")
+        splitted = bugid.split("_")
         if len(splitted)==1:
             splitted=bugid.split('_')
         proj=splitted[0]
@@ -689,7 +689,7 @@ def sort_bugids(bugids: List[str]) -> List[str]:
         ids = proj_dict[proj]
         ids.sort()
         for id in ids:
-            result.append(f"{proj}-{id}")
+            result.append(f"{proj}_{id}")
     return result
 
 def main(tool: str, patchdir: str) -> None:
@@ -714,20 +714,25 @@ def main(tool: str, patchdir: str) -> None:
     cmd_list = list()
     for bugid in sort_bugids(os.listdir(basedir)):
       dir = os.path.join(basedir, bugid)
+      print(f"[dir] [d {dir}]")
       if os.path.isdir(dir):
         result = prepare(basedir, os.path.join(dir, f"{bugid}.json"), tool)
         cmd_list.extend(result)
-    pool = mp.Pool(processes=96)
+        break
+    pool = mp.Pool(processes=1)
     pool.map(execute, cmd_list)
     pool.close()
     pool.join()
 
 if __name__ == "__main__":
-  if len(sys.argv) < 3:
-    print("Usage: python3 driver.py <tool> <patchdir>")
+  if len(sys.argv) < 4:
+    print("Usage: python3 driver.py <rootdir> <tool> <patchdir>")
+    print("ex) python3 driver.py /root/project/GreyboxAPR recoder patches/recoder")
     exit(1)
-  tool_name = sys.argv[1]
+    
+  ROOTDIR = os.path.join(sys.argv[1], "DiffTGen")
+  tool_name = sys.argv[2]
   # get_diff_lines("d4j/Closure-115f/src/com/google/javascript/jscomp/FunctionInjector.java", "/root/DiffTGen/patches/alpharepair/Closure-115/7/100/FunctionInjector.java")
   # get_diff_lines("/root/DiffTGen/examples/before", "/root/DiffTGen/examples/after")
   # tool_name in ["recoder", "alpharepair", "avatar", "tbar", "kpar", "fixminer"]:
-  main(tool_name, sys.argv[2])
+  main(tool_name, sys.argv[3])

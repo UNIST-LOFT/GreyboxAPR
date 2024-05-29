@@ -19,3 +19,4 @@ experiments/yechan/
 !experiments/scripts/test-time.json
 !experiments/scripts/**/*.txt
 !SRepair/d4j/**/*.json  # Keep SRepair results, it takes too long time and cost to generate them
+!DiffTGen/groundtruth.txt
