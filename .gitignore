@@ -19,4 +19,8 @@ experiments/yechan/
 !experiments/scripts/test-time.json
 !experiments/scripts/**/*.txt
 !SRepair/d4j/**/*.json  # Keep SRepair results, it takes too long time and cost to generate them
+
 !TBar/SuspiciousCodePositions_updated/**/*.txt
+!Avatar/SuspiciousCodePositions/**/*.txt
+!kPar/SuspiciousCodePositions/**/*.txt
+!Fixminer/BugPositions/**/*.txt
