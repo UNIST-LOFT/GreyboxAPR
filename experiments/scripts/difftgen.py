@@ -15,12 +15,9 @@ def run(tool:str, procs: int):
     
     shutil.copytree(f'{difftgen_dir}/out/{tool.lower()}/{tool.lower()}.csv',f'{tool.lower()}/difftgen.csv',dirs_exist_ok=True)
     
-procs = 96
-if len(sys.argv) > 1:
-    procs = int(sys.argv[1])
-run('TBar', procs)
-run('Fixminer', procs)
-run('kPar', procs)
-run('Avatar', procs)
-run('Recoder', procs)
-run('AlphaRepair', procs)
+if len(sys.argv) != 3:
+    print("Usage: python3 difftgen.py <tool> <num_procs>")
+    exit(1)
+
+procs = int(sys.argv[2])
+run(sys.argv[1], procs)
