@@ -374,7 +374,13 @@ public class ContextReader {
 				varType = readType(children.get(0).getLabel());
 				for (int i = 1, size = children.size(); i < size; i ++) {
 					ITree child = children.get(i);
-					String varName = child.getChild(0).getLabel();
+					String varName;
+					try {
+						varName = child.getChild(0).getLabel();
+					}
+					catch (Exception e) {
+						continue;
+					}
 					List<String> varNames = varNamesMap.get(varType);
 					if (varNames == null) {
 						varNames = new ArrayList<>();
