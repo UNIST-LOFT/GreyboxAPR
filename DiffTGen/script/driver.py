@@ -718,7 +718,6 @@ def main(tool: str, patchdir: str, procs: int) -> None:
       if os.path.isdir(dir):
         result = prepare(basedir, os.path.join(dir, f"{bugid}.json"), tool)
         cmd_list.extend(result)
-        break
     pool = mp.Pool(processes=procs)
     pool.map(execute, cmd_list)
     pool.close()
