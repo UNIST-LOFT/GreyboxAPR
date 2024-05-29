@@ -133,6 +133,7 @@ public abstract class FixTemplate implements IFixTemplate {
 			String sourceCodeFileName = sourceCodeFile.getName();
 			sourceCodeFileName = "." + sourceCodeFileName.substring(0, sourceCodeFileName.length() - 5);
 			if (!classPath.endsWith(sourceCodeFileName)) {
+				if (classPath.lastIndexOf(sourceCodeFileName + ".") < 0) return;
 				classPath = classPath.substring(0, classPath.lastIndexOf(sourceCodeFileName + ".")) + sourceCodeFileName;
 			}
 			File javaCodeFile = new File(this.sourceCodePath + classPath.replace(".", "/") + ".java");
