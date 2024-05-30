@@ -229,6 +229,7 @@ public abstract class AbstractFixer implements IFixer {
             String line = null;
 			int rank=0;
             while ((line = reader.readLine()) != null) {
+				if (rank>1000) break;
             	String[] elements = line.split("@");
             	SuspiciousPosition sp = new SuspiciousPosition();
             	sp.classPath = elements[0];
