@@ -3,6 +3,9 @@ import subprocess
 import multiprocessing as mp
 
 def run(project):
+    if os.path.exists(f"/root/project/GreyboxAPR/TBar/d4j/{project}/switch-info.json"):
+        print(f"{project} is done")
+        return
     print(f'Run {project}')
     result=subprocess.run(['python3','tbar.py',project],stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
     with open(f'result/{project}-tbar.log','w') as f:
