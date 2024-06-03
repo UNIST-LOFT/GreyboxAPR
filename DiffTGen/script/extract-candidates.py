@@ -100,7 +100,7 @@ def main_recoder(cmd: str, rootdir: str, outdir: str) -> None:
   elif cmd == "kpar":
     tool_dir = os.path.join(rootdir, "kPar")
   elif cmd == "fixminer":
-    tool_dir = os.path.join(rootdir, "FixMiner")
+    tool_dir = os.path.join(rootdir, "Fixminer")
   bugids = list()
   for cache in os.listdir(sim_dir):
     bugids.append(cache.replace("-cache.json", ""))
@@ -121,7 +121,10 @@ def main_recoder(cmd: str, rootdir: str, outdir: str) -> None:
       plau_patches = list()
       result["plausible_patches"] = plau_patches
       for file_info in sw["rules"]:
-        file_name = file_info["file"]
+        if 'file' in file_info:
+          file_name = file_info["file"]
+        else:
+          file_name=file_info['file_name']
         for func_info in file_info["functions"]:  
           for line_info in func_info["lines"]:
             for case_info in line_info["cases"]:
@@ -151,7 +154,7 @@ def main_tbar(rootdir,outdir,cmd):
   elif cmd == "kpar":
     tool_dir = os.path.join(rootdir, "kPar")
   elif cmd == "fixminer":
-    tool_dir = os.path.join(rootdir, "FixMiner")
+    tool_dir = os.path.join(rootdir, "Fixminer")
 
   bugids = get_bugids(f"{tool_dir}/data/bugs.csv")
   for bugid in bugids:

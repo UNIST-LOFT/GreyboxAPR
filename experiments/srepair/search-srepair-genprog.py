@@ -16,9 +16,9 @@ def run(project,seed,trial):
 
     print(f"Run {project}-genprog-{trial}")
     result=subprocess.run(['python3',f'{new_cur_dir}/SimAPR/simapr.py','-o',f'result/{project}-genprog-{trial}','-m','genprog',
-                           '--seed',f'{seed}','-k','learning','-w',f'{new_cur_dir}/AlphaRepair/d4j/{project}','-t','180000',
+                           '--seed',f'{seed}','-k','learning','-w',f'{new_cur_dir}/SRepair/d4j/{project}','-t','180000',
                            '--use-simulation-mode',f'result/cache/{project}-cache.json','-E','3000','--skip-valid',
-                           '--','python3',f'{new_cur_dir}/SimAPR/script/d4j_run_test.py',f'{new_cur_dir}/AlphaRepair/buggy'])
+                           '--','python3',f'{new_cur_dir}/SimAPR/script/d4j_run_test.py',f'{new_cur_dir}/SRepair/buggy'])
     
     print(f'{project} genprog-{trial} finish with return code {result.returncode}')
     exit(result.returncode)
