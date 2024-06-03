@@ -196,6 +196,8 @@ def plot_patches_ci_java(mode='tbar'):
     elif mode=='avatar': name='Avatar'
     elif mode=='recoder': name='Recoder'
     elif mode=='alpharepair': name='AlphaRepair'
+    elif mode=='srepair': name='SRepair'
+    elif mode=='selfapr': name='SelfAPR'
 
     # Original
     results=sorted(orig_result)
