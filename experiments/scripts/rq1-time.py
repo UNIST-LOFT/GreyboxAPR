@@ -264,6 +264,7 @@ def plot_patches_ci_java(mode='tbar'):
     plt.xlabel('Time (min)',fontsize=15)
     plt.ylabel('# of Valid Patches',fontsize=15)
     plt.xticks(fontsize=15)
+    plt.locator_params(axis='x',nbins=6)
     plt.yticks(fontsize=15)
 
     if WITH_MOCKITO:
