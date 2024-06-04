@@ -55,10 +55,10 @@ class PassFail:
     else:
       return 1.
     
-  def beta_mode(self, alpha: float, beta: float) -> float:
-    if alpha+beta==2.0:
+  def beta_mode(self, alpha_init: float=1.0, beta_init: float=1.0) -> float:
+    if self.pass_count+alpha_init+self.fail_count+beta_init==2.0:
       return 1.0
-    return (alpha - 1.0) / (alpha + beta - 2.0)
+    return (self.pass_count+alpha_init - 1.0) / (self.pass_count+self.fail_count + beta_init - 2.0)
   
   def update(self, result: bool, n: float,b_n:float=1.0, exp_alpha: bool = False) -> None:
     if result:
@@ -146,6 +146,16 @@ class CriticalBranchUpDown:
       self.branchDownScore+=1 # increase the score with some value.
     elif branch_difference>0:
       self.branchUpScore+=1 # increase the score with some value.
+
+  def mode(self,isUp):
+    if isUp:
+      if self.branchUpScore+self.branchUpInit+self.branchUpInit==2.0:
+        return 1.0
+      return (self.branchUpScore+self.branchUpInit - 1.0) / (self.branchUpScore+self.branchUpInit*2 - 2.0)
+    else:
+      if self.branchDownScore+self.branchDownInit+self.branchDownInit==2.0:
+        return 1.0
+      return (self.branchDownScore+self.branchDownInit - 1.0) / (self.branchDownScore+self.branchDownInit*2 - 2.0)
 
   def select_value(self,isUp:bool) -> float: # select a value randomly from the beta distribution
     """
@@ -252,6 +262,9 @@ class FileInfo(LocationNode):
     return hash(self.file_name)
   def __eq__(self, other) -> bool:
     return self.file_name == other.file_name
+  
+  def __str__(self) -> str:
+    return self.file_name
 
 class FuncInfo(LocationNode):
   def __init__(self, parent: FileInfo, func_name: str) -> None:
@@ -272,6 +285,9 @@ class FuncInfo(LocationNode):
     return hash(self.id)
   def __eq__(self, other) -> bool:
     return self.id == other.id and self.parent.file_name == other.parent.file_name
+  
+  def __str__(self) -> str:
+    return f'{self.parent}-{self.func_name}'
 
 class LineInfo(LocationNode):
   def __init__(self, parent: FuncInfo, line_number: int) -> None:
@@ -287,6 +303,9 @@ class LineInfo(LocationNode):
     return hash(self.uuid)
   def __eq__(self, other) -> bool:
     return self.uuid == other.uuid
+  
+  def __str__(self) -> str:
+    return f'{self.parent}-{self.line_number}'
 
 class TbarTypeInfo(PatchTreeNode):
   def __init__(self, parent: LineInfo, mutation: str) -> None:
@@ -298,6 +317,9 @@ class TbarTypeInfo(PatchTreeNode):
     return hash(self.mutation)
   def __eq__(self, other) -> bool:
     return self.mutation == other.mutation and self.parent==other.parent
+  
+  def __str__(self) -> str:
+    return f'{self.parent}-{self.mutation}'
 
 class TbarCaseInfo(PatchTreeNode):
   def __init__(self, parent: TbarTypeInfo, location: str) -> None:
@@ -311,6 +333,9 @@ class TbarCaseInfo(PatchTreeNode):
     return hash(self.location)
   def __eq__(self, other) -> bool:
     return self.location == other.location
+  
+  def __str__(self) -> str:
+    return self.location
 
 class RecoderCaseInfo(PatchTreeNode):
   def __init__(self, parent: LineInfo, location: str, case_id: int) -> None:
@@ -326,6 +351,9 @@ class RecoderCaseInfo(PatchTreeNode):
     return hash(self.location)
   def __eq__(self, other) -> bool:
     return self.location == other.location
+  
+  def __str__(self) -> str:
+    return self.location
 
 class BranchInfo:
   def __init__(self, id: int, c_i: int, c_u: int, n_i: int, n_u:int) -> None:
