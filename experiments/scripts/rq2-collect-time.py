@@ -20,7 +20,7 @@ def get_ranking_info_tbar(mode='tbar'):
     casino_result:List[List[Tuple[int,int]]]=[[] for _ in range(MAX_EXP)]
     orig_result:List[Tuple[int,int]]=[]
 
-    with open(f'scripts/{mode}/difftgen.csv','r') as f:
+    with open(f'{mode}/difftgen.csv','r') as f:
         lines=f.readlines()
         correct=dict()
         for line in lines:
@@ -38,8 +38,7 @@ def get_ranking_info_tbar(mode='tbar'):
         for result in d4j.D4J_1_2_LIST:
             if not WITH_MOCKITO and 'Mockito' in result:
                 continue
-            if not os.path.exists(f'{mode}/result/{result}-greybox-{MAX_EXP-1}/simapr-finished.txt') or \
-                        not os.path.exists(f'{mode}/result/{result}-wo-vertical-{MAX_EXP-1}/simapr-finished.txt'):
+            if not os.path.exists(f'{mode}/result/{result}-greybox-{MAX_EXP-1}/simapr-finished.txt'):
                 # Skip if experiment not end
                 continue
             try:
@@ -98,8 +97,7 @@ def get_ranking_info_tbar(mode='tbar'):
         for result in d4j.D4J_1_2_LIST:
             if not WITH_MOCKITO and 'Mockito' in result:
                 continue
-            if not os.path.exists(f'{mode}/result/{result}-greybox-{MAX_EXP-1}/simapr-finished.txt') or \
-                        not os.path.exists(f'{mode}/result/{result}-wo-vertical-{MAX_EXP-1}/simapr-finished.txt'):
+            if not os.path.exists(f'{mode}/result/{result}-greybox-{MAX_EXP-1}/simapr-finished.txt'):
                 # Skip if experiment not end
                 continue
             try:
@@ -168,8 +166,7 @@ def get_ranking_info_tbar(mode='tbar'):
     for result in d4j.D4J_1_2_LIST:
         if not WITH_MOCKITO and 'Mockito' in result:
             continue
-        if not os.path.exists(f'{mode}/result/{result}-greybox-{MAX_EXP-1}/simapr-finished.txt') or \
-                        not os.path.exists(f'{mode}/result/{result}-wo-vertical-{MAX_EXP-1}/simapr-finished.txt'):
+        if not os.path.exists(f'{mode}/result/{result}-greybox-{MAX_EXP-1}/simapr-finished.txt'):
                 # Skip if experiment not end
                 continue
         try:
