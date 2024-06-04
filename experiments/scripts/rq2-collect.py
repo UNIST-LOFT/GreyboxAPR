@@ -61,14 +61,16 @@ def get_ranking_info_tbar(mode='tbar'):
 
             cur_rank=0
             for res in result_file:
+                if res.startswith(','): continue
                 cur_rank+=1
                 is_correct=False
-                id=res.split(',')[0]
+                id=res.split(',')[1].split('#')[1][:-2]+'.java'
+                id=id.replace('-','/').replace('_','/')
                 if result in correct:
                     if id in correct[result]:
                         is_correct=True
                 
-                if is_correct:
+                if is_correct and id in cur_result:
                     casino_result[i].append((cur_result[id],cur_rank))
                     break
 
@@ -103,14 +105,16 @@ def get_ranking_info_tbar(mode='tbar'):
 
             cur_rank=0
             for res in result_file:
+                if res.startswith(','): continue
                 cur_rank+=1
                 is_correct=False
-                id=res.split(',')[0]
+                id=res.split(',')[1].split('#')[1][:-2]+'.java'
+                id=id.replace('-','/').replace('_','/')
                 if result in correct:
                     if id in correct[result]:
                         is_correct=True
                 
-                if is_correct:
+                if is_correct and id in cur_result:
                     greybox_result[i].append((cur_result[id],cur_rank))
                     break
 
@@ -144,14 +148,16 @@ def get_ranking_info_tbar(mode='tbar'):
 
         cur_rank=0
         for res in result_file:
+            if res.startswith(','): continue
             cur_rank+=1
             is_correct=False
-            id=res.split(',')[0]
+            id=res.split(',')[1].split('#')[1][:-2]+'.java'
+            id=id.replace('-','/').replace('_','/')
             if result in correct:
                 if id in correct[result]:
                     is_correct=True
             
-            if is_correct:
+            if is_correct and id in cur_result:
                 orig_result.append((cur_result[id],cur_rank))
                 break
 
@@ -186,7 +192,7 @@ def get_ranking_info_tbar(mode='tbar'):
     casino_list:List[List[int]]=[]
     for i in range(MAX_EXP):
         cur_result=[]
-        for time,rank in casino_result:
+        for time,rank in casino_result[i]:
             if rank==1:
                 cur_result.append(time)
         casino_list.append(cur_result)
@@ -200,7 +206,7 @@ def get_ranking_info_tbar(mode='tbar'):
             if i in cur_result:
                 guided_list[-1].append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
                 guided_x.append(i)
-                guided_y.append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
+                guided_y.append(guided_list[-1][-1]+cur_result.count(i))
             else:
                 guided_list[-1].append(guided_list[-1][-1])
                 guided_x.append(i)
@@ -212,7 +218,7 @@ def get_ranking_info_tbar(mode='tbar'):
     genprog_list:List[List[int]]=[]
     for i in range(MAX_EXP):
         cur_result=[]
-        for time,rank in greybox_result:
+        for time,rank in greybox_result[i]:
             if rank==1:
                 cur_result.append(time)
         genprog_list.append(cur_result)
@@ -226,7 +232,7 @@ def get_ranking_info_tbar(mode='tbar'):
             if i in cur_result:
                 guided_list[-1].append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
                 guided_x.append(i)
-                guided_y.append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
+                guided_y.append(guided_list[-1][-1]+cur_result.count(i))
             else:
                 guided_list[-1].append(guided_list[-1][-1])
                 guided_x.append(i)
@@ -239,6 +245,7 @@ def get_ranking_info_tbar(mode='tbar'):
     plt.ylabel('# of Valid Patches',fontsize=15)
     plt.xticks(fontsize=15)
     plt.yticks(fontsize=15)
+    plt.savefig(f'rq2-top-1-{mode}.jpg',bbox_inches='tight')
     plt.savefig(f'rq2-top-1-{mode}.pdf',bbox_inches='tight')
 
     # Top-5
@@ -263,7 +270,7 @@ def get_ranking_info_tbar(mode='tbar'):
     casino_list:List[List[int]]=[]
     for i in range(MAX_EXP):
         cur_result=[]
-        for time,rank in casino_result:
+        for time,rank in casino_result[i]:
             if rank<=5:
                 cur_result.append(time)
         casino_list.append(cur_result)
@@ -277,7 +284,7 @@ def get_ranking_info_tbar(mode='tbar'):
             if i in cur_result:
                 guided_list[-1].append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
                 guided_x.append(i)
-                guided_y.append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
+                guided_y.append(guided_list[-1][-1]+cur_result.count(i))
             else:
                 guided_list[-1].append(guided_list[-1][-1])
                 guided_x.append(i)
@@ -289,7 +296,7 @@ def get_ranking_info_tbar(mode='tbar'):
     genprog_list:List[List[int]]=[]
     for i in range(MAX_EXP):
         cur_result=[]
-        for time,rank in greybox_result:
+        for time,rank in greybox_result[i]:
             if rank<=5:
                 cur_result.append(time)
         genprog_list.append(cur_result)
@@ -303,7 +310,7 @@ def get_ranking_info_tbar(mode='tbar'):
             if i in cur_result:
                 guided_list[-1].append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
                 guided_x.append(i)
-                guided_y.append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
+                guided_y.append(guided_list[-1][-1]+cur_result.count(i))
             else:
                 guided_list[-1].append(guided_list[-1][-1])
                 guided_x.append(i)
@@ -316,6 +323,7 @@ def get_ranking_info_tbar(mode='tbar'):
     plt.ylabel('# of Valid Patches',fontsize=15)
     plt.xticks(fontsize=15)
     plt.yticks(fontsize=15)
+    plt.savefig(f'rq2-top-5-{mode}.jpg',bbox_inches='tight')
     plt.savefig(f'rq2-top-5-{mode}.pdf',bbox_inches='tight')
 
 o,a=getopt(argv[1:],'',['with-mockito'])
