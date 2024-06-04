@@ -25,7 +25,7 @@ for opt,arg in o:
         WITH_MOCKITO=True
 
 def get_tool_data(tool:str):
-    global orig_result,wo_vertical,greybox_result,casino_result
+    global orig_result,wo_vertical,greybox_result,casino_result,MAX_TIME
     with open(f'scripts/ablation-data/rq3-{tool}.json','r') as f:
         root=json.load(f)
     

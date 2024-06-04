@@ -18,7 +18,7 @@ casino_result:List[List[Tuple[int,int]]]=[[] for _ in range(MAX_EXP)]
 orig_result:List[Tuple[int,int]]=[]
 
 def get_ranking_info_tbar(mode='tbar'):
-    global greybox_result,casino_result,orig_result
+    global greybox_result,casino_result,orig_result,MAX_TIME
     with open(f'scripts/recall-data/rq2-time-{mode}.json','r') as f:
         root=json.load(f)
     
