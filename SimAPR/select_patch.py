@@ -92,12 +92,14 @@ def second_vertical_search_recursion(state:GlobalState, source:PatchTreeNode):
   for child in children_map.values():
     randomly_selected_values.append(child.critical_branch_up_down_manager.select_value(selected_branch, isUp))
 
-  _debug=f'Prob of 2nd vertical: {_source}: '
+  _debug=f'Mode of 2nd vertical: {_source}: '
   for child in children_map.values():
-    if isUp:
-      _debug+=f'{child.critical_branch_up_down_manager.upDownDict[selected_branch].branchUpScore}'
-    else:
-      _debug+=f'{child.critical_branch_up_down_manager.upDownDict[selected_branch].branchDownScore}'
+    _debug+=f'{child.critical_branch_up_down_manager.upDownDict[selected_branch].mode(isUp)}'
+  state.logger.debug(_debug)
+
+  _debug=f'Prob of 2nd vertical: {_source}: '
+  for i in randomly_selected_values:
+    _debug+=f'{i},'
   state.logger.debug(_debug)
   
   max_index = randomly_selected_values.index(max(randomly_selected_values))
@@ -242,10 +244,15 @@ def select_patch_guide_algorithm(state: GlobalState,elements:Dict[Any,PatchTreeN
       else:
         p_b.append(0.)
 
-    _debug=f'Prob of 1st vertical: {parent}: '
+    _debug=f'Mode of 1st vertical: {parent}: '
     for element_name in elements:
       info:PatchTreeNode = elements[element_name]
       _debug+=f'{info.positive_pf.beta_mode(PT.ALPHA_INIT,PT.BETA_INIT)},'
+    state.logger.debug(_debug)
+
+    _debug=f'Prob of 1st vertical: {parent}: '
+    for i in p_b:
+      _debug+=f'{i},'
     state.logger.debug(_debug)
 
     max_score=0.
