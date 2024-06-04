@@ -58,7 +58,7 @@ class PassFail:
   def beta_mode(self, alpha_init: float=1.0, beta_init: float=1.0) -> float:
     if self.pass_count+alpha_init+self.fail_count+beta_init==2.0:
       return 1.0
-    return (self.pass_count+alpha_init - 1.0) / (self.pass_count+self.fail_count + beta_init - 2.0)
+    return (self.pass_count+alpha_init - 1.0) / (self.pass_count+alpha_init+self.fail_count + beta_init - 2.0)
   
   def update(self, result: bool, n: float,b_n:float=1.0, exp_alpha: bool = False) -> None:
     if result:
