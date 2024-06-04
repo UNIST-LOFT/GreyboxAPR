@@ -46,8 +46,8 @@ def main(args: list) -> None:
         bugj = json.load(f)
       for patch in bugj["plausible_patches"]:
         tot += 1
-        patchid = patch["id"]
-        if tool in ['tbar','avatar','kpar','fixminer']: patchid=patchid.lower()
+        patchid = patch["id"].lower()
+        # if tool in ['tbar','avatar','kpar','fixminer']: patchid=patchid.lower()
         patchloc = patch["location"]
         out_id = f"{bugid}_{patchid}"
         out_id_dir = os.path.join(outdir, out_id)
