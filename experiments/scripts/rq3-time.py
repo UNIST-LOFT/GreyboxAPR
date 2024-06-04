@@ -30,11 +30,23 @@ def get_tool_data(tool:str):
         root=json.load(f)
     
     orig_result+=root['orig']
+    for l in orig_result:
+        if l>MAX_TIME:
+            l=MAX_TIME
 
     for i in range(MAX_EXP):
         wo_vertical[i]+=root['wo_vertical'][i]
+        for l in wo_vertical[i]:
+            if l>MAX_TIME:
+                l=MAX_TIME
         greybox_result[i]+=root['greybox'][i]
+        for l in greybox_result[i]:
+            if l>MAX_TIME:
+                l=MAX_TIME
         casino_result[i]+=root['casino'][i]
+        for l in casino_result[i]:
+            if l>MAX_TIME:
+                l=MAX_TIME
 
 get_tool_data('tbar')
 get_tool_data('alpharepair')

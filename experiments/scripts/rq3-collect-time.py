@@ -47,7 +47,6 @@ def plot_patches_ci_java(mode='tbar'):
             cache=json.load(cache_file)
             cache_file.close()
 
-
             total_time=0.
             for res in root:
                 is_hq=res['result']
@@ -64,7 +63,7 @@ def plot_patches_ci_java(mode='tbar'):
                 if is_plausible:
                     if MAX_TIME<round((total_time)/60):
                         MAX_TIME=round((total_time)/60)
-                    casino_result[i].append(round((time)/60))
+                    casino_result[i].append(round((total_time)/60))
                     # casino_result[i].append(iteration)
 
                 # if time>3600:
@@ -123,7 +122,7 @@ def plot_patches_ci_java(mode='tbar'):
                 if is_plausible:
                     if MAX_TIME<round((total_time)/60):
                         MAX_TIME=round((total_time)/60)
-                    wo_vertical[i].append(round((time)/60))
+                    wo_vertical[i].append(round((total_time)/60))
                     # wo_vertical[i].append(iteration)
 
                 # if time>3600:
@@ -182,7 +181,7 @@ def plot_patches_ci_java(mode='tbar'):
                 if is_plausible:
                     if MAX_TIME<round((total_time)/60):
                         MAX_TIME=round((total_time)/60)
-                    greybox_result[i].append(round((time)/60))
+                    greybox_result[i].append(round((total_time)/60))
                     # greybox_result[i].append(iteration)
 
                 # if time>3600:
@@ -230,7 +229,7 @@ def plot_patches_ci_java(mode='tbar'):
             if is_plausible:
                 if MAX_TIME<round((total_time)/60):
                     MAX_TIME=round((total_time)/60)
-                orig_result.append(round((time)/60))
+                orig_result.append(round((total_time)/60))
                 # orig_result.append(iteration)
 
             # if time>3600:
