@@ -64,7 +64,7 @@ plt.plot(list(range(0,MAX_ITERATION+1)),other_list,'-.b',label='Orig')
 casino_list:List[List[int]]=[]
 for i in range(MAX_EXP):
     cur_result=[]
-    for time,rank in casino_result:
+    for time,rank in casino_result[i]:
         if rank==1:
             cur_result.append(time)
     casino_list.append(cur_result)
@@ -78,7 +78,7 @@ for j in range(MAX_EXP):
         if i in cur_result:
             guided_list[-1].append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
             guided_x.append(i)
-            guided_y.append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
+            guided_y.append(guided_list[-1][-1]+cur_result.count(i))
         else:
             guided_list[-1].append(guided_list[-1][-1])
             guided_x.append(i)
@@ -90,7 +90,7 @@ seaborn.lineplot(data=guided_df,x='Iteration',y='Number of valid patches',color=
 genprog_list:List[List[int]]=[]
 for i in range(MAX_EXP):
     cur_result=[]
-    for time,rank in greybox_result:
+    for time,rank in greybox_result[i]:
         if rank==1:
             cur_result.append(time)
     genprog_list.append(cur_result)
@@ -104,7 +104,7 @@ for j in range(MAX_EXP):
         if i in cur_result:
             guided_list[-1].append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
             guided_x.append(i)
-            guided_y.append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
+            guided_y.append(guided_list[-1][-1]+cur_result.count(i))
         else:
             guided_list[-1].append(guided_list[-1][-1])
             guided_x.append(i)
@@ -118,6 +118,7 @@ plt.ylabel('# of Valid Patches',fontsize=15)
 plt.xticks(fontsize=15)
 plt.locator_params(axis='x',nbins=6)
 plt.yticks(fontsize=15)
+plt.savefig(f'rq2-top-1.jpg',bbox_inches='tight')
 plt.savefig(f'rq2-top-1.pdf',bbox_inches='tight')
 
 # Top-5
@@ -142,7 +143,7 @@ plt.plot(list(range(0,MAX_ITERATION+1)),other_list,'-.b',label='Orig')
 casino_list:List[List[int]]=[]
 for i in range(MAX_EXP):
     cur_result=[]
-    for time,rank in casino_result:
+    for time,rank in casino_result[i]:
         if rank<=5:
             cur_result.append(time)
     casino_list.append(cur_result)
@@ -156,7 +157,7 @@ for j in range(MAX_EXP):
         if i in cur_result:
             guided_list[-1].append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
             guided_x.append(i)
-            guided_y.append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
+            guided_y.append(guided_list[-1][-1]+cur_result.count(i))
         else:
             guided_list[-1].append(guided_list[-1][-1])
             guided_x.append(i)
@@ -168,7 +169,7 @@ seaborn.lineplot(data=guided_df,x='Iteration',y='Number of valid patches',color=
 genprog_list:List[List[int]]=[]
 for i in range(MAX_EXP):
     cur_result=[]
-    for time,rank in greybox_result:
+    for time,rank in greybox_result[i]:
         if rank<=5:
             cur_result.append(time)
     genprog_list.append(cur_result)
@@ -182,7 +183,7 @@ for j in range(MAX_EXP):
         if i in cur_result:
             guided_list[-1].append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
             guided_x.append(i)
-            guided_y.append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
+            guided_y.append(guided_list[-1][-1]+cur_result.count(i))
         else:
             guided_list[-1].append(guided_list[-1][-1])
             guided_x.append(i)
@@ -196,4 +197,5 @@ plt.ylabel('# of Valid Patches',fontsize=15)
 plt.xticks(fontsize=15)
 plt.locator_params(axis='x',nbins=6)
 plt.yticks(fontsize=15)
+plt.savefig(f'rq2-top-5.jpg',bbox_inches='tight')
 plt.savefig(f'rq2-top-5.pdf',bbox_inches='tight')
