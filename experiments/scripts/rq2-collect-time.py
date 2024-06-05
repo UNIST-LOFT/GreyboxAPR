@@ -262,7 +262,7 @@ def get_ranking_info_tbar(mode='tbar'):
                 cur_result.append(time)
         casino_list.append(cur_result)
     guided_list:List[List[int]]=[]
-    guided_x=[]
+    guided_x=[0]
     guided_y=[0]
     for j in range(MAX_EXP):
         cur_result=sorted(casino_list[j])
@@ -288,7 +288,7 @@ def get_ranking_info_tbar(mode='tbar'):
                 cur_result.append(time)
         genprog_list.append(cur_result)
     guided_list:List[List[int]]=[]
-    guided_x=[]
+    guided_x=[0]
     guided_y=[0]
     for j in range(MAX_EXP):
         cur_result=sorted(genprog_list[j])
@@ -340,7 +340,7 @@ def get_ranking_info_tbar(mode='tbar'):
                 cur_result.append(time)
         casino_list.append(cur_result)
     guided_list:List[List[int]]=[]
-    guided_x=[]
+    guided_x=[0]
     guided_y=[0]
     for j in range(MAX_EXP):
         cur_result=sorted(casino_list[j])
@@ -366,7 +366,7 @@ def get_ranking_info_tbar(mode='tbar'):
                 cur_result.append(time)
         genprog_list.append(cur_result)
     guided_list:List[List[int]]=[]
-    guided_x=[]
+    guided_x=[0]
     guided_y=[0]
     for j in range(MAX_EXP):
         cur_result=sorted(genprog_list[j])
@@ -418,7 +418,7 @@ def get_ranking_info_tbar(mode='tbar'):
                 cur_result.append(time)
         casino_list.append(cur_result)
     guided_list:List[List[int]]=[]
-    guided_x=[]
+    guided_x=[0]
     guided_y=[0]
     for j in range(MAX_EXP):
         cur_result=sorted(casino_list[j])
@@ -444,7 +444,7 @@ def get_ranking_info_tbar(mode='tbar'):
                 cur_result.append(time)
         genprog_list.append(cur_result)
     guided_list:List[List[int]]=[]
-    guided_x=[]
+    guided_x=[0]
     guided_y=[0]
     for j in range(MAX_EXP):
         cur_result=sorted(genprog_list[j])
@@ -496,7 +496,7 @@ def get_ranking_info_tbar(mode='tbar'):
                 cur_result.append(time)
         casino_list.append(cur_result)
     guided_list:List[List[int]]=[]
-    guided_x=[]
+    guided_x=[0]
     guided_y=[0]
     for j in range(MAX_EXP):
         cur_result=sorted(casino_list[j])
@@ -522,7 +522,7 @@ def get_ranking_info_tbar(mode='tbar'):
                 cur_result.append(time)
         genprog_list.append(cur_result)
     guided_list:List[List[int]]=[]
-    guided_x=[]
+    guided_x=[0]
     guided_y=[0]
     for j in range(MAX_EXP):
         cur_result=sorted(genprog_list[j])
