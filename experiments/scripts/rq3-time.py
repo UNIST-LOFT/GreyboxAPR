@@ -150,7 +150,7 @@ plt.legend(fontsize=12)
 plt.xlabel('Time (min)',fontsize=15)
 plt.ylabel('# of Valid Patches',fontsize=15)
 plt.xticks(fontsize=15)
-plt.locator_params(axis='x',nbins=6)
+plt.locator_params(axis='x',nbins=8)
 plt.yticks(fontsize=15)
 if WITH_MOCKITO:
     plt.savefig(f'rq3-time-w-mockito.pdf',bbox_inches='tight')

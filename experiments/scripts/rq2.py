@@ -35,12 +35,12 @@ for opt,arg in o:
 
 get_ranking_info_tbar('tbar')
 get_ranking_info_tbar('avatar')
-get_ranking_info_tbar('kpar')
+# get_ranking_info_tbar('kpar')
 get_ranking_info_tbar('fixminer')
 get_ranking_info_tbar('recoder')
-get_ranking_info_tbar('alpharepair')
-get_ranking_info_tbar('srepair')
-get_ranking_info_tbar('selfapr')
+# get_ranking_info_tbar('alpharepair')
+# get_ranking_info_tbar('srepair')
+# get_ranking_info_tbar('selfapr')
 
 # Top-1
 plt.clf()
