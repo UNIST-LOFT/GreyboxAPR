@@ -72,10 +72,15 @@ def update_result_tbar(state: GlobalState, selected_patch: TbarPatchInfo, result
   selected_patch.update_result(result, PT.ALPHA_INCREASE, PT.BETA_INCREASE, state.use_exp_alpha)
   if result:
     state.total_basic_patch += 1
+    print(f'black-box alpha updated')
     selected_patch.tbar_type_info.children_basic_patches+=1
+    print(f'black-box alpha updated')
     selected_patch.line_info.children_basic_patches+=1
+    print(f'black-box alpha updated')
     selected_patch.func_info.children_basic_patches+=1
+    print(f'black-box alpha updated')
     selected_patch.file_info.children_basic_patches+=1
+    print(f'black-box alpha updated')
     selected_patch.tbar_type_info.consecutive_fail_count=0
     selected_patch.line_info.consecutive_fail_count=0
     selected_patch.func_info.consecutive_fail_count=0
@@ -177,9 +182,13 @@ def update_result_recoder(state: GlobalState, selected_patch: RecoderPatchInfo, 
   selected_patch.update_result(result, PT.ALPHA_INCREASE, PT.BETA_INCREASE,state.use_exp_alpha)
   if result:
     state.total_basic_patch += 1
+    print(f'black-box alpha updated')
     selected_patch.line_info.children_basic_patches += 1
+    print(f'black-box alpha updated')
     selected_patch.func_info.children_basic_patches += 1
+    print(f'black-box alpha updated')
     selected_patch.file_info.children_basic_patches += 1
+    print(f'black-box alpha updated')
     selected_patch.line_info.consecutive_fail_count = 0
     selected_patch.func_info.consecutive_fail_count = 0
     selected_patch.file_info.consecutive_fail_count = 0
