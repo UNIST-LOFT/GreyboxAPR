@@ -79,7 +79,7 @@ for i in range(MAX_EXP):
     casino_list.append(cur_result)
 guided_list:List[List[int]]=[]
 guided_x=[]
-guided_y=[]
+guided_y=[0]
 for j in range(MAX_EXP):
     cur_result=sorted(casino_list[j])
     guided_list.append([0])
@@ -87,13 +87,13 @@ for j in range(MAX_EXP):
         if i in cur_result:
             guided_list[-1].append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
             guided_x.append(i)
-            guided_y.append(guided_list[-1][-1]+cur_result.count(i))
+            guided_y.append(guided_y[-1]+cur_result.count(i)/MAX_EXP)
         else:
             guided_list[-1].append(guided_list[-1][-1])
             guided_x.append(i)
-            guided_y.append(guided_list[-1][-1])
+            guided_y.append(guided_y[-1])
 guided_df=pd.DataFrame({'Time':guided_x,'Number of valid patches':guided_y})
-seaborn.lineplot(data=guided_df,x='Time',y='Number of valid patches',color='r',label='Casino')
+seaborn.lineplot(data=guided_df,x='Time',y='Number of valid patches',color='g',label='Casino')
 
 # Greybox
 genprog_list:List[List[int]]=[]
@@ -105,7 +105,7 @@ for i in range(MAX_EXP):
     genprog_list.append(cur_result)
 guided_list:List[List[int]]=[]
 guided_x=[]
-guided_y=[]
+guided_y=[0]
 for j in range(MAX_EXP):
     cur_result=sorted(genprog_list[j])
     guided_list.append([0])
@@ -113,22 +113,99 @@ for j in range(MAX_EXP):
         if i in cur_result:
             guided_list[-1].append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
             guided_x.append(i)
-            guided_y.append(guided_list[-1][-1]+cur_result.count(i))
+            guided_y.append(guided_y[-1]+cur_result.count(i)/MAX_EXP)
         else:
             guided_list[-1].append(guided_list[-1][-1])
             guided_x.append(i)
-            guided_y.append(guided_list[-1][-1])
+            guided_y.append(guided_y[-1])
 other_df=pd.DataFrame({'Time':guided_x,'Number of valid patches':guided_y})
-seaborn.lineplot(data=other_df,x='Time',y='Number of valid patches',color='y',label='Gresino',linestyle='dashed')
+seaborn.lineplot(data=other_df,x='Time',y='Number of valid patches',color='r',label='Gresino',linestyle='dashed')
 
 plt.legend(fontsize=12)
 plt.xlabel('Time (min)',fontsize=15)
 plt.ylabel('# of Valid Patches',fontsize=15)
 plt.xticks(fontsize=15)
-plt.locator_params(axis='x',nbins=6)
 plt.yticks(fontsize=15)
 plt.savefig(f'rq2-top-1-time.jpg',bbox_inches='tight')
 plt.savefig(f'rq2-top-1-time.pdf',bbox_inches='tight')
+
+# Top-3
+plt.clf()
+fig=plt.figure(figsize=(5,3))
+
+# Original
+results=[]
+for time,rank in orig_result:
+    if rank<=3:
+        results.append(time)
+results=sorted(results)
+other_list=[0]
+for i in range(0,MAX_TIME+1):
+    if i in results:
+        other_list.append(other_list[-1]+results.count(i))
+    else:
+        other_list.append(other_list[-1])
+plt.plot(list(range(0,MAX_TIME+2)),other_list,'-.b',label='Orig')
+
+# Casino
+casino_list:List[List[int]]=[]
+for i in range(MAX_EXP):
+    cur_result=[]
+    for time,rank in casino_result[i]:
+        if rank<=3:
+            cur_result.append(time)
+    casino_list.append(cur_result)
+guided_list:List[List[int]]=[]
+guided_x=[]
+guided_y=[0]
+for j in range(MAX_EXP):
+    cur_result=sorted(casino_list[j])
+    guided_list.append([0])
+    for i in range(0,MAX_TIME+1):
+        if i in cur_result:
+            guided_list[-1].append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
+            guided_x.append(i)
+            guided_y.append(guided_y[-1]+cur_result.count(i)/MAX_EXP)
+        else:
+            guided_list[-1].append(guided_list[-1][-1])
+            guided_x.append(i)
+            guided_y.append(guided_y[-1])
+guided_df=pd.DataFrame({'Time':guided_x,'Number of valid patches':guided_y})
+seaborn.lineplot(data=guided_df,x='Time',y='Number of valid patches',color='g',label='Casino')
+
+# Greybox
+genprog_list:List[List[int]]=[]
+for i in range(MAX_EXP):
+    cur_result=[]
+    for time,rank in greybox_result[i]:
+        if rank<=3:
+            cur_result.append(time)
+    genprog_list.append(cur_result)
+guided_list:List[List[int]]=[]
+guided_x=[]
+guided_y=[0]
+for j in range(MAX_EXP):
+    cur_result=sorted(genprog_list[j])
+    guided_list.append([0])
+    for i in range(0,MAX_TIME+1):
+        if i in cur_result:
+            guided_list[-1].append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
+            guided_x.append(i)
+            guided_y.append(guided_y[-1]+cur_result.count(i)/MAX_EXP)
+        else:
+            guided_list[-1].append(guided_list[-1][-1])
+            guided_x.append(i)
+            guided_y.append(guided_y[-1])
+other_df=pd.DataFrame({'Time':guided_x,'Number of valid patches':guided_y})
+seaborn.lineplot(data=other_df,x='Time',y='Number of valid patches',color='r',label='Gresino',linestyle='dashed')
+
+plt.legend(fontsize=12)
+plt.xlabel('Time (min)',fontsize=15)
+plt.ylabel('# of Valid Patches',fontsize=15)
+plt.xticks(fontsize=15)
+plt.yticks(fontsize=15)
+plt.savefig(f'rq2-top-3-time.jpg',bbox_inches='tight')
+plt.savefig(f'rq2-top-3-time.pdf',bbox_inches='tight')
 
 # Top-5
 plt.clf()
@@ -158,7 +235,7 @@ for i in range(MAX_EXP):
     casino_list.append(cur_result)
 guided_list:List[List[int]]=[]
 guided_x=[]
-guided_y=[]
+guided_y=[0]
 for j in range(MAX_EXP):
     cur_result=sorted(casino_list[j])
     guided_list.append([0])
@@ -166,13 +243,13 @@ for j in range(MAX_EXP):
         if i in cur_result:
             guided_list[-1].append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
             guided_x.append(i)
-            guided_y.append(guided_list[-1][-1]+cur_result.count(i))
+            guided_y.append(guided_y[-1]+cur_result.count(i)/MAX_EXP)
         else:
             guided_list[-1].append(guided_list[-1][-1])
             guided_x.append(i)
-            guided_y.append(guided_list[-1][-1])
+            guided_y.append(guided_y[-1])
 guided_df=pd.DataFrame({'Time':guided_x,'Number of valid patches':guided_y})
-seaborn.lineplot(data=guided_df,x='Time',y='Number of valid patches',color='r',label='Casino')
+seaborn.lineplot(data=guided_df,x='Time',y='Number of valid patches',color='g',label='Casino')
 
 # Greybox
 genprog_list:List[List[int]]=[]
@@ -184,7 +261,7 @@ for i in range(MAX_EXP):
     genprog_list.append(cur_result)
 guided_list:List[List[int]]=[]
 guided_x=[]
-guided_y=[]
+guided_y=[0]
 for j in range(MAX_EXP):
     cur_result=sorted(genprog_list[j])
     guided_list.append([0])
@@ -192,19 +269,96 @@ for j in range(MAX_EXP):
         if i in cur_result:
             guided_list[-1].append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
             guided_x.append(i)
-            guided_y.append(guided_list[-1][-1]+cur_result.count(i))
+            guided_y.append(guided_y[-1]+cur_result.count(i)/MAX_EXP)
         else:
             guided_list[-1].append(guided_list[-1][-1])
             guided_x.append(i)
-            guided_y.append(guided_list[-1][-1])
+            guided_y.append(guided_y[-1])
 other_df=pd.DataFrame({'Time':guided_x,'Number of valid patches':guided_y})
-seaborn.lineplot(data=other_df,x='Time',y='Number of valid patches',color='y',label='Gresino',linestyle='dashed')
+seaborn.lineplot(data=other_df,x='Time',y='Number of valid patches',color='r',label='Gresino',linestyle='dashed')
 
 plt.legend(fontsize=12)
 plt.xlabel('Time (min)',fontsize=15)
 plt.ylabel('# of Valid Patches',fontsize=15)
 plt.xticks(fontsize=15)
-plt.locator_params(axis='x',nbins=6)
 plt.yticks(fontsize=15)
 plt.savefig(f'rq2-top-5-time.jpg',bbox_inches='tight')
 plt.savefig(f'rq2-top-5-time.pdf',bbox_inches='tight')
+
+# Top-10
+plt.clf()
+fig=plt.figure(figsize=(5,3))
+
+# Original
+results=[]
+for time,rank in orig_result:
+    if rank<=10:
+        results.append(time)
+results=sorted(results)
+other_list=[0]
+for i in range(0,MAX_TIME+1):
+    if i in results:
+        other_list.append(other_list[-1]+results.count(i))
+    else:
+        other_list.append(other_list[-1])
+plt.plot(list(range(0,MAX_TIME+2)),other_list,'-.b',label='Orig')
+
+# Casino
+casino_list:List[List[int]]=[]
+for i in range(MAX_EXP):
+    cur_result=[]
+    for time,rank in casino_result[i]:
+        if rank<=10:
+            cur_result.append(time)
+    casino_list.append(cur_result)
+guided_list:List[List[int]]=[]
+guided_x=[]
+guided_y=[0]
+for j in range(MAX_EXP):
+    cur_result=sorted(casino_list[j])
+    guided_list.append([0])
+    for i in range(0,MAX_TIME+1):
+        if i in cur_result:
+            guided_list[-1].append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
+            guided_x.append(i)
+            guided_y.append(guided_y[-1]+cur_result.count(i)/MAX_EXP)
+        else:
+            guided_list[-1].append(guided_list[-1][-1])
+            guided_x.append(i)
+            guided_y.append(guided_y[-1])
+guided_df=pd.DataFrame({'Time':guided_x,'Number of valid patches':guided_y})
+seaborn.lineplot(data=guided_df,x='Time',y='Number of valid patches',color='g',label='Casino')
+
+# Greybox
+genprog_list:List[List[int]]=[]
+for i in range(MAX_EXP):
+    cur_result=[]
+    for time,rank in greybox_result[i]:
+        if rank<=10:
+            cur_result.append(time)
+    genprog_list.append(cur_result)
+guided_list:List[List[int]]=[]
+guided_x=[]
+guided_y=[0]
+for j in range(MAX_EXP):
+    cur_result=sorted(genprog_list[j])
+    guided_list.append([0])
+    for i in range(0,MAX_TIME+1):
+        if i in cur_result:
+            guided_list[-1].append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
+            guided_x.append(i)
+            guided_y.append(guided_y[-1]+cur_result.count(i)/MAX_EXP)
+        else:
+            guided_list[-1].append(guided_list[-1][-1])
+            guided_x.append(i)
+            guided_y.append(guided_y[-1])
+other_df=pd.DataFrame({'Time':guided_x,'Number of valid patches':guided_y})
+seaborn.lineplot(data=other_df,x='Time',y='Number of valid patches',color='r',label='Gresino',linestyle='dashed')
+
+plt.legend(fontsize=12)
+plt.xlabel('Time (min)',fontsize=15)
+plt.ylabel('# of Valid Patches',fontsize=15)
+plt.xticks(fontsize=15)
+plt.yticks(fontsize=15)
+plt.savefig(f'rq2-top-10-time.jpg',bbox_inches='tight')
+plt.savefig(f'rq2-top-10-time.pdf',bbox_inches='tight')
