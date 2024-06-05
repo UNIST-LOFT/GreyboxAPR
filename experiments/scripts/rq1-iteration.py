@@ -143,6 +143,8 @@ def plot_patches_ci_java(mode='tbar'):
     elif mode=='avatar': name='Avatar'
     elif mode=='recoder': name='Recoder'
     elif mode=='alpharepair': name='AlphaRepair'
+    elif mode=='srepair': name='SRepair'
+    elif mode=='selfapr': name='SelfAPR'
 
     # Original
     results=sorted(orig_result)
@@ -210,6 +212,7 @@ def plot_patches_ci_java(mode='tbar'):
     plt.xlabel('Iteration',fontsize=15)
     plt.ylabel('# of Valid Patches',fontsize=15)
     plt.xticks(fontsize=15)
+    plt.locator_params(axis='x',nbins=6)
     plt.yticks(fontsize=15)
 
     if WITH_MOCKITO:

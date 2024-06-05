@@ -14,6 +14,10 @@ def run(tool:str):
         tool_capital='Recoder'
     elif tool=='alpharepair':
         tool_capital='AlphaRepair'
+    elif tool=='srepair':
+        tool_capital='SRepair'
+    elif tool=='selfapr':
+        tool_capital='SelfAPR'
 
     print(f'Running ODS with {tool}...')
     result=subprocess.run(['python3','parse_msv.py','--msv_results_path',f'../experiments/{tool}/result','--patches_path',f'../{tool_capital}/d4j',
