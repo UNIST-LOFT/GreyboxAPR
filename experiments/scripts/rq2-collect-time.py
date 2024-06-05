@@ -34,6 +34,25 @@ def get_ranking_info_tbar(mode='tbar'):
             for i in range(1,len(cur_line)):
                 correct[cur_ver].append(cur_line[i].strip())
 
+    with open(f'ods-{mode}.csv','r') as f:
+        ranks:Dict[str,List[Tuple[str,float]]]=dict()
+        for line in f:
+            if line.startswith(','): continue
+            _,patch,score=line.split(',')
+            bug_id,patch_id=patch.split('#')
+            patch_id=(patch_id[:-2]+'.java').replace('-','/').replace('_','/')
+
+            if bug_id not in ranks:
+                ranks[bug_id]=[]
+            ranks[bug_id].append((patch_id,float(score),))
+
+    patch_ranks:Dict[str,List[str]]=dict()
+    for bug_id in ranks:
+        ranks[bug_id].sort(reverse=True,key=lambda patch: patch[1])
+        patch_ranks[bug_id]=[]
+        for patch in ranks[bug_id]:
+            patch_ranks[bug_id].append(patch[0])
+
     # Casino
     for i in range(MAX_EXP):
         for result in d4j.D4J_1_2_LIST:
@@ -59,6 +78,8 @@ def get_ranking_info_tbar(mode='tbar'):
 
             total_time=0.
             cur_result=dict()
+            min_rank=500
+            cur_patch=None
             for res in root:
                 is_plausible=res['pass_result']
                 time=res['time']
@@ -76,24 +97,16 @@ def get_ranking_info_tbar(mode='tbar'):
                     cur_result[loc]=round(total_time/60)
                     # cur_result[loc]=iteration
 
-            result_file=open(f'ods-{mode}.csv','r')
+                    if result in patch_ranks:
+                        if loc in patch_ranks[result]:
+                            if patch_ranks[result].index(loc)+1<min_rank:
+                                min_rank=patch_ranks[result].index(loc)+1
+                                cur_patch=loc
 
-            cur_rank=0
-            for res in result_file:
-                if res.startswith(','): continue
-                cur_rank+=1
-                is_correct=False
-                id=res.split(',')[1].split('#')[1][:-2]+'.java'
-                id=id.replace('-','/').replace('_','/')
-                if result in correct:
-                    if id in correct[result]:
-                        is_correct=True
-                
-                if is_correct and id in cur_result:
-                    casino_result[i].append((cur_result[id],cur_rank))
-                    break
-
-            result_file.close()
+            if cur_patch is not None:
+                casino_result[i].append((cur_result[cur_patch],min_rank))
+    
+    print(mean([len(l) for l in casino_result]))
 
     # Greybox
     for i in range(MAX_EXP):
@@ -127,6 +140,8 @@ def get_ranking_info_tbar(mode='tbar'):
             total_time=0.
             cur_result=dict()
             fail_time_list=[]
+            min_rank=500
+            cur_patch=None
             for res in root:
                 is_hq=res['result']
                 is_plausible=res['pass_result']
@@ -148,24 +163,16 @@ def get_ranking_info_tbar(mode='tbar'):
                     cur_result[loc]=round(total_time/60)
                     # cur_result[loc]=iteration
 
-            result_file=open(f'ods-{mode}.csv','r')
+                    if result in patch_ranks:
+                        if loc in patch_ranks[result]:
+                            if patch_ranks[result].index(loc)+1<min_rank:
+                                min_rank=patch_ranks[result].index(loc)+1
+                                cur_patch=loc
 
-            cur_rank=0
-            for res in result_file:
-                if res.startswith(','): continue
-                cur_rank+=1
-                is_correct=False
-                id=res.split(',')[1].split('#')[1][:-2]+'.java'
-                id=id.replace('-','/').replace('_','/')
-                if result in correct:
-                    if id in correct[result]:
-                        is_correct=True
-                
-                if is_correct and id in cur_result:
-                    greybox_result[i].append((cur_result[id],cur_rank))
-                    break
-
-            result_file.close()
+            if cur_patch is not None:
+                greybox_result[i].append((cur_result[cur_patch],min_rank))
+    
+    print(mean([len(l) for l in greybox_result]))
 
     # original
     for result in d4j.D4J_1_2_LIST:
@@ -190,8 +197,9 @@ def get_ranking_info_tbar(mode='tbar'):
         cache_file.close()
 
         total_time=0.
-
         cur_result=dict()
+        min_rank=500
+        cur_patch=None
         for res in root:
             is_plausible=res['pass_result']
             time=res['time']
@@ -209,24 +217,16 @@ def get_ranking_info_tbar(mode='tbar'):
                 cur_result[loc]=round(total_time/60)
                 # cur_result[loc]=iteration
 
-        result_file=open(f'ods-{mode}.csv','r')
+                if result in patch_ranks:
+                    if loc in patch_ranks[result]:
+                        if patch_ranks[result].index(loc)+1<min_rank:
+                            min_rank=patch_ranks[result].index(loc)+1
+                            cur_patch=loc
 
-        cur_rank=0
-        for res in result_file:
-            if res.startswith(','): continue
-            cur_rank+=1
-            is_correct=False
-            id=res.split(',')[1].split('#')[1][:-2]+'.java'
-            id=id.replace('-','/').replace('_','/')
-            if result in correct:
-                if id in correct[result]:
-                    is_correct=True
-            
-            if is_correct and id in cur_result:
-                orig_result.append((cur_result[id],cur_rank))
-                break
-
-        result_file.close()
+        if cur_patch is not None:
+            orig_result.append((cur_result[cur_patch],min_rank))
+    
+    print(len(orig_result))
 
     with open(f'rq2-time-{mode}.json','w') as f:
         json.dump({
@@ -263,7 +263,7 @@ def get_ranking_info_tbar(mode='tbar'):
         casino_list.append(cur_result)
     guided_list:List[List[int]]=[]
     guided_x=[]
-    guided_y=[]
+    guided_y=[0]
     for j in range(MAX_EXP):
         cur_result=sorted(casino_list[j])
         guided_list.append([0])
@@ -271,13 +271,13 @@ def get_ranking_info_tbar(mode='tbar'):
             if i in cur_result:
                 guided_list[-1].append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
                 guided_x.append(i)
-                guided_y.append(guided_list[-1][-1]+cur_result.count(i))
+                guided_y.append(guided_y[-1]+cur_result.count(i)/MAX_EXP)
             else:
                 guided_list[-1].append(guided_list[-1][-1])
                 guided_x.append(i)
-                guided_y.append(guided_list[-1][-1])
+                guided_y.append(guided_y[-1])
     guided_df=pd.DataFrame({'Time':guided_x,'Number of valid patches':guided_y})
-    seaborn.lineplot(data=guided_df,x='Time',y='Number of valid patches',color='r',label='Casino')
+    seaborn.lineplot(data=guided_df,x='Time',y='Number of valid patches',color='g',label='Casino')
 
     # Greybox
     genprog_list:List[List[int]]=[]
@@ -289,7 +289,7 @@ def get_ranking_info_tbar(mode='tbar'):
         genprog_list.append(cur_result)
     guided_list:List[List[int]]=[]
     guided_x=[]
-    guided_y=[]
+    guided_y=[0]
     for j in range(MAX_EXP):
         cur_result=sorted(genprog_list[j])
         guided_list.append([0])
@@ -297,13 +297,13 @@ def get_ranking_info_tbar(mode='tbar'):
             if i in cur_result:
                 guided_list[-1].append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
                 guided_x.append(i)
-                guided_y.append(guided_list[-1][-1]+cur_result.count(i))
+                guided_y.append(guided_y[-1]+cur_result.count(i)/MAX_EXP)
             else:
                 guided_list[-1].append(guided_list[-1][-1])
                 guided_x.append(i)
-                guided_y.append(guided_list[-1][-1])
+                guided_y.append(guided_y[-1])
     other_df=pd.DataFrame({'Time':guided_x,'Number of valid patches':guided_y})
-    seaborn.lineplot(data=other_df,x='Time',y='Number of valid patches',color='y',label='Gresino',linestyle='dashed')
+    seaborn.lineplot(data=other_df,x='Time',y='Number of valid patches',color='r',label='Gresino',linestyle='dashed')
 
     plt.legend(fontsize=12)
     plt.xlabel('Time (min)',fontsize=15)
@@ -341,7 +341,7 @@ def get_ranking_info_tbar(mode='tbar'):
         casino_list.append(cur_result)
     guided_list:List[List[int]]=[]
     guided_x=[]
-    guided_y=[]
+    guided_y=[0]
     for j in range(MAX_EXP):
         cur_result=sorted(casino_list[j])
         guided_list.append([0])
@@ -349,13 +349,13 @@ def get_ranking_info_tbar(mode='tbar'):
             if i in cur_result:
                 guided_list[-1].append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
                 guided_x.append(i)
-                guided_y.append(guided_list[-1][-1]+cur_result.count(i))
+                guided_y.append(guided_y[-1]+cur_result.count(i)/MAX_EXP)
             else:
                 guided_list[-1].append(guided_list[-1][-1])
                 guided_x.append(i)
-                guided_y.append(guided_list[-1][-1])
+                guided_y.append(guided_y[-1])
     guided_df=pd.DataFrame({'Time':guided_x,'Number of valid patches':guided_y})
-    seaborn.lineplot(data=guided_df,x='Time',y='Number of valid patches',color='r',label='Casino')
+    seaborn.lineplot(data=guided_df,x='Time',y='Number of valid patches',color='g',label='Casino')
 
     # Greybox
     genprog_list:List[List[int]]=[]
@@ -367,7 +367,7 @@ def get_ranking_info_tbar(mode='tbar'):
         genprog_list.append(cur_result)
     guided_list:List[List[int]]=[]
     guided_x=[]
-    guided_y=[]
+    guided_y=[0]
     for j in range(MAX_EXP):
         cur_result=sorted(genprog_list[j])
         guided_list.append([0])
@@ -375,13 +375,13 @@ def get_ranking_info_tbar(mode='tbar'):
             if i in cur_result:
                 guided_list[-1].append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
                 guided_x.append(i)
-                guided_y.append(guided_list[-1][-1]+cur_result.count(i))
+                guided_y.append(guided_y[-1]+cur_result.count(i)/MAX_EXP)
             else:
                 guided_list[-1].append(guided_list[-1][-1])
                 guided_x.append(i)
-                guided_y.append(guided_list[-1][-1])
+                guided_y.append(guided_y[-1])
     other_df=pd.DataFrame({'Time':guided_x,'Number of valid patches':guided_y})
-    seaborn.lineplot(data=other_df,x='Time',y='Number of valid patches',color='y',label='Gresino',linestyle='dashed')
+    seaborn.lineplot(data=other_df,x='Time',y='Number of valid patches',color='r',label='Gresino',linestyle='dashed')
 
     plt.legend(fontsize=12)
     plt.xlabel('Time (min)',fontsize=15)
