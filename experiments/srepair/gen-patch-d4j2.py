@@ -6,8 +6,8 @@ def run(project_queue,core):
     while not project_queue.empty():
         project=project_queue.get()
         print(f'Run {project}')
-        result=subprocess.run(['python3','alpharepair.py',project,str(core)],stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
-        with open(f'result/{project}-alpharepair.log','w') as f:
+        result=subprocess.run(['python3','srepair.py',project,str(core)],stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+        with open(f'result/{project}-srepair.log','w') as f:
             f.write(result.stdout.decode("utf-8"))
         print(f'Finish {project} with returncode {result.returncode}')
 
