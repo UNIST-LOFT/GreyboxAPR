@@ -11,6 +11,7 @@
 !**/Ochiai.txt
 **/*.pdf
 **/*.log
+**/*.jpg
 
 rq1.py
 experiments/yechan/
@@ -25,3 +26,4 @@ experiments/yechan/
 !Avatar/SuspiciousCodePositions/**/*.txt
 !kPar/SuspiciousCodePositions/**/*.txt
 !Fixminer/BugPositions/**/*.txt
+!SRepair/SuspiciousCodePositions/**/*.txt
