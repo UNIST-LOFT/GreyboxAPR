@@ -88,7 +88,7 @@ def parse(mode:str):
                             if test not in orig_coverage: continue
                             patch_coverage=parse_branch(f'{mode}/{res_dir}/branch/{result}/{file}')
                             diff=branch_diff(orig_coverage[test],patch_coverage)
-                            greybox_update_result['blackbox']+=len(diff)*4
+                            greybox_update_result['greybox']+=len(diff)*4
                             continue
 
                 if res['pass_result']:
