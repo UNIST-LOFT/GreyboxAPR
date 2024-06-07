@@ -33,6 +33,11 @@ def branch_diff(orig:Dict[int,int],patch:Dict[int,int]):
     return result
 
 def parse(mode:str):
+    if mode=='avatar':
+        res_dir='result-temp'
+    else:
+        res_dir='result'
+
     greybox_result:Dict[str,List[float]]={
         '1st':[],
         '2nd':[]
@@ -40,12 +45,12 @@ def parse(mode:str):
 
     for i in range(MAX_EXP):
         for result in d4j.D4J_1_2_LIST:
-            if not path.exists(f'{mode}/result/{result}-greybox-{MAX_EXP-1}/simapr-finished.txt'):
+            if not path.exists(f'{mode}/{res_dir}/{result}-greybox-{MAX_EXP-1}/simapr-finished.txt'):
                 # Skip if experiment not end
                 continue
             if not WITH_MOCKITO and 'Mockito' in result:
                 continue
-            result_log=open(f'{mode}/result/{result}-greybox-{i}/simapr-search.log','r')
+            result_log=open(f'{mode}/{res_dir}/{result}-greybox-{i}/simapr-search.log','r')
 
             for line in result_log:
                 if 'Mode of 1st' in line:
