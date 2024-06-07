@@ -64,7 +64,7 @@ def parse(mode:str):
             orig_coverage:Dict[str,Dict[int,int]]=dict()
             for file in listdir(f'{mode}/result/branch/{result}'):
                 if file.startswith('original_'):
-                    test=file.split('_')[1].split('.')[0]
+                    test=file.split('_')[1][:-4]
                     orig_coverage[test]=parse_branch(f'{mode}/result/branch/{result}/{file}')
 
             intr_patches:Set[str]=set()
@@ -76,7 +76,7 @@ def parse(mode:str):
 
                     for file in listdir(f'{mode}/result/branch/{result}'):
                         if file.startswith(res['config'][0]['location'].replace('/','#')):
-                            test=file.split('_')[1].split('.')[0]
+                            test=file.split('_')[1][:-4]
                             patch_coverage=parse_branch(f'{mode}/result/branch/{result}/{file}')
                             diff=branch_diff(orig_coverage[test],patch_coverage)
                             greybox_update_result['blackbox']+=len(diff)*4
