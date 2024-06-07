@@ -52,21 +52,26 @@ def parse(mode:str):
                 continue
             result_log=open(f'{mode}/{res_dir}/{result}-greybox-{i}/simapr-search.log','r')
 
-            for line in result_log:
-                if 'Mode of 1st' in line:
-                    _l=line.split(': ')[-1]
-                    mode_list=[]
-                    for m in _l.split(','):
-                        if m!='':
-                            mode_list.append(float(m))
-                    greybox_result['1st'].append(entropy(mode_list))
-                elif 'Mode of 2nd' in line:
-                    _l=line.split(': ')[-1]
-                    mode_list=[]
-                    for m in _l.split(','):
-                        if m!='':
-                            mode_list.append(float(m))
-                    greybox_result['2nd'].append(entropy(mode_list))
+            with np.errstate(invalid='raise'):
+                for line in result_log:
+                    if 'Prob of 1st' in line:
+                        _l=line.split(': ')[-1]
+                        mode_list=[]
+                        for m in _l.split(','):
+                            if m!='\n':
+                                if float(m)!=0.:
+                                    mode_list.append(float(m))
+                        if len(mode_list)>0:
+                            greybox_result['1st'].append(entropy(mode_list))
+                    elif 'Prob of 2nd' in line:
+                        _l=line.split(': ')[-1]
+                        mode_list=[]
+                        for m in _l.split(','):
+                            if m!='\n':
+                                if float(m)!=0.:
+                                    mode_list.append(float(m))
+                        if len(mode_list)>0:
+                            greybox_result['2nd'].append(entropy(mode_list))
 
             result_log.close()
 
