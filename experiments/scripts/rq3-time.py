@@ -32,21 +32,21 @@ def get_tool_data(tool:str):
     orig_result+=root['orig']
     for l in orig_result:
         if l>MAX_TIME:
-            l=MAX_TIME
+            MAX_TIME=l
 
     for i in range(MAX_EXP):
         wo_vertical[i]+=root['wo_vertical'][i]
         for l in wo_vertical[i]:
             if l>MAX_TIME:
-                l=MAX_TIME
+                MAX_TIME=l
         greybox_result[i]+=root['greybox'][i]
         for l in greybox_result[i]:
             if l>MAX_TIME:
-                l=MAX_TIME
+                MAX_TIME=l
         casino_result[i]+=root['casino'][i]
         for l in casino_result[i]:
             if l>MAX_TIME:
-                l=MAX_TIME
+                MAX_TIME=l
 
 get_tool_data('tbar')
 get_tool_data('alpharepair')
@@ -119,7 +119,7 @@ for j in range(MAX_EXP):
             else:
                 guided_y.append(guided_y[-1])
 guided_df=pd.DataFrame({'Time (min)':guided_x,'# of valid patches':guided_y})
-seaborn.lineplot(data=guided_df,x='Time (min)',y='# of valid patches',color='y',label='w/o 1st vert.')
+seaborn.lineplot(data=guided_df,x='Time (min)',y='# of valid patches',color='y',label='Greybox Only')
 
 # greybox
 other_list:List[List[int]]=[]
