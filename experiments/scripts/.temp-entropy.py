@@ -52,13 +52,15 @@ def parse(mode:str):
                     _l=line.split(': ')[-1]
                     mode_list=[]
                     for m in _l.split(','):
-                        mode_list.append(float(m))
+                        if m!='':
+                            mode_list.append(float(m))
                     greybox_result['1st'].append(entropy(mode_list))
                 elif 'Mode of 2nd' in line:
                     _l=line.split(': ')[-1]
                     mode_list=[]
                     for m in _l.split(','):
-                        mode_list.append(float(m))
+                        if m!='':
+                            mode_list.append(float(m))
                     greybox_result['2nd'].append(entropy(mode_list))
 
             result_log.close()
