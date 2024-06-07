@@ -70,10 +70,10 @@ def parse(mode:str):
 
             # Parse original branch coverage
             orig_coverage:Dict[str,Dict[int,int]]=dict()
-            for file in listdir(f'{mode}/{res_dir}/branch/{result}'):
+            for file in listdir(f'{mode}/result/branch/{result}'):
                 if file.startswith('original_'):
                     test=file.split('original_')[1][:-4]
-                    orig_coverage[test]=parse_branch(f'{mode}/{res_dir}/branch/{result}/{file}')
+                    orig_coverage[test]=parse_branch(f'{mode}/result/branch/{result}/{file}')
 
             intr_patches:Set[str]=set()
             valid_patches:Set[str]=set()
@@ -82,11 +82,11 @@ def parse(mode:str):
                     intr_patches.add(res['config'][0]['location'])
                     greybox_update_result['blackbox']+=4
 
-                    for file in listdir(f'{mode}/{res_dir}/branch/{result}'):
+                    for file in listdir(f'{mode}/result/branch/{result}'):
                         if file.startswith(res['config'][0]['location'].replace('/','#')):
                             test=file.split('.java_')[1][:-4]
                             if test not in orig_coverage: continue
-                            patch_coverage=parse_branch(f'{mode}/{res_dir}/branch/{result}/{file}')
+                            patch_coverage=parse_branch(f'{mode}/result/branch/{result}/{file}')
                             diff=branch_diff(orig_coverage[test],patch_coverage)
                             greybox_update_result['greybox']+=len(diff)*4
                             continue
