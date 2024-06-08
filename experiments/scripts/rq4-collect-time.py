@@ -24,7 +24,6 @@ def plot_patches_ci_java(mode='tbar'):
 
     # Casino
     for i in range(MAX_EXP):
-        casino_result.append([])
         for result in d4j.D4J_2_LIST:
             if not path.exists(f'{mode}/result/{result}-greybox-{MAX_EXP-1}/simapr-finished.txt'):
                 # Skip if experiment not end
@@ -62,7 +61,7 @@ def plot_patches_ci_java(mode='tbar'):
                 if is_plausible:
                     if MAX_TIME<round((total_time)/60):
                         MAX_TIME=round((total_time)/60)
-                    casino_result[-1].append(round((total_time)/60))
+                    casino_result[i].append(round((total_time)/60))
 
     print(np.mean([len(l) for l in casino_result]))
 
@@ -110,7 +109,6 @@ def plot_patches_ci_java(mode='tbar'):
 
     # Greybox
     for i in range(MAX_EXP):
-        greybox_result.append([])
         for result in d4j.D4J_2_LIST:
             if not path.exists(f'{mode}/result/{result}-greybox-{MAX_EXP-1}/simapr-finished.txt'):
                 # Skip if experiment not end
@@ -157,7 +155,7 @@ def plot_patches_ci_java(mode='tbar'):
                 if is_plausible:
                     if MAX_TIME<round((total_time)/60):
                         MAX_TIME=round((total_time)/60)
-                    greybox_result[-1].append(round((total_time)/60))
+                    greybox_result[i].append(round((total_time)/60))
 
     print(np.mean([len(l) for l in greybox_result]))
 
