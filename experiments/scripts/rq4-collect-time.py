@@ -132,11 +132,11 @@ def plot_patches_ci_java(mode='tbar'):
             cache=json.load(cache_file)
             cache_file.close()
 
-            file_instrument_time:Dict[str,float]=dict()
-            with open(f'scripts/file-instrument-time/{result}.txt','r') as f:
-                for line in f:
-                    file,time=line.strip().split(',')
-                    file_instrument_time[file]=float(time)
+            # file_instrument_time:Dict[str,float]=dict()
+            # with open(f'scripts/file-instrument-time/{result}.txt','r') as f:
+            #     for line in f:
+            #         file,time=line.strip().split(',')
+            #         file_instrument_time[file]=float(time)
 
             total_time=0.
             fail_time_list=[]
@@ -152,7 +152,7 @@ def plot_patches_ci_java(mode='tbar'):
                     total_time+=mean(fail_time_list)+cache[loc]['pass_time']
                 if is_hq:
                     # Instrumentation time
-                    total_time+=file_instrument_time[loc.split('/')[-1]]
+                    total_time+=0.5
 
                 if is_plausible:
                     if MAX_TIME<round((total_time)/60):
