@@ -60,13 +60,13 @@ for opt,arg in o:
         WITH_MOCKITO=True
 
 get_ranking_info_tbar('tbar')
-# get_ranking_info_tbar('avatar')
-# get_ranking_info_tbar('kpar')
+get_ranking_info_tbar('avatar')
+get_ranking_info_tbar('kpar')
 get_ranking_info_tbar('fixminer')
 get_ranking_info_tbar('recoder')
 get_ranking_info_tbar('alpharepair')
 get_ranking_info_tbar('srepair')
-# get_ranking_info_tbar('selfapr')
+get_ranking_info_tbar('selfapr')
 
 # Top-1
 plt.clf()
@@ -149,7 +149,7 @@ seaborn.lineplot(data=other_df,x='Time',y='Number of valid patches',color='r',la
 
 plt.legend(fontsize=12)
 plt.xlabel('Time (min)',fontsize=15)
-plt.ylabel('# of Bugs',fontsize=15)
+plt.ylabel('# of Versions',fontsize=15)
 plt.xticks(fontsize=15)
 plt.locator_params(axis='x',nbins=8)
 plt.yticks(fontsize=15)
@@ -237,7 +237,7 @@ seaborn.lineplot(data=other_df,x='Time',y='Number of valid patches',color='r',la
 
 plt.legend(fontsize=12)
 plt.xlabel('Time (min)',fontsize=15)
-plt.ylabel('# of Bugs',fontsize=15)
+plt.ylabel('# of Versions',fontsize=15)
 plt.xticks(fontsize=15)
 plt.locator_params(axis='x',nbins=8)
 plt.yticks(fontsize=15)
@@ -326,7 +326,7 @@ seaborn.lineplot(data=other_df,x='Time',y='Number of valid patches',color='r',la
 
 plt.legend(fontsize=12)
 plt.xlabel('Time (min)',fontsize=15)
-plt.ylabel('# of Bugs',fontsize=15)
+plt.ylabel('# of Versions',fontsize=15)
 plt.xticks(fontsize=15)
 plt.locator_params(axis='x',nbins=8)
 plt.yticks(fontsize=15)
@@ -414,7 +414,7 @@ seaborn.lineplot(data=other_df,x='Time',y='Number of valid patches',color='r',la
 
 plt.legend(fontsize=12)
 plt.xlabel('Time (min)',fontsize=15)
-plt.ylabel('# of Bugs',fontsize=15)
+plt.ylabel('# of Versions',fontsize=15)
 plt.xticks(fontsize=15)
 plt.locator_params(axis='x',nbins=8)
 plt.yticks(fontsize=15)

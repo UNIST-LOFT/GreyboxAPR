@@ -25,7 +25,7 @@ for opt,arg in o:
 
 def get_tool_data(tool:str):
     global orig_result,greybox_result,casino_result
-    with open(f'rq4-{tool}.json','r') as f:
+    with open(f'scripts/d4j2-data/rq4-{tool}.json','r') as f:
         root=json.load(f)
     
     orig_result+=root['orig']

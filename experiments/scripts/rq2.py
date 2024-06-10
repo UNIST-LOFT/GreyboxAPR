@@ -140,7 +140,7 @@ seaborn.lineplot(data=other_df,x='Iteration',y='Number of valid patches',color='
 
 plt.legend(fontsize=12)
 plt.xlabel('Iteration',fontsize=15)
-plt.ylabel('# of Bugs',fontsize=15)
+plt.ylabel('# of Versions',fontsize=15)
 plt.xticks(fontsize=15)
 plt.yticks(fontsize=15)
 plt.savefig(f'rq2-top-1.jpg',bbox_inches='tight')
@@ -227,7 +227,7 @@ seaborn.lineplot(data=other_df,x='Iteration',y='Number of valid patches',color='
 
 plt.legend(fontsize=12)
 plt.xlabel('Iteration',fontsize=15)
-plt.ylabel('# of Bugs',fontsize=15)
+plt.ylabel('# of Versions',fontsize=15)
 plt.xticks(fontsize=15)
 plt.yticks(fontsize=15)
 plt.savefig(f'rq2-top-3.jpg',bbox_inches='tight')
@@ -314,7 +314,7 @@ seaborn.lineplot(data=other_df,x='Iteration',y='Number of valid patches',color='
 
 plt.legend(fontsize=12)
 plt.xlabel('Iteration',fontsize=15)
-plt.ylabel('# of Bugs',fontsize=15)
+plt.ylabel('# of Versions',fontsize=15)
 plt.xticks(fontsize=15)
 plt.yticks(fontsize=15)
 plt.savefig(f'rq2-top-5.jpg',bbox_inches='tight')
@@ -401,7 +401,7 @@ seaborn.lineplot(data=other_df,x='Iteration',y='Number of valid patches',color='
 
 plt.legend(fontsize=12)
 plt.xlabel('Iteration',fontsize=15)
-plt.ylabel('# of Bugs',fontsize=15)
+plt.ylabel('# of Versions',fontsize=15)
 plt.xticks(fontsize=15)
 plt.yticks(fontsize=15)
 plt.savefig(f'rq2-top-10.jpg',bbox_inches='tight')
