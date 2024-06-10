@@ -150,7 +150,7 @@ def get_ranking_info_tbar(mode='tbar'):
                                     break
                     if finish: break
     
-    print(mean([len(l) for l in casino_result]))
+    print(mean([len(l) for l in casino_result['top-10']]))
 
     # Greybox
     for i in range(MAX_EXP):
@@ -247,7 +247,7 @@ def get_ranking_info_tbar(mode='tbar'):
                                     break
                     if finish: break
     
-    print(mean([len(l) for l in greybox_result]))
+    print(mean([len(l) for l in greybox_result['top-10']]))
 
     # original
     for result in d4j.D4J_1_2_LIST:
@@ -329,7 +329,7 @@ def get_ranking_info_tbar(mode='tbar'):
                                 break
                 if finish: break
     
-    print(len(orig_result))
+    print(len(orig_result['top-10']))
 
     with open(f'rq2-time-{mode}.json','w') as f:
         json.dump({
