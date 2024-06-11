@@ -107,7 +107,7 @@ for j in range(MAX_EXP):
             else:
                 guided_y.append(guided_y[-1])
 guided_df=pd.DataFrame({'Iteration':guided_x,'# of valid patches':guided_y})
-seaborn.lineplot(data=guided_df,x='Iteration',y='# of valid patches',color='y',label='w/o 1st vert.')
+seaborn.lineplot(data=guided_df,x='Iteration',y='# of valid patches',color='y',label='Greybox Only')
 
 # greybox
 other_list:List[List[int]]=[]
@@ -138,7 +138,7 @@ plt.legend(fontsize=12)
 plt.xlabel('Iteration',fontsize=15)
 plt.ylabel('# of Valid Patches',fontsize=15)
 plt.xticks(fontsize=15)
-plt.locator_params(axis='x',nbins=6)
+# plt.locator_params(axis='x',nbins=6)
 plt.yticks(fontsize=15)
 if WITH_MOCKITO:
     plt.savefig(f'rq3-w-mockito.pdf',bbox_inches='tight')

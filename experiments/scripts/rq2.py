@@ -13,19 +13,36 @@ MAX_EXP=10
 WITH_MOCKITO=False
 MAX_ITERATION=3000
 
-greybox_result:List[List[Tuple[int,int]]]=[[] for _ in range(MAX_EXP)]
-casino_result:List[List[Tuple[int,int]]]=[[] for _ in range(MAX_EXP)]
-orig_result:List[Tuple[int,int]]=[]
+greybox_result:Dict[str,List[List[Tuple[int,int]]]]={
+    'top-1':[[] for _ in range(MAX_EXP)],
+    'top-3':[[] for _ in range(MAX_EXP)],
+    'top-5':[[] for _ in range(MAX_EXP)],
+    'top-10':[[] for _ in range(MAX_EXP)],
+}
+casino_result:Dict[str,List[List[Tuple[int,int]]]]={
+    'top-1':[[] for _ in range(MAX_EXP)],
+    'top-3':[[] for _ in range(MAX_EXP)],
+    'top-5':[[] for _ in range(MAX_EXP)],
+    'top-10':[[] for _ in range(MAX_EXP)],
+
+}
+orig_result:Dict[str,List[Tuple[int,int]]]={
+    'top-1':[],
+    'top-3':[],
+    'top-5':[],
+    'top-10':[],
+}
 
 def get_ranking_info_tbar(mode='tbar'):
     global greybox_result,casino_result,orig_result
     with open(f'scripts/recall-data/rq2-{mode}.json','r') as f:
         root=json.load(f)
     
-    orig_result+=root['orig']
-    for i in range(MAX_EXP):
-        greybox_result[i]+=root['greybox'][i]
-        casino_result[i]+=root['casino'][i]
+    for k in orig_result:
+        orig_result[k]+=root['orig'][k]
+        for i in range(MAX_EXP):
+            greybox_result[k][i]+=root['greybox'][k][i]
+            casino_result[k][i]+=root['casino'][k][i]
 
 
 o,a=getopt(argv[1:],'',['with-mockito'])
@@ -48,41 +65,45 @@ fig=plt.figure(figsize=(5,3))
 
 # Original
 results=[]
-for time,rank in orig_result:
-    if rank==1:
-        results.append(time)
+for time,rank in orig_result['top-1']:
+    results.append(time)
 results=sorted(results)
 other_list=[0]
-for i in range(0,MAX_ITERATION):
+for i in range(0,MAX_ITERATION+1):
     if i in results:
         other_list.append(other_list[-1]+results.count(i))
     else:
         other_list.append(other_list[-1])
-plt.plot(list(range(0,MAX_ITERATION+1)),other_list,'-.b',label='Orig')
+plt.plot(list(range(0,MAX_ITERATION+2)),other_list,'-.b',label='Orig')
 
 # Casino
 casino_list:List[List[int]]=[]
 for i in range(MAX_EXP):
     cur_result=[]
-    for time,rank in casino_result[i]:
-        if rank==1:
-            cur_result.append(time)
+    for time,rank in casino_result['top-1'][i]:
+        cur_result.append(time)
     casino_list.append(cur_result)
 guided_list:List[List[int]]=[]
-guided_x=[0]
-guided_y=[0]
+guided_x=[]
+guided_y=[]
 for j in range(MAX_EXP):
     cur_result=sorted(casino_list[j])
     guided_list.append([0])
-    for i in range(0,MAX_ITERATION):
+    for i in range(0,MAX_ITERATION+1):
         if i in cur_result:
             guided_list[-1].append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
             guided_x.append(i)
-            guided_y.append(guided_y[-1]+cur_result.count(i)/MAX_EXP)
+            if i==0:
+                guided_y.append(0)
+            else:
+                guided_y.append(guided_y[-1]+cur_result.count(i))
         else:
             guided_list[-1].append(guided_list[-1][-1])
             guided_x.append(i)
-            guided_y.append(guided_y[-1])
+            if i==0:
+                guided_y.append(0)
+            else:
+                guided_y.append(guided_y[-1])
 guided_df=pd.DataFrame({'Iteration':guided_x,'Number of valid patches':guided_y})
 seaborn.lineplot(data=guided_df,x='Iteration',y='Number of valid patches',color='g',label='Casino')
 
@@ -90,31 +111,36 @@ seaborn.lineplot(data=guided_df,x='Iteration',y='Number of valid patches',color=
 genprog_list:List[List[int]]=[]
 for i in range(MAX_EXP):
     cur_result=[]
-    for time,rank in greybox_result[i]:
-        if rank==1:
-            cur_result.append(time)
+    for time,rank in greybox_result['top-1'][i]:
+        cur_result.append(time)
     genprog_list.append(cur_result)
 guided_list:List[List[int]]=[]
-guided_x=[0]
-guided_y=[0]
+guided_x=[]
+guided_y=[]
 for j in range(MAX_EXP):
     cur_result=sorted(genprog_list[j])
     guided_list.append([0])
-    for i in range(0,MAX_ITERATION):
+    for i in range(0,MAX_ITERATION+1):
         if i in cur_result:
             guided_list[-1].append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
             guided_x.append(i)
-            guided_y.append(guided_y[-1]+cur_result.count(i)/MAX_EXP)
+            if i==0:
+                guided_y.append(0)
+            else:
+                guided_y.append(guided_y[-1]+cur_result.count(i))
         else:
             guided_list[-1].append(guided_list[-1][-1])
             guided_x.append(i)
-            guided_y.append(guided_y[-1])
+            if i==0:
+                guided_y.append(0)
+            else:
+                guided_y.append(guided_y[-1])
 other_df=pd.DataFrame({'Iteration':guided_x,'Number of valid patches':guided_y})
 seaborn.lineplot(data=other_df,x='Iteration',y='Number of valid patches',color='r',label='Gresino',linestyle='dashed')
 
 plt.legend(fontsize=12)
 plt.xlabel('Iteration',fontsize=15)
-plt.ylabel('# of Valid Patches',fontsize=15)
+plt.ylabel('# of Versions',fontsize=15)
 plt.xticks(fontsize=15)
 plt.yticks(fontsize=15)
 plt.savefig(f'rq2-top-1.jpg',bbox_inches='tight')
@@ -126,41 +152,45 @@ fig=plt.figure(figsize=(5,3))
 
 # Original
 results=[]
-for time,rank in orig_result:
-    if rank<=3:
-        results.append(time)
+for time,rank in orig_result['top-3']:
+    results.append(time)
 results=sorted(results)
 other_list=[0]
-for i in range(0,MAX_ITERATION):
+for i in range(0,MAX_ITERATION+1):
     if i in results:
         other_list.append(other_list[-1]+results.count(i))
     else:
         other_list.append(other_list[-1])
-plt.plot(list(range(0,MAX_ITERATION+1)),other_list,'-.b',label='Orig')
+plt.plot(list(range(0,MAX_ITERATION+2)),other_list,'-.b',label='Orig')
 
 # Casino
 casino_list:List[List[int]]=[]
 for i in range(MAX_EXP):
     cur_result=[]
-    for time,rank in casino_result[i]:
-        if rank<=3:
-            cur_result.append(time)
+    for time,rank in casino_result['top-3'][i]:
+        cur_result.append(time)
     casino_list.append(cur_result)
 guided_list:List[List[int]]=[]
-guided_x=[0]
-guided_y=[0]
+guided_x=[]
+guided_y=[]
 for j in range(MAX_EXP):
     cur_result=sorted(casino_list[j])
     guided_list.append([0])
-    for i in range(0,MAX_ITERATION):
+    for i in range(0,MAX_ITERATION+1):
         if i in cur_result:
             guided_list[-1].append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
             guided_x.append(i)
-            guided_y.append(guided_y[-1]+cur_result.count(i)/MAX_EXP)
+            if i==0:
+                guided_y.append(0)
+            else:
+                guided_y.append(guided_y[-1]+cur_result.count(i))
         else:
             guided_list[-1].append(guided_list[-1][-1])
             guided_x.append(i)
-            guided_y.append(guided_y[-1])
+            if i==0:
+                guided_y.append(0)
+            else:
+                guided_y.append(guided_y[-1])
 guided_df=pd.DataFrame({'Iteration':guided_x,'Number of valid patches':guided_y})
 seaborn.lineplot(data=guided_df,x='Iteration',y='Number of valid patches',color='g',label='Casino')
 
@@ -168,31 +198,36 @@ seaborn.lineplot(data=guided_df,x='Iteration',y='Number of valid patches',color=
 genprog_list:List[List[int]]=[]
 for i in range(MAX_EXP):
     cur_result=[]
-    for time,rank in greybox_result[i]:
-        if rank<=3:
-            cur_result.append(time)
+    for time,rank in greybox_result['top-3'][i]:
+        cur_result.append(time)
     genprog_list.append(cur_result)
 guided_list:List[List[int]]=[]
-guided_x=[0]
-guided_y=[0]
+guided_x=[]
+guided_y=[]
 for j in range(MAX_EXP):
     cur_result=sorted(genprog_list[j])
     guided_list.append([0])
-    for i in range(0,MAX_ITERATION):
+    for i in range(0,MAX_ITERATION+1):
         if i in cur_result:
             guided_list[-1].append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
             guided_x.append(i)
-            guided_y.append(guided_y[-1]+cur_result.count(i)/MAX_EXP)
+            if i==0:
+                guided_y.append(0)
+            else:
+                guided_y.append(guided_y[-1]+cur_result.count(i))
         else:
             guided_list[-1].append(guided_list[-1][-1])
             guided_x.append(i)
-            guided_y.append(guided_y[-1])
+            if i==0:
+                guided_y.append(0)
+            else:
+                guided_y.append(guided_y[-1])
 other_df=pd.DataFrame({'Iteration':guided_x,'Number of valid patches':guided_y})
 seaborn.lineplot(data=other_df,x='Iteration',y='Number of valid patches',color='r',label='Gresino',linestyle='dashed')
 
 plt.legend(fontsize=12)
 plt.xlabel('Iteration',fontsize=15)
-plt.ylabel('# of Valid Patches',fontsize=15)
+plt.ylabel('# of Versions',fontsize=15)
 plt.xticks(fontsize=15)
 plt.yticks(fontsize=15)
 plt.savefig(f'rq2-top-3.jpg',bbox_inches='tight')
@@ -204,41 +239,45 @@ fig=plt.figure(figsize=(5,3))
 
 # Original
 results=[]
-for time,rank in orig_result:
-    if rank<=5:
-        results.append(time)
+for time,rank in orig_result['top-5']:
+    results.append(time)
 results=sorted(results)
 other_list=[0]
-for i in range(0,MAX_ITERATION):
+for i in range(0,MAX_ITERATION+1):
     if i in results:
         other_list.append(other_list[-1]+results.count(i))
     else:
         other_list.append(other_list[-1])
-plt.plot(list(range(0,MAX_ITERATION+1)),other_list,'-.b',label='Orig')
+plt.plot(list(range(0,MAX_ITERATION+2)),other_list,'-.b',label='Orig')
 
 # Casino
 casino_list:List[List[int]]=[]
 for i in range(MAX_EXP):
     cur_result=[]
-    for time,rank in casino_result[i]:
-        if rank<=5:
-            cur_result.append(time)
+    for time,rank in casino_result['top-5'][i]:
+        cur_result.append(time)
     casino_list.append(cur_result)
 guided_list:List[List[int]]=[]
-guided_x=[0]
-guided_y=[0]
+guided_x=[]
+guided_y=[]
 for j in range(MAX_EXP):
     cur_result=sorted(casino_list[j])
     guided_list.append([0])
-    for i in range(0,MAX_ITERATION):
+    for i in range(0,MAX_ITERATION+1):
         if i in cur_result:
             guided_list[-1].append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
             guided_x.append(i)
-            guided_y.append(guided_y[-1]+cur_result.count(i)/MAX_EXP)
+            if i==0:
+                guided_y.append(0)
+            else:
+                guided_y.append(guided_y[-1]+cur_result.count(i))
         else:
             guided_list[-1].append(guided_list[-1][-1])
             guided_x.append(i)
-            guided_y.append(guided_y[-1])
+            if i==0:
+                guided_y.append(0)
+            else:
+                guided_y.append(guided_y[-1])
 guided_df=pd.DataFrame({'Iteration':guided_x,'Number of valid patches':guided_y})
 seaborn.lineplot(data=guided_df,x='Iteration',y='Number of valid patches',color='g',label='Casino')
 
@@ -246,31 +285,36 @@ seaborn.lineplot(data=guided_df,x='Iteration',y='Number of valid patches',color=
 genprog_list:List[List[int]]=[]
 for i in range(MAX_EXP):
     cur_result=[]
-    for time,rank in greybox_result[i]:
-        if rank<=5:
-            cur_result.append(time)
+    for time,rank in greybox_result['top-5'][i]:
+        cur_result.append(time)
     genprog_list.append(cur_result)
 guided_list:List[List[int]]=[]
-guided_x=[0]
-guided_y=[0]
+guided_x=[]
+guided_y=[]
 for j in range(MAX_EXP):
     cur_result=sorted(genprog_list[j])
     guided_list.append([0])
-    for i in range(0,MAX_ITERATION):
+    for i in range(0,MAX_ITERATION+1):
         if i in cur_result:
             guided_list[-1].append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
             guided_x.append(i)
-            guided_y.append(guided_y[-1]+cur_result.count(i)/MAX_EXP)
+            if i==0:
+                guided_y.append(0)
+            else:
+                guided_y.append(guided_y[-1]+cur_result.count(i))
         else:
             guided_list[-1].append(guided_list[-1][-1])
             guided_x.append(i)
-            guided_y.append(guided_y[-1])
+            if i==0:
+                guided_y.append(0)
+            else:
+                guided_y.append(guided_y[-1])
 other_df=pd.DataFrame({'Iteration':guided_x,'Number of valid patches':guided_y})
 seaborn.lineplot(data=other_df,x='Iteration',y='Number of valid patches',color='r',label='Gresino',linestyle='dashed')
 
 plt.legend(fontsize=12)
 plt.xlabel('Iteration',fontsize=15)
-plt.ylabel('# of Valid Patches',fontsize=15)
+plt.ylabel('# of Versions',fontsize=15)
 plt.xticks(fontsize=15)
 plt.yticks(fontsize=15)
 plt.savefig(f'rq2-top-5.jpg',bbox_inches='tight')
@@ -282,41 +326,45 @@ fig=plt.figure(figsize=(5,3))
 
 # Original
 results=[]
-for time,rank in orig_result:
-    if rank<=10:
-        results.append(time)
+for time,rank in orig_result['top-10']:
+    results.append(time)
 results=sorted(results)
 other_list=[0]
-for i in range(0,MAX_ITERATION):
+for i in range(0,MAX_ITERATION+1):
     if i in results:
         other_list.append(other_list[-1]+results.count(i))
     else:
         other_list.append(other_list[-1])
-plt.plot(list(range(0,MAX_ITERATION+1)),other_list,'-.b',label='Orig')
+plt.plot(list(range(0,MAX_ITERATION+2)),other_list,'-.b',label='Orig')
 
 # Casino
 casino_list:List[List[int]]=[]
 for i in range(MAX_EXP):
     cur_result=[]
-    for time,rank in casino_result[i]:
-        if rank<=10:
-            cur_result.append(time)
+    for time,rank in casino_result['top-10'][i]:
+        cur_result.append(time)
     casino_list.append(cur_result)
 guided_list:List[List[int]]=[]
-guided_x=[0]
-guided_y=[0]
+guided_x=[]
+guided_y=[]
 for j in range(MAX_EXP):
     cur_result=sorted(casino_list[j])
     guided_list.append([0])
-    for i in range(0,MAX_ITERATION):
+    for i in range(0,MAX_ITERATION+1):
         if i in cur_result:
             guided_list[-1].append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
             guided_x.append(i)
-            guided_y.append(guided_y[-1]+cur_result.count(i)/MAX_EXP)
+            if i==0:
+                guided_y.append(0)
+            else:
+                guided_y.append(guided_y[-1]+cur_result.count(i))
         else:
             guided_list[-1].append(guided_list[-1][-1])
             guided_x.append(i)
-            guided_y.append(guided_y[-1])
+            if i==0:
+                guided_y.append(0)
+            else:
+                guided_y.append(guided_y[-1])
 guided_df=pd.DataFrame({'Iteration':guided_x,'Number of valid patches':guided_y})
 seaborn.lineplot(data=guided_df,x='Iteration',y='Number of valid patches',color='g',label='Casino')
 
@@ -324,31 +372,36 @@ seaborn.lineplot(data=guided_df,x='Iteration',y='Number of valid patches',color=
 genprog_list:List[List[int]]=[]
 for i in range(MAX_EXP):
     cur_result=[]
-    for time,rank in greybox_result[i]:
-        if rank<=10:
-            cur_result.append(time)
+    for time,rank in greybox_result['top-10'][i]:
+        cur_result.append(time)
     genprog_list.append(cur_result)
 guided_list:List[List[int]]=[]
-guided_x=[0]
-guided_y=[0]
+guided_x=[]
+guided_y=[]
 for j in range(MAX_EXP):
     cur_result=sorted(genprog_list[j])
     guided_list.append([0])
-    for i in range(0,MAX_ITERATION):
+    for i in range(0,MAX_ITERATION+1):
         if i in cur_result:
             guided_list[-1].append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
             guided_x.append(i)
-            guided_y.append(guided_y[-1]+cur_result.count(i)/MAX_EXP)
+            if i==0:
+                guided_y.append(0)
+            else:
+                guided_y.append(guided_y[-1]+cur_result.count(i))
         else:
             guided_list[-1].append(guided_list[-1][-1])
             guided_x.append(i)
-            guided_y.append(guided_y[-1])
+            if i==0:
+                guided_y.append(0)
+            else:
+                guided_y.append(guided_y[-1])
 other_df=pd.DataFrame({'Iteration':guided_x,'Number of valid patches':guided_y})
 seaborn.lineplot(data=other_df,x='Iteration',y='Number of valid patches',color='r',label='Gresino',linestyle='dashed')
 
 plt.legend(fontsize=12)
 plt.xlabel('Iteration',fontsize=15)
-plt.ylabel('# of Valid Patches',fontsize=15)
+plt.ylabel('# of Versions',fontsize=15)
 plt.xticks(fontsize=15)
 plt.yticks(fontsize=15)
 plt.savefig(f'rq2-top-10.jpg',bbox_inches='tight')

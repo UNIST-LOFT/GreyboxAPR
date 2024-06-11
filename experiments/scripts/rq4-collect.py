@@ -110,16 +110,27 @@ def plot_patches_ci_java(mode='tbar'):
     # Plausible patch plot
     plt.clf()
     fig=plt.figure(figsize=(5,3))
+    print(mode)
+
+    # Original tool
+    if mode=='tbar': name='TBar'
+    elif mode=='fixminer': name='Fixminer'
+    elif mode=='kpar': name='kPar'
+    elif mode=='avatar': name='Avatar'
+    elif mode=='recoder': name='Recoder'
+    elif mode=='alpharepair': name='AlphaRepair'
+    elif mode=='srepair': name='SRepair'
+    elif mode=='selfapr': name='SelfAPR'
 
     # Original
     results=sorted(orig_result)
     other_list=[0]
-    for i in range(0,MAX_ITERATION):
+    for i in range(0,MAX_ITERATION+1):
         if i in results:
             other_list.append(other_list[-1]+results.count(i))
         else:
             other_list.append(other_list[-1])
-    plt.plot(list(range(0,MAX_ITERATION+1)),other_list,'-.b',label='Orig')
+    plt.plot(list(range(0,MAX_ITERATION+2)),other_list,'-.b',label=name)
 
     # Casino
     guided_list:List[List[int]]=[]
@@ -128,17 +139,23 @@ def plot_patches_ci_java(mode='tbar'):
     for j in range(MAX_EXP):
         cur_result=sorted(casino_result[j])
         guided_list.append([0])
-        for i in range(0,MAX_ITERATION):
+        for i in range(0,MAX_ITERATION+1):
             if i in cur_result:
                 guided_list[-1].append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
                 guided_x.append(i)
-                guided_y.append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
+                if i==0:
+                    guided_y.append(0)
+                else:
+                    guided_y.append(guided_y[-1]+cur_result.count(i))
             else:
                 guided_list[-1].append(guided_list[-1][-1])
                 guided_x.append(i)
-                guided_y.append(guided_list[-1][-1])
-    guided_df=pd.DataFrame({'Iteration':guided_x,'# of valid patches':guided_y})
-    seaborn.lineplot(data=guided_df,x='Iteration',y='# of valid patches',color='g',label='Casino')
+                if i==0:
+                    guided_y.append(0)
+                else:
+                    guided_y.append(guided_y[-1])
+    guided_df=pd.DataFrame({'Iteration':guided_x,'Number of valid patches':guided_y})
+    seaborn.lineplot(data=guided_df,x='Iteration',y='Number of valid patches',color='g',label='Casino')
 
     # Greybox
     guided_list:List[List[int]]=[]
@@ -147,24 +164,37 @@ def plot_patches_ci_java(mode='tbar'):
     for j in range(MAX_EXP):
         cur_result=sorted(greybox_result[j])
         guided_list.append([0])
-        for i in range(0,MAX_ITERATION):
+        for i in range(0,MAX_ITERATION+1):
             if i in cur_result:
                 guided_list[-1].append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
                 guided_x.append(i)
-                guided_y.append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
+                if i==0:
+                    guided_y.append(0)
+                else:
+                    guided_y.append(guided_y[-1]+cur_result.count(i))
             else:
                 guided_list[-1].append(guided_list[-1][-1])
                 guided_x.append(i)
-                guided_y.append(guided_list[-1][-1])
-    guided_df=pd.DataFrame({'Iteration':guided_x,'# of valid patches':guided_y})
-    seaborn.lineplot(data=guided_df,x='Iteration',y='# of valid patches',color='r',label='Gresino',linestyle='dashed')
+                if i==0:
+                    guided_y.append(0)
+                else:
+                    guided_y.append(guided_y[-1])
+    guided_df=pd.DataFrame({'Iteration':guided_x,'Number of valid patches':guided_y})
+    seaborn.lineplot(data=guided_df,x='Iteration',y='Number of valid patches',color='r',label='Gresino',linestyle='dashed')
 
     plt.legend(fontsize=12)
-    plt.xlabel('Time (min)',fontsize=15)
+    plt.xlabel('Iteration',fontsize=15)
     plt.ylabel('# of Valid Patches',fontsize=15)
     plt.xticks(fontsize=15)
+    # plt.locator_params(axis='x',nbins=6)
     plt.yticks(fontsize=15)
-    plt.savefig(f'rq4-{mode}.pdf',bbox_inches='tight')
+
+    if WITH_MOCKITO:
+        plt.savefig(f'rq4-iter-{mode}-w-mockito.pdf',bbox_inches='tight')
+        plt.savefig(f'rq4-iter-{mode}-w-mockito.jpg',bbox_inches='tight')
+    else:
+        plt.savefig(f'rq4-iter-{mode}.pdf',bbox_inches='tight')
+        plt.savefig(f'rq4-iter-{mode}.jpg',bbox_inches='tight')
 
 o,a=getopt(argv[1:],'',['with-mockito'])
 for opt,arg in o:

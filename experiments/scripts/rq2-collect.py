@@ -16,9 +16,25 @@ WITH_MOCKITO=False
 MAX_ITERATION=3000
 
 def get_ranking_info_tbar(mode='tbar'):
-    greybox_result:List[List[Tuple[int,int]]]=[[] for _ in range(MAX_EXP)]
-    casino_result:List[List[Tuple[int,int]]]=[[] for _ in range(MAX_EXP)]
-    orig_result:List[Tuple[int,int]]=[]
+    greybox_result:Dict[str,List[List[Tuple[int,int]]]]={
+        'top-1':[[] for _ in range(MAX_EXP)],
+        'top-3':[[] for _ in range(MAX_EXP)],
+        'top-5':[[] for _ in range(MAX_EXP)],
+        'top-10':[[] for _ in range(MAX_EXP)],
+    }
+    casino_result:Dict[str,List[List[Tuple[int,int]]]]={
+        'top-1':[[] for _ in range(MAX_EXP)],
+        'top-3':[[] for _ in range(MAX_EXP)],
+        'top-5':[[] for _ in range(MAX_EXP)],
+        'top-10':[[] for _ in range(MAX_EXP)],
+
+    }
+    orig_result:Dict[str,List[Tuple[int,int]]]={
+        'top-1':[],
+        'top-3':[],
+        'top-5':[],
+        'top-10':[],
+    }
 
     with open(f'{mode}/difftgen.csv','r') as f:
         lines=f.readlines()
@@ -45,12 +61,13 @@ def get_ranking_info_tbar(mode='tbar'):
                 ranks[bug_id]=[]
             ranks[bug_id].append((patch_id,float(score),))
 
-    patch_ranks:Dict[str,List[str]]=dict()
+    patch_ranks:Dict[str,Dict[float,List[str]]]=dict()
     for bug_id in ranks:
-        ranks[bug_id].sort(reverse=True,key=lambda patch: patch[1])
-        patch_ranks[bug_id]=[]
+        patch_ranks[bug_id]=dict()
         for patch in ranks[bug_id]:
-            patch_ranks[bug_id].append(patch[0])
+            if patch[1] not in patch_ranks[bug_id]:
+                patch_ranks[bug_id][patch[1]]=[]
+            patch_ranks[bug_id][patch[1]].append(patch[0])
 
     # Casino
     for i in range(MAX_EXP):
@@ -67,28 +84,56 @@ def get_ranking_info_tbar(mode='tbar'):
             root=json.load(simapr_result)
             simapr_result.close()
 
-            cur_result=dict()
-            min_rank=500
-            cur_patch=None
-            for res in root:
-                is_plausible=res['pass_result']
-                time=res['time']
-                iteration=res['iteration']
-                loc=res['config'][0]['location']
-                if is_plausible:
-                    # cur_result[loc]=round(time/60)
-                    cur_result[loc]=iteration
+            if result in patch_ranks:
+                patch_rankings:Dict[int,List[str]]=dict()
+                score_ranks=sorted(patch_ranks[result].keys(),reverse=True)
+                total_rank=0
+                for score in score_ranks:
+                    total_rank+=len(patch_ranks[result][score])
+                    patch_rankings[total_rank]=patch_ranks[result][score]
 
-                    if result in patch_ranks:
-                        if loc in patch_ranks[result]:
-                            if patch_ranks[result].index(loc)+1<min_rank:
-                                min_rank=patch_ranks[result].index(loc)+1
-                                cur_patch=loc
+                cur_result=dict()
+                finish=False
+                for res in root:
+                    is_plausible=res['pass_result']
+                    time=res['time']
+                    iteration=res['iteration']
+                    loc=res['config'][0]['location']
+                    if is_plausible:
+                        # cur_result[loc]=round(time/60)
+                        cur_result[loc]=iteration
 
-            if cur_patch is not None:
-                casino_result[i].append((cur_result[cur_patch],min_rank))
+                        for rank,patches in patch_rankings.items():
+                            if loc in patches:
+                                if rank==1:
+                                    # Top-1
+                                    casino_result['top-1'][i].append((cur_result[loc],total_rank))
+                                    casino_result['top-3'][i].append((cur_result[loc],total_rank))
+                                    casino_result['top-5'][i].append((cur_result[loc],total_rank))
+                                    casino_result['top-10'][i].append((cur_result[loc],total_rank))
+                                    finish=True
+                                    break
+                                if rank<=3:
+                                    # Top-3
+                                    casino_result['top-3'][i].append((cur_result[loc],total_rank))
+                                    casino_result['top-5'][i].append((cur_result[loc],total_rank))
+                                    casino_result['top-10'][i].append((cur_result[loc],total_rank))
+                                    finish=True
+                                    break
+                                if rank<=5:
+                                    # Top-5
+                                    casino_result['top-5'][i].append((cur_result[loc],total_rank))
+                                    casino_result['top-10'][i].append((cur_result[loc],total_rank))
+                                    finish=True
+                                    break
+                                if rank<=10:
+                                    # Top-10
+                                    casino_result['top-10'][i].append((cur_result[loc],total_rank))
+                                    finish=True
+                                    break
+                    if finish: break
     
-    print(mean([len(l) for l in casino_result]))
+    print(mean([len(l) for l in casino_result['top-10']]))
 
     # Greybox
     for i in range(MAX_EXP):
@@ -105,28 +150,56 @@ def get_ranking_info_tbar(mode='tbar'):
             root=json.load(simapr_result)
             simapr_result.close()
 
-            cur_result=dict()
-            min_rank=500
-            cur_patch=None
-            for res in root:
-                is_plausible=res['pass_result']
-                time=res['time']
-                iteration=res['iteration']
-                loc=res['config'][0]['location']
-                if is_plausible:
-                    # cur_result[loc]=round(time/60)
-                    cur_result[loc]=iteration
+            if result in patch_ranks:
+                patch_rankings:Dict[int,List[str]]=dict()
+                score_ranks=sorted(patch_ranks[result].keys(),reverse=True)
+                total_rank=0
+                for score in score_ranks:
+                    total_rank+=len(patch_ranks[result][score])
+                    patch_rankings[total_rank]=patch_ranks[result][score]
 
-                    if result in patch_ranks:
-                        if loc in patch_ranks[result]:
-                            if patch_ranks[result].index(loc)+1<min_rank:
-                                min_rank=patch_ranks[result].index(loc)+1
-                                cur_patch=loc
+                cur_result=dict()
+                finish=False
+                for res in root:
+                    is_plausible=res['pass_result']
+                    time=res['time']
+                    iteration=res['iteration']
+                    loc=res['config'][0]['location']
+                    if is_plausible:
+                        # cur_result[loc]=round(time/60)
+                        cur_result[loc]=iteration
 
-            if cur_patch is not None:
-                greybox_result[i].append((cur_result[cur_patch],min_rank))
+                        for rank,patches in patch_rankings.items():
+                            if loc in patches:
+                                if rank==1:
+                                    # Top-1
+                                    greybox_result['top-1'][i].append((cur_result[loc],total_rank))
+                                    greybox_result['top-3'][i].append((cur_result[loc],total_rank))
+                                    greybox_result['top-5'][i].append((cur_result[loc],total_rank))
+                                    greybox_result['top-10'][i].append((cur_result[loc],total_rank))
+                                    finish=True
+                                    break
+                                if rank<=3:
+                                    # Top-3
+                                    greybox_result['top-3'][i].append((cur_result[loc],total_rank))
+                                    greybox_result['top-5'][i].append((cur_result[loc],total_rank))
+                                    greybox_result['top-10'][i].append((cur_result[loc],total_rank))
+                                    finish=True
+                                    break
+                                if rank<=5:
+                                    # Top-5
+                                    greybox_result['top-5'][i].append((cur_result[loc],total_rank))
+                                    greybox_result['top-10'][i].append((cur_result[loc],total_rank))
+                                    finish=True
+                                    break
+                                if rank<=10:
+                                    # Top-10
+                                    greybox_result['top-10'][i].append((cur_result[loc],total_rank))
+                                    finish=True
+                                    break
+                    if finish: break
 
-    print(mean([len(l) for l in greybox_result]))
+    print(mean([len(l) for l in greybox_result['top-10']]))
 
     # original
     for result in d4j.D4J_1_2_LIST:
@@ -142,28 +215,56 @@ def get_ranking_info_tbar(mode='tbar'):
         root=json.load(simapr_result)
         simapr_result.close()
 
-        cur_result=dict()
-        min_rank=500
-        cur_patch=None
-        for res in root:
-            is_plausible=res['pass_result']
-            time=res['time']
-            iteration=res['iteration']
-            loc=res['config'][0]['location']
-            if is_plausible:
-                # cur_result[loc]=round(time/60)
-                cur_result[loc]=iteration
+        if result in patch_ranks:
+            patch_rankings:Dict[int,List[str]]=dict()
+            score_ranks=sorted(patch_ranks[result].keys(),reverse=True)
+            total_rank=0
+            for score in score_ranks:
+                total_rank+=len(patch_ranks[result][score])
+                patch_rankings[total_rank]=patch_ranks[result][score]
 
-                if result in patch_ranks:
-                    if loc in patch_ranks[result]:
-                        if patch_ranks[result].index(loc)+1<min_rank:
-                            min_rank=patch_ranks[result].index(loc)+1
-                            cur_patch=loc
+            cur_result=dict()
+            finish=False
+            for res in root:
+                is_plausible=res['pass_result']
+                time=res['time']
+                iteration=res['iteration']
+                loc=res['config'][0]['location']
+                if is_plausible:
+                    # cur_result[loc]=round(time/60)
+                    cur_result[loc]=iteration
 
-        if cur_patch is not None:
-            orig_result.append((cur_result[cur_patch],min_rank))
-    
-    print(len(orig_result))
+                    for rank,patches in patch_rankings.items():
+                        if loc in patches:
+                            if rank==1:
+                                # Top-1
+                                orig_result['top-1'].append((cur_result[loc],total_rank))
+                                orig_result['top-3'].append((cur_result[loc],total_rank))
+                                orig_result['top-5'].append((cur_result[loc],total_rank))
+                                orig_result['top-10'].append((cur_result[loc],total_rank))
+                                finish=True
+                                break
+                            if rank<=3:
+                                # Top-3
+                                orig_result['top-3'].append((cur_result[loc],total_rank))
+                                orig_result['top-5'].append((cur_result[loc],total_rank))
+                                orig_result['top-10'].append((cur_result[loc],total_rank))
+                                finish=True
+                                break
+                            if rank<=5:
+                                # Top-5
+                                orig_result['top-5'].append((cur_result[loc],total_rank))
+                                orig_result['top-10'].append((cur_result[loc],total_rank))
+                                finish=True
+                                break
+                            if rank<=10:
+                                # Top-10
+                                orig_result['top-10'].append((cur_result[loc],total_rank))
+                                finish=True
+                                break
+                if finish: break
+
+    print(len(orig_result['top-10']))
 
     with open(f'rq2-{mode}.json','w') as f:
         json.dump({
@@ -178,41 +279,45 @@ def get_ranking_info_tbar(mode='tbar'):
 
     # Original
     results=[]
-    for time,rank in orig_result:
-        if rank==1:
-            results.append(time)
+    for time,rank in orig_result['top-1']:
+        results.append(time)
     results=sorted(results)
     other_list=[0]
-    for i in range(0,MAX_ITERATION):
+    for i in range(0,MAX_ITERATION+1):
         if i in results:
             other_list.append(other_list[-1]+results.count(i))
         else:
             other_list.append(other_list[-1])
-    plt.plot(list(range(0,MAX_ITERATION+1)),other_list,'-.b',label='Orig')
+    plt.plot(list(range(0,MAX_ITERATION+2)),other_list,'-.b',label='Orig')
 
     # Casino
     casino_list:List[List[int]]=[]
     for i in range(MAX_EXP):
         cur_result=[]
-        for time,rank in casino_result[i]:
-            if rank==1:
-                cur_result.append(time)
+        for time,rank in casino_result['top-1'][i]:
+            cur_result.append(time)
         casino_list.append(cur_result)
     guided_list:List[List[int]]=[]
-    guided_x=[0]
-    guided_y=[0]
+    guided_x=[]
+    guided_y=[]
     for j in range(MAX_EXP):
         cur_result=sorted(casino_list[j])
         guided_list.append([0])
-        for i in range(0,MAX_ITERATION):
+        for i in range(0,MAX_ITERATION+1):
             if i in cur_result:
                 guided_list[-1].append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
                 guided_x.append(i)
-                guided_y.append(guided_y[-1]+cur_result.count(i)/MAX_EXP)
+                if i==0:
+                    guided_y.append(0)
+                else:
+                    guided_y.append(guided_y[-1]+cur_result.count(i))
             else:
                 guided_list[-1].append(guided_list[-1][-1])
                 guided_x.append(i)
-                guided_y.append(guided_y[-1])
+                if i==0:
+                    guided_y.append(0)
+                else:
+                    guided_y.append(guided_y[-1])
     guided_df=pd.DataFrame({'Iteration':guided_x,'Number of valid patches':guided_y})
     seaborn.lineplot(data=guided_df,x='Iteration',y='Number of valid patches',color='g',label='Casino')
 
@@ -220,25 +325,30 @@ def get_ranking_info_tbar(mode='tbar'):
     genprog_list:List[List[int]]=[]
     for i in range(MAX_EXP):
         cur_result=[]
-        for time,rank in greybox_result[i]:
-            if rank==1:
-                cur_result.append(time)
+        for time,rank in greybox_result['top-1'][i]:
+            cur_result.append(time)
         genprog_list.append(cur_result)
     guided_list:List[List[int]]=[]
-    guided_x=[0]
-    guided_y=[0]
+    guided_x=[]
+    guided_y=[]
     for j in range(MAX_EXP):
         cur_result=sorted(genprog_list[j])
         guided_list.append([0])
-        for i in range(0,MAX_ITERATION):
+        for i in range(0,MAX_ITERATION+1):
             if i in cur_result:
                 guided_list[-1].append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
                 guided_x.append(i)
-                guided_y.append(guided_y[-1]+cur_result.count(i)/MAX_EXP)
+                if i==0:
+                    guided_y.append(0)
+                else:
+                    guided_y.append(guided_y[-1]+cur_result.count(i))
             else:
                 guided_list[-1].append(guided_list[-1][-1])
                 guided_x.append(i)
-                guided_y.append(guided_y[-1])
+                if i==0:
+                    guided_y.append(0)
+                else:
+                    guided_y.append(guided_y[-1])
     other_df=pd.DataFrame({'Iteration':guided_x,'Number of valid patches':guided_y})
     seaborn.lineplot(data=other_df,x='Iteration',y='Number of valid patches',color='r',label='Gresino',linestyle='dashed')
 
@@ -256,41 +366,45 @@ def get_ranking_info_tbar(mode='tbar'):
 
     # Original
     results=[]
-    for time,rank in orig_result:
-        if rank<=3:
-            results.append(time)
+    for time,rank in orig_result['top-3']:
+        results.append(time)
     results=sorted(results)
     other_list=[0]
-    for i in range(0,MAX_ITERATION):
+    for i in range(0,MAX_ITERATION+1):
         if i in results:
             other_list.append(other_list[-1]+results.count(i))
         else:
             other_list.append(other_list[-1])
-    plt.plot(list(range(0,MAX_ITERATION+1)),other_list,'-.b',label='Orig')
+    plt.plot(list(range(0,MAX_ITERATION+2)),other_list,'-.b',label='Orig')
 
     # Casino
     casino_list:List[List[int]]=[]
     for i in range(MAX_EXP):
         cur_result=[]
-        for time,rank in casino_result[i]:
-            if rank<=3:
-                cur_result.append(time)
+        for time,rank in casino_result['top-3'][i]:
+            cur_result.append(time)
         casino_list.append(cur_result)
     guided_list:List[List[int]]=[]
-    guided_x=[0]
-    guided_y=[0]
+    guided_x=[]
+    guided_y=[]
     for j in range(MAX_EXP):
         cur_result=sorted(casino_list[j])
         guided_list.append([0])
-        for i in range(0,MAX_ITERATION):
+        for i in range(0,MAX_ITERATION+1):
             if i in cur_result:
                 guided_list[-1].append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
                 guided_x.append(i)
-                guided_y.append(guided_y[-1]+cur_result.count(i)/MAX_EXP)
+                if i==0:
+                    guided_y.append(0)
+                else:
+                    guided_y.append(guided_y[-1]+cur_result.count(i))
             else:
                 guided_list[-1].append(guided_list[-1][-1])
                 guided_x.append(i)
-                guided_y.append(guided_y[-1])
+                if i==0:
+                    guided_y.append(0)
+                else:
+                    guided_y.append(guided_y[-1])
     guided_df=pd.DataFrame({'Iteration':guided_x,'Number of valid patches':guided_y})
     seaborn.lineplot(data=guided_df,x='Iteration',y='Number of valid patches',color='g',label='Casino')
 
@@ -298,25 +412,30 @@ def get_ranking_info_tbar(mode='tbar'):
     genprog_list:List[List[int]]=[]
     for i in range(MAX_EXP):
         cur_result=[]
-        for time,rank in greybox_result[i]:
-            if rank<=3:
-                cur_result.append(time)
+        for time,rank in greybox_result['top-3'][i]:
+            cur_result.append(time)
         genprog_list.append(cur_result)
     guided_list:List[List[int]]=[]
-    guided_x=[0]
-    guided_y=[0]
+    guided_x=[]
+    guided_y=[]
     for j in range(MAX_EXP):
         cur_result=sorted(genprog_list[j])
         guided_list.append([0])
-        for i in range(0,MAX_ITERATION):
+        for i in range(0,MAX_ITERATION+1):
             if i in cur_result:
                 guided_list[-1].append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
                 guided_x.append(i)
-                guided_y.append(guided_y[-1]+cur_result.count(i)/MAX_EXP)
+                if i==0:
+                    guided_y.append(0)
+                else:
+                    guided_y.append(guided_y[-1]+cur_result.count(i))
             else:
                 guided_list[-1].append(guided_list[-1][-1])
                 guided_x.append(i)
-                guided_y.append(guided_y[-1])
+                if i==0:
+                    guided_y.append(0)
+                else:
+                    guided_y.append(guided_y[-1])
     other_df=pd.DataFrame({'Iteration':guided_x,'Number of valid patches':guided_y})
     seaborn.lineplot(data=other_df,x='Iteration',y='Number of valid patches',color='r',label='Gresino',linestyle='dashed')
 
@@ -334,41 +453,45 @@ def get_ranking_info_tbar(mode='tbar'):
 
     # Original
     results=[]
-    for time,rank in orig_result:
-        if rank<=5:
-            results.append(time)
+    for time,rank in orig_result['top-5']:
+        results.append(time)
     results=sorted(results)
     other_list=[0]
-    for i in range(0,MAX_ITERATION):
+    for i in range(0,MAX_ITERATION+1):
         if i in results:
             other_list.append(other_list[-1]+results.count(i))
         else:
             other_list.append(other_list[-1])
-    plt.plot(list(range(0,MAX_ITERATION+1)),other_list,'-.b',label='Orig')
+    plt.plot(list(range(0,MAX_ITERATION+2)),other_list,'-.b',label='Orig')
 
     # Casino
     casino_list:List[List[int]]=[]
     for i in range(MAX_EXP):
         cur_result=[]
-        for time,rank in casino_result[i]:
-            if rank<=5:
-                cur_result.append(time)
+        for time,rank in casino_result['top-5'][i]:
+            cur_result.append(time)
         casino_list.append(cur_result)
     guided_list:List[List[int]]=[]
-    guided_x=[0]
-    guided_y=[0]
+    guided_x=[]
+    guided_y=[]
     for j in range(MAX_EXP):
         cur_result=sorted(casino_list[j])
         guided_list.append([0])
-        for i in range(0,MAX_ITERATION):
+        for i in range(0,MAX_ITERATION+1):
             if i in cur_result:
                 guided_list[-1].append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
                 guided_x.append(i)
-                guided_y.append(guided_y[-1]+cur_result.count(i)/MAX_EXP)
+                if i==0:
+                    guided_y.append(0)
+                else:
+                    guided_y.append(guided_y[-1]+cur_result.count(i))
             else:
                 guided_list[-1].append(guided_list[-1][-1])
                 guided_x.append(i)
-                guided_y.append(guided_y[-1])
+                if i==0:
+                    guided_y.append(0)
+                else:
+                    guided_y.append(guided_y[-1])
     guided_df=pd.DataFrame({'Iteration':guided_x,'Number of valid patches':guided_y})
     seaborn.lineplot(data=guided_df,x='Iteration',y='Number of valid patches',color='g',label='Casino')
 
@@ -376,25 +499,30 @@ def get_ranking_info_tbar(mode='tbar'):
     genprog_list:List[List[int]]=[]
     for i in range(MAX_EXP):
         cur_result=[]
-        for time,rank in greybox_result[i]:
-            if rank<=5:
-                cur_result.append(time)
+        for time,rank in greybox_result['top-5'][i]:
+            cur_result.append(time)
         genprog_list.append(cur_result)
     guided_list:List[List[int]]=[]
-    guided_x=[0]
-    guided_y=[0]
+    guided_x=[]
+    guided_y=[]
     for j in range(MAX_EXP):
         cur_result=sorted(genprog_list[j])
         guided_list.append([0])
-        for i in range(0,MAX_ITERATION):
+        for i in range(0,MAX_ITERATION+1):
             if i in cur_result:
                 guided_list[-1].append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
                 guided_x.append(i)
-                guided_y.append(guided_y[-1]+cur_result.count(i)/MAX_EXP)
+                if i==0:
+                    guided_y.append(0)
+                else:
+                    guided_y.append(guided_y[-1]+cur_result.count(i))
             else:
                 guided_list[-1].append(guided_list[-1][-1])
                 guided_x.append(i)
-                guided_y.append(guided_y[-1])
+                if i==0:
+                    guided_y.append(0)
+                else:
+                    guided_y.append(guided_y[-1])
     other_df=pd.DataFrame({'Iteration':guided_x,'Number of valid patches':guided_y})
     seaborn.lineplot(data=other_df,x='Iteration',y='Number of valid patches',color='r',label='Gresino',linestyle='dashed')
 
@@ -412,41 +540,45 @@ def get_ranking_info_tbar(mode='tbar'):
 
     # Original
     results=[]
-    for time,rank in orig_result:
-        if rank<=10:
-            results.append(time)
+    for time,rank in orig_result['top-10']:
+        results.append(time)
     results=sorted(results)
     other_list=[0]
-    for i in range(0,MAX_ITERATION):
+    for i in range(0,MAX_ITERATION+1):
         if i in results:
             other_list.append(other_list[-1]+results.count(i))
         else:
             other_list.append(other_list[-1])
-    plt.plot(list(range(0,MAX_ITERATION+1)),other_list,'-.b',label='Orig')
+    plt.plot(list(range(0,MAX_ITERATION+2)),other_list,'-.b',label='Orig')
 
     # Casino
     casino_list:List[List[int]]=[]
     for i in range(MAX_EXP):
         cur_result=[]
-        for time,rank in casino_result[i]:
-            if rank<=10:
-                cur_result.append(time)
+        for time,rank in casino_result['top-10'][i]:
+            cur_result.append(time)
         casino_list.append(cur_result)
     guided_list:List[List[int]]=[]
-    guided_x=[0]
-    guided_y=[0]
+    guided_x=[]
+    guided_y=[]
     for j in range(MAX_EXP):
         cur_result=sorted(casino_list[j])
         guided_list.append([0])
-        for i in range(0,MAX_ITERATION):
+        for i in range(0,MAX_ITERATION+1):
             if i in cur_result:
                 guided_list[-1].append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
                 guided_x.append(i)
-                guided_y.append(guided_y[-1]+cur_result.count(i)/MAX_EXP)
+                if i==0:
+                    guided_y.append(0)
+                else:
+                    guided_y.append(guided_y[-1]+cur_result.count(i))
             else:
                 guided_list[-1].append(guided_list[-1][-1])
                 guided_x.append(i)
-                guided_y.append(guided_y[-1])
+                if i==0:
+                    guided_y.append(0)
+                else:
+                    guided_y.append(guided_y[-1])
     guided_df=pd.DataFrame({'Iteration':guided_x,'Number of valid patches':guided_y})
     seaborn.lineplot(data=guided_df,x='Iteration',y='Number of valid patches',color='g',label='Casino')
 
@@ -454,25 +586,30 @@ def get_ranking_info_tbar(mode='tbar'):
     genprog_list:List[List[int]]=[]
     for i in range(MAX_EXP):
         cur_result=[]
-        for time,rank in greybox_result[i]:
-            if rank<=10:
-                cur_result.append(time)
+        for time,rank in greybox_result['top-10'][i]:
+            cur_result.append(time)
         genprog_list.append(cur_result)
     guided_list:List[List[int]]=[]
-    guided_x=[0]
-    guided_y=[0]
+    guided_x=[]
+    guided_y=[]
     for j in range(MAX_EXP):
         cur_result=sorted(genprog_list[j])
         guided_list.append([0])
-        for i in range(0,MAX_ITERATION):
+        for i in range(0,MAX_ITERATION+1):
             if i in cur_result:
                 guided_list[-1].append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
                 guided_x.append(i)
-                guided_y.append(guided_y[-1]+cur_result.count(i)/MAX_EXP)
+                if i==0:
+                    guided_y.append(0)
+                else:
+                    guided_y.append(guided_y[-1]+cur_result.count(i))
             else:
                 guided_list[-1].append(guided_list[-1][-1])
                 guided_x.append(i)
-                guided_y.append(guided_y[-1])
+                if i==0:
+                    guided_y.append(0)
+                else:
+                    guided_y.append(guided_y[-1])
     other_df=pd.DataFrame({'Iteration':guided_x,'Number of valid patches':guided_y})
     seaborn.lineplot(data=other_df,x='Iteration',y='Number of valid patches',color='r',label='Gresino',linestyle='dashed')
 

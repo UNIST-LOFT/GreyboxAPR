@@ -59,7 +59,12 @@ public class Main {
 
             List<Location> locations=new ArrayList<>();
             // Read the FL result file
-            List<String> lines=Files.readLines(new File(flResultPath), Charset.defaultCharset());
+            List<String> lines;
+            File flResultFile=new File(flResultPath);
+            if (flResultFile.exists())
+                lines=Files.readLines(flResultFile, Charset.defaultCharset());
+            else
+                lines=Files.readLines(new File(flResultPath.replace("Ochiai", "ochiai")), Charset.defaultCharset());
             for (String line : lines) {
                 String[] tokens = line.split("@");
                 String file = tokens[0].replace('.', '/');
