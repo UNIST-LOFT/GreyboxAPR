@@ -577,9 +577,11 @@ for i, xss in enumerate(prlist):
             if mnode is None:
                 continue
             funcname, startline, endline = get_method_range(tree, mnode, lineid)
-            if filepath not in func_map:
-                func_map[filepath] = list()
-            func_map[filepath].append({"function": funcname, "begin": startline, "end": endline})
+
+            filepath_wo_bugid=f'{dirs}/{s.replace(".", "/")}.java'
+            if filepath_wo_bugid not in func_map:
+                func_map[filepath_wo_bugid] = list()
+            func_map[filepath_wo_bugid].append({"function": funcname, "begin": startline, "end": endline})
             oldcode = liness[ac[2] - 1]
             isIf = True
             subroot = lnode     # line root
