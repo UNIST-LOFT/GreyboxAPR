@@ -94,7 +94,7 @@ def second_vertical_search_recursion(state:GlobalState, source:PatchTreeNode):
 
   _debug=f'Mode of 2nd vertical: {_source}: '
   for child in children_map.values():
-    _debug+=f'{child.critical_branch_up_down_manager.upDownDict[selected_branch].mode(isUp)}'
+    _debug+=f'{child.critical_branch_up_down_manager.upDownDict[selected_branch].mode()},'
   state.logger.debug(_debug)
 
   _debug=f'Prob of 2nd vertical: {_source}: '

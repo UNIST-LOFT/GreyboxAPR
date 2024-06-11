@@ -148,15 +148,17 @@ class CriticalBranchUpDown:
     elif branch_difference>0:
       self.branchUpScore+=1 # increase the score with some value.
 
-  def mode(self,isUp):
-    if isUp:
-      if self.branchUpScore+self.branchUpInit+self.branchUpInit==2.0:
-        return 1.0
-      return (self.branchUpScore+self.branchUpInit - 1.0) / (self.branchUpScore+self.branchUpInit*2 - 2.0)
+  def mode(self):
+    if self.branchUpScore==0:
+      up_score=0.
     else:
-      if self.branchDownScore+self.branchDownInit+self.branchDownInit==2.0:
-        return 1.0
-      return (self.branchDownScore+self.branchDownInit - 1.0) / (self.branchDownScore+self.branchDownInit*2 - 2.0)
+      up_score=self.branchUpScore
+    if self.branchDownScore==0:
+      down_score=0.
+    else:
+      down_score=self.branchDownScore
+    
+    return down_score,up_score
 
   def select_value(self,isUp:bool) -> float: # select a value randomly from the beta distribution
     """
