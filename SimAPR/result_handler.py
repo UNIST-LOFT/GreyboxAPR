@@ -339,11 +339,11 @@ def update_result_branch(state:GlobalState,selected_patch:Union[TbarPatchInfo,Re
       if testName in each_result and testName in branch_coverage and testName in state.original_branch_cov:
         # get branch difference
         branch_difference_list: list[Tuple[int,int]] = branch_coverage[testName].diff(state.original_branch_cov[testName]) # list of (branch index, branch count difference)
-        state.logger.debug(f"update_result_branch updating successfully.")
 
         if each_result[testName]:
           # update if the patch is interesting
           for branch_tuple in branch_difference_list:
+            print(f'grey-box alpha updated')
             branch_index:int=branch_tuple[0]
             branch_difference=branch_tuple[1]
             
