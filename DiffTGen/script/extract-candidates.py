@@ -103,6 +103,8 @@ def main_recoder(cmd: str, rootdir: str, outdir: str) -> None:
     tool_dir = os.path.join(rootdir, "Fixminer")
   bugids = list()
   for cache in os.listdir(sim_dir):
+    if cache.startswith('Mockito'):
+      continue # Skip Mockito
     bugids.append(cache.replace("-cache.json", ""))
   for bugid in bugids:
     switch_info_file = os.path.join(tool_dir, "d4j", bugid, "switch-info.json")
