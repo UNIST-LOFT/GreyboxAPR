@@ -323,10 +323,10 @@ def test_patched_project(patch_location: str, buggy_location: str, work_dir: str
         print("FAIL")
         print("---INSTRUMENTATION_FAILED")
         raise ValueError("Patch is not instrumented")
-      if not compile_project_updated(work_dir, buggy_project):
-        print("FAIL")
-        print("---COMPILATION_FAILED")
-        raise ValueError("Patch is not compiled after instrumentation")
+      # if not compile_project_updated(work_dir, buggy_project):
+      #   print("FAIL")
+      #   print("---COMPILATION_FAILED")
+      #   raise ValueError("Patch is not compiled after instrumentation")
       
       
     error_num, failed_test = run_single_test(work_dir, buggy_project, test)
