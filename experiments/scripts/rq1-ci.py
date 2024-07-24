@@ -217,10 +217,10 @@ def plot_patches_ci_java(mode='tbar'):
 
     if WITH_MOCKITO:
         plt.savefig(f'rq1-iter-ci-{mode}-w-mockito.pdf',bbox_inches='tight')
-        plt.savefig(f'rq1-iter-ci-{mode}-w-mockito.jpg',bbox_inches='tight')
+        plt.savefig(f'rq1-iter-ci-{mode}-w-mockito.png',bbox_inches='tight')
     else:
         plt.savefig(f'rq1-iter-ci-{mode}.pdf',bbox_inches='tight')
-        plt.savefig(f'rq1-iter-ci-{mode}.jpg',bbox_inches='tight')
+        plt.savefig(f'rq1-iter-ci-{mode}.png',bbox_inches='tight')
 
 if __name__=='__main__':
     o,a=getopt(argv[1:],'',['with-mockito'])
