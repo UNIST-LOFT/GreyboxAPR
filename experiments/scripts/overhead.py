@@ -14,7 +14,7 @@ def run_test(project:str,tool:str,patch:str,buggy_file:str,buggy_class_name:str=
     new_env["SIMAPR_BUGGY_LOCATION"] = buggy_file
     new_env["SIMAPR_BUGGY_PROJECT"] = project
     new_env["SIMAPR_TIMEOUT"] = '180000'
-    if buggy_class_name is not None:
+    if buggy_class_name is not None and buggy_class_name!='':
         new_env["SIMAPR_CLASS_NAME"] = buggy_class_name
 
     if greybox:
@@ -87,17 +87,24 @@ def run(project:str,tool:str):
 
     print(f'Run {project}',file=sys.stderr)
     
+    run_original(project,tool,greybox=False)
+    wo_greybox=[]
     for patch in patches:
         file_name=patch_infos[project][patch]['file_name']
         class_name=patch_infos[project][patch]['class_name']
         for test in failing_tests[project]:
-            _time=[]
-            run_original(project,tool,greybox=False)
-            _time.append(run_test(project,tool,patch,file_name,class_name,test,greybox=False))
+            wo_greybox.append(run_test(project,tool,patch,file_name,class_name,test,greybox=False))
 
-            run_original(project,tool,greybox=True)
-            _time.append(run_test(project,tool,patch,file_name,class_name,test,greybox=True))
-            print(f'{_time[0]},{_time[1]}',file=sys.stdout)
+    greybox=[]
+    run_original(project,tool,greybox=True)
+    for patch in patches:
+        file_name=patch_infos[project][patch]['file_name']
+        class_name=patch_infos[project][patch]['class_name']
+        for test in failing_tests[project]:        
+            greybox.append(run_test(project,tool,patch,file_name,class_name,test,greybox=True))
+
+    for wo,w in zip(wo_greybox,greybox):
+        print(f'{wo},{w}',file=sys.stdout)
 
     print(f'Finish {project}',file=sys.stderr)
 
