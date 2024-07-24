@@ -1,11 +1,10 @@
 import os
+import sys
 import time
 from typing import Any, Dict, List, Set, Tuple
 import d4j
 import subprocess
 import json
-
-each_time:Dict[str,List[Tuple[float,float]]]=dict()
 
 def run_test(project:str,tool:str,patch:str,buggy_file:str,buggy_class_name:str=None,test:str='ALL',greybox:bool=False):
     new_env=os.environ.copy()
@@ -77,38 +76,30 @@ def parse_result(project:str,tool:str):
     return casino_patches.intersection(gresino_patches)
 
 def run(project:str,tool:str):
-    global each_time
     failing_tests,patch_infos=parse_info(project,tool)
     patches=parse_result(project,tool)
 
-    print(f'Run {project}')
-    # without greybox
-    wo_greybox_times=[]
+    print(f'Run {project}',file=sys.stderr)
+    
     for patch in patches:
         file_name=patch_infos[project][patch]['file_name']
         class_name=patch_infos[project][patch]['class_name']
         for test in failing_tests[project]:
+            _time=[]
             run_original(project,tool,greybox=False)
-            wo_greybox_times.append(run_test(project,tool,patch,file_name,class_name,test,greybox=False))
+            _time.append(run_test(project,tool,patch,file_name,class_name,test,greybox=False))
 
-    # with greybox
-    w_greybox_times=[]
-    for patch in patches:
-        file_name=patch_infos[project][patch]['file_name']
-        class_name=patch_infos[project][patch]['class_name']
-        for test in failing_tests[project]:
             run_original(project,tool,greybox=True)
-            w_greybox_times.append(run_test(project,tool,patch,file_name,class_name,test,greybox=True))
+            _time.append(run_test(project,tool,patch,file_name,class_name,test,greybox=True))
+            print(f'{_time[0]},{_time[1]}',file=sys.stdout)
 
-    for wo,w in zip(wo_greybox_times,w_greybox_times):
-        each_time[project].append((wo,w,))
-    print(f'Finish {project}')
+    print(f'Finish {project}',file=sys.stderr)
 
 import multiprocessing as mp
 from sys import argv
 
 if len(argv)!=3:
-    print(f'Usage: {argv[0]} <tool> <num of processes>')
+    print(f'Usage: {argv[0]} <tool> <num of processes>',file=sys.stderr)
     exit(1)
 
 _tool=argv[1].lower()
@@ -132,18 +123,7 @@ elif _tool=='selfapr':
 pool=mp.Pool(int(argv[2]))
 
 for proj in d4j.D4J_1_2_LIST:
-    each_time[proj]=[]
-
-for proj in d4j.D4J_1_2_LIST:
     pool.apply_async(run,args=(proj,tool,))
 
 pool.close()
 pool.join()
-
-final_result:List[List[float]]=[]
-for proj in each_time:
-    for wo,w in each_time[proj]:
-        final_result.append([wo,w,])
-
-with open(f'/root/project/GreyboxAPR/experiments/{argv[1].lower()}/overhead.json','w') as f:
-    json.dump(final_result,f,indent=2)
