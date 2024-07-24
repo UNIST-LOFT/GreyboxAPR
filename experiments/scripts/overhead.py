@@ -45,8 +45,14 @@ def parse_info(project:str,tool:str):
     failing_tests[project]=info['failing_test_cases']
     patch_infos[project]=dict()
     for file in info['rules']:
-        file_name=file['file_name']
-        class_name=file['class_name']
+        if 'file_name' in file:
+            file_name=file['file_name']
+        else:
+            file_name=file['file']
+        if 'class_name' in file:
+            class_name=file['class_name']
+        else:
+            class_name=''
         for func in file['functions']:
             for line in func['lines']:
                 for patch in line['cases']:
