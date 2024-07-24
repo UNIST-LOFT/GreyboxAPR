@@ -5,7 +5,7 @@ import d4j
 import subprocess
 import json
 
-each_time:Dict[str,List[Tuple[float,float]]]=[]
+each_time:Dict[str,List[Tuple[float,float]]]=dict()
 
 def run_test(project:str,tool:str,patch:str,buggy_file:str,buggy_class_name:str=None,test:str='ALL',greybox:bool=False):
     new_env=os.environ.copy()
@@ -63,7 +63,7 @@ def parse_result(project:str,tool:str):
     gresino_patches:Set[str]=set()
 
     for res_file in os.listdir(f'/root/project/GreyboxAPR/experiments/{tool.lower()}/result'):
-        if res_file.startswith(project) and ('casino' in res_file or 'greybox' in res_file):
+        if res_file.startswith(project) and os.path.isdir(f'/root/project/GreyboxAPR/experiments/{tool.lower()}/result/{res_file}') and ('casino' in res_file or 'greybox' in res_file):
             with open(f'/root/project/GreyboxAPR/experiments/{tool.lower()}/result/{res_file}/simapr-result.json') as f:
                 res=json.load(f)
             
@@ -81,6 +81,7 @@ def run(project:str,tool:str):
     failing_tests,patch_infos=parse_info(project,tool)
     patches=parse_result(project,tool)
 
+    print(f'Run {project}')
     # without greybox
     wo_greybox_times=[]
     run_original(project,tool,greybox=False)
@@ -101,6 +102,7 @@ def run(project:str,tool:str):
 
     for wo,w in zip(wo_greybox_times,w_greybox_times):
         each_time[project].append((wo,w,))
+    print(f'Finish {project}')
 
 import multiprocessing as mp
 from sys import argv
@@ -127,13 +129,13 @@ elif _tool=='srepair':
 elif _tool=='selfapr':
     tool='SelfAPR'
     
-pool=mp.Pool(int(argv[1]))
+pool=mp.Pool(int(argv[2]))
 
 for proj in d4j.D4J_1_2_LIST:
     each_time[proj]=[]
 
 for proj in d4j.D4J_1_2_LIST:
-    pool.apply_async(run,args=(proj,argv[2],))
+    pool.apply_async(run,args=(proj,tool,))
 
 pool.close()
 pool.join()
@@ -144,4 +146,4 @@ for proj in each_time:
         final_result.append([wo,w,])
 
 with open(f'/root/project/GreyboxAPR/experiments/{argv[1].lower()}/overhead.json','w') as f:
-    json.dump(final_result,f)
+    json.dump(final_result,f,indent=2)
