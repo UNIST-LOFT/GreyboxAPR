@@ -84,20 +84,20 @@ def run(project:str,tool:str):
     print(f'Run {project}')
     # without greybox
     wo_greybox_times=[]
-    run_original(project,tool,greybox=False)
     for patch in patches:
         file_name=patch_infos[project][patch]['file_name']
         class_name=patch_infos[project][patch]['class_name']
         for test in failing_tests[project]:
+            run_original(project,tool,greybox=False)
             wo_greybox_times.append(run_test(project,tool,patch,file_name,class_name,test,greybox=False))
 
     # with greybox
     w_greybox_times=[]
-    run_original(project,tool,greybox=True)
     for patch in patches:
         file_name=patch_infos[project][patch]['file_name']
         class_name=patch_infos[project][patch]['class_name']
         for test in failing_tests[project]:
+            run_original(project,tool,greybox=True)
             w_greybox_times.append(run_test(project,tool,patch,file_name,class_name,test,greybox=True))
 
     for wo,w in zip(wo_greybox_times,w_greybox_times):
