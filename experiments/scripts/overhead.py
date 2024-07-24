@@ -108,9 +108,10 @@ def run(project:str,tool:str):
         class_name=patch_infos[project][patch]['class_name']
         for test in failing_tests[project]:        
             greybox.append(run_test(project,tool,patch,file_name,class_name,test,greybox=True))
+            print(f'{wo_greybox[len(greybox)-1]},{greybox[-1]}',file=sys.stdout)
 
-    for wo,w in zip(wo_greybox,greybox):
-        print(f'{wo},{w}',file=sys.stdout)
+    # for wo,w in zip(wo_greybox,greybox):
+    #     print(f'{wo},{w}',file=sys.stdout)
 
     print(f'Finish {project}',file=sys.stderr)
 
