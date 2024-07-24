@@ -27,7 +27,7 @@ def run_test(project:str,tool:str,patch:str,buggy_file:str,buggy_class_name:str=
         new_env['CLASSPATH']='/root/project/JPatchInst'
 
     start_time=time.time()
-    res=subprocess.run(['python3','d4j_run_test.py',f'/root/project/GreyboxAPR/{tool}/buggy'],env=new_env,
+    res=subprocess.run(['python3','/root/project/GreyboxAPR/experiments/scripts/d4j_run_test.py',f'/root/project/GreyboxAPR/{tool}/buggy'],env=new_env,
                        stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     total_time=time.time()-start_time
     return total_time  # We already know this patch passes all failing tests or not
