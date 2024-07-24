@@ -30,6 +30,12 @@ def run_test(project:str,tool:str,patch:str,buggy_file:str,buggy_class_name:str=
     res=subprocess.run(['python3','/root/project/GreyboxAPR/experiments/scripts/d4j_run_test.py',f'/root/project/GreyboxAPR/{tool}/buggy'],env=new_env,
                        stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     total_time=time.time()-start_time
+    
+    if 'GREYBOX_RESULT' in new_env:
+        try:
+            os.remove(new_env['GREYBOX_RESULT'])
+        except FileNotFoundError:
+            pass
     return total_time  # We already know this patch passes all failing tests or not
 
 def run_original(project:str,tool:str,test:str='ALL',greybox:bool=False):
