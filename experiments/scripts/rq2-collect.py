@@ -319,7 +319,7 @@ def get_ranking_info_tbar(mode='tbar'):
                 else:
                     guided_y.append(guided_y[-1])
     guided_df=pd.DataFrame({'Iteration':guided_x,'Number of valid patches':guided_y})
-    seaborn.lineplot(data=guided_df,x='Iteration',y='Number of valid patches',color='g',label='Casino')
+    seaborn.lineplot(data=guided_df,x='Iteration',y='Number of valid patches',color='g',label='Casino',errorbar=('ci',100))
 
     # Greybox
     genprog_list:List[List[int]]=[]
@@ -350,7 +350,7 @@ def get_ranking_info_tbar(mode='tbar'):
                 else:
                     guided_y.append(guided_y[-1])
     other_df=pd.DataFrame({'Iteration':guided_x,'Number of valid patches':guided_y})
-    seaborn.lineplot(data=other_df,x='Iteration',y='Number of valid patches',color='r',label='Gresino',linestyle='dashed')
+    seaborn.lineplot(data=other_df,x='Iteration',y='Number of valid patches',color='r',label='Gresino',linestyle='dashed',errorbar=('ci',100))
 
     plt.legend(fontsize=12)
     plt.xlabel('Iteration',fontsize=15)
@@ -406,7 +406,7 @@ def get_ranking_info_tbar(mode='tbar'):
                 else:
                     guided_y.append(guided_y[-1])
     guided_df=pd.DataFrame({'Iteration':guided_x,'Number of valid patches':guided_y})
-    seaborn.lineplot(data=guided_df,x='Iteration',y='Number of valid patches',color='g',label='Casino')
+    seaborn.lineplot(data=guided_df,x='Iteration',y='Number of valid patches',color='g',label='Casino',errorbar=('ci',100))
 
     # Greybox
     genprog_list:List[List[int]]=[]
@@ -437,7 +437,7 @@ def get_ranking_info_tbar(mode='tbar'):
                 else:
                     guided_y.append(guided_y[-1])
     other_df=pd.DataFrame({'Iteration':guided_x,'Number of valid patches':guided_y})
-    seaborn.lineplot(data=other_df,x='Iteration',y='Number of valid patches',color='r',label='Gresino',linestyle='dashed')
+    seaborn.lineplot(data=other_df,x='Iteration',y='Number of valid patches',color='r',label='Gresino',linestyle='dashed',errorbar=('ci',100))
 
     plt.legend(fontsize=12)
     plt.xlabel('Iteration',fontsize=15)
@@ -493,7 +493,7 @@ def get_ranking_info_tbar(mode='tbar'):
                 else:
                     guided_y.append(guided_y[-1])
     guided_df=pd.DataFrame({'Iteration':guided_x,'Number of valid patches':guided_y})
-    seaborn.lineplot(data=guided_df,x='Iteration',y='Number of valid patches',color='g',label='Casino')
+    seaborn.lineplot(data=guided_df,x='Iteration',y='Number of valid patches',color='g',label='Casino',errorbar=('ci',100))
 
     # Greybox
     genprog_list:List[List[int]]=[]
@@ -524,7 +524,7 @@ def get_ranking_info_tbar(mode='tbar'):
                 else:
                     guided_y.append(guided_y[-1])
     other_df=pd.DataFrame({'Iteration':guided_x,'Number of valid patches':guided_y})
-    seaborn.lineplot(data=other_df,x='Iteration',y='Number of valid patches',color='r',label='Gresino',linestyle='dashed')
+    seaborn.lineplot(data=other_df,x='Iteration',y='Number of valid patches',color='r',label='Gresino',linestyle='dashed',errorbar=('ci',100))
 
     plt.legend(fontsize=12)
     plt.xlabel('Iteration',fontsize=15)
@@ -580,7 +580,7 @@ def get_ranking_info_tbar(mode='tbar'):
                 else:
                     guided_y.append(guided_y[-1])
     guided_df=pd.DataFrame({'Iteration':guided_x,'Number of valid patches':guided_y})
-    seaborn.lineplot(data=guided_df,x='Iteration',y='Number of valid patches',color='g',label='Casino')
+    seaborn.lineplot(data=guided_df,x='Iteration',y='Number of valid patches',color='g',label='Casino',errorbar=('ci',100))
 
     # Greybox
     genprog_list:List[List[int]]=[]
@@ -611,7 +611,7 @@ def get_ranking_info_tbar(mode='tbar'):
                 else:
                     guided_y.append(guided_y[-1])
     other_df=pd.DataFrame({'Iteration':guided_x,'Number of valid patches':guided_y})
-    seaborn.lineplot(data=other_df,x='Iteration',y='Number of valid patches',color='r',label='Gresino',linestyle='dashed')
+    seaborn.lineplot(data=other_df,x='Iteration',y='Number of valid patches',color='r',label='Gresino',linestyle='dashed',errorbar=('ci',100))
 
     plt.legend(fontsize=12)
     plt.xlabel('Iteration',fontsize=15)
