@@ -158,7 +158,9 @@ def plot_patches_ci_java(mode='tbar'):
                 is_plausible=res['pass_result']
                 iteration=res['iteration']
                 loc=res['config'][0]['location']
-                if 'fail_time' in cache[loc]:
+                if loc not in cache:
+                    total_time+=mean(fail_time_list)
+                elif 'fail_time' in cache[loc]:
                     total_time+=cache[loc]['fail_time']+cache[loc]['pass_time']
                     fail_time_list.append(cache[loc]['fail_time'])
                 else:
