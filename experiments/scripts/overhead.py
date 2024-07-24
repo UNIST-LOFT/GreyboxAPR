@@ -93,25 +93,16 @@ def run(project:str,tool:str):
 
     print(f'Run {project}',file=sys.stderr)
     
-    run_original(project,tool,greybox=False)
-    wo_greybox=[]
     for patch in patches:
         file_name=patch_infos[project][patch]['file_name']
         class_name=patch_infos[project][patch]['class_name']
         for test in failing_tests[project]:
-            wo_greybox.append(run_test(project,tool,patch,file_name,class_name,test,greybox=False))
+            run_original(project,tool,greybox=False)
+            wo_greybox=run_test(project,tool,patch,file_name,class_name,test,greybox=False)
 
-    greybox=[]
-    run_original(project,tool,greybox=True)
-    for patch in patches:
-        file_name=patch_infos[project][patch]['file_name']
-        class_name=patch_infos[project][patch]['class_name']
-        for test in failing_tests[project]:        
-            greybox.append(run_test(project,tool,patch,file_name,class_name,test,greybox=True))
-            print(f'{wo_greybox[len(greybox)-1]},{greybox[-1]}',file=sys.stdout)
-
-    # for wo,w in zip(wo_greybox,greybox):
-    #     print(f'{wo},{w}',file=sys.stdout)
+            run_original(project,tool,greybox=True)
+            greybox=run_test(project,tool,patch,file_name,class_name,test,greybox=True)
+            print(f'{wo_greybox},{greybox}',file=sys.stdout)
 
     print(f'Finish {project}',file=sys.stderr)
 
