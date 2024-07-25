@@ -30,7 +30,7 @@ for project in os.listdir(f'{tool}/result/branch'):
 
     for file in os.listdir(f'{tool}/result/branch/{project}'):
         if file.startswith('original'):
-            test='_'.join(file.split('_')[1])
+            test='_'.join(file.split('_')[1:])
             orig_patches[project][test]=parse(f'{tool}/result/branch/{project}/original_{test}')
 
 def get_diff(source:Dict[int,int],target:Dict[int,int]):
