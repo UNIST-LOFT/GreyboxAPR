@@ -118,8 +118,15 @@ def test(subject:str,id:int):
         if os.path.exists(new_env['GREYBOX_RESULT']):
             os.rename(new_env['GREYBOX_RESULT'],f'/root/project/GreyboxAPR/experiments/scripts/correct-branch/{subject}_{id}/{test.replace("::","#")}.txt')
 
+TBAR_LIST=['Chart_1','Chart_4','Chart_8','Chart_9','Chart_11','Chart_12','Chart_20','Chart_24','Chart_26',
+'Closure_10','Closure_11','Closure_18','Closure_31','Closure_38','Closure_46','Closure_62','Closure_63','Closure_86','Closure_115','Closure_126',
+'Lang_6','Lang_10','Lang_24','Lang_26','Lang_33','Lang_39','Lang_51','Lang_57','Lang_59',
+'Math_5','Math_11','Math_30','Math_33','Math_34','Math_50','Math_57','Math_58','Math_59','Math_65','Math_70','Math_75','Math_80','Math_82','Math_85',
+'Time_19',
+]
+
 if __name__ == "__main__":
-    for project in d4j.D4J_1_2_LIST:
+    for project in TBAR_LIST:
         project_name, bug_id = project.split('_')
         bug_id = int(bug_id)
         checkout(project_name,bug_id)
