@@ -65,8 +65,9 @@ def checkout(subject:str,id:int):
         print(res.stdout.decode())
         print(f'checkout {subject}-{id} failed')
     
-    res=subprocess.run(['defects4j','checkout','-p',subject,'-v',f'{id}f','-w',
-                        f'/root/project/GreyboxAPR/experiments/scripts/correct-version/{subject}_{id}f'],
+    shutil.rmtree(f'/root/project/GreyboxAPR/experiments/scripts/correct-version/{subject}_{id}b',ignore_errors=True)
+    res=subprocess.run(['defects4j','checkout','-p',subject,'-v',f'{id}b','-w',
+                        f'/root/project/GreyboxAPR/experiments/scripts/correct-version/{subject}_{id}b'],
                         stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     if res.returncode!=0:
         print(res.stdout.decode())
@@ -84,7 +85,7 @@ def checkout(subject:str,id:int):
         print(f'compile {subject}-{id} failed')
     
     res=subprocess.run(['defects4j','compile','-w',
-                        f'/root/project/GreyboxAPR/experiments/scripts/correct-version/{subject}_{id}f'],
+                        f'/root/project/GreyboxAPR/experiments/scripts/correct-version/{subject}_{id}b'],
                         stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     if res.returncode!=0:
         print(res.stdout.decode())
@@ -93,7 +94,7 @@ def checkout(subject:str,id:int):
 def instrument(subject:str,id:int):
     print(f'instrument {subject}-{id}')
     res=subprocess.run(['java','-Xmx100G','-jar','/root/project/JPatchInst/build/libs/JPatchInst.jar',
-                        f'/root/project/GreyboxAPR/experiments/scripts/correct-version/{subject}_{id}f/{get_target_paths(f"{subject}_{id}")[0]}',
+                        f'/root/project/GreyboxAPR/experiments/scripts/correct-version/{subject}_{id}b/{get_target_paths(f"{subject}_{id}")[0]}',
                         f'/root/project/GreyboxAPR/experiments/scripts/correct-version/{subject}_{id}/{get_target_paths(f"{subject}_{id}")[0]}'],
                         stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     if res.returncode!=0:

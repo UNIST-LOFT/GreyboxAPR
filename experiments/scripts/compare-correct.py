@@ -67,6 +67,7 @@ def compare_each_branch(project:str):
     result:List[int]=[0,0]
     for patch in plau_patches:
         for test in correct_diff:
+            if not os.path.exists(f'{tool}/result/branch/{project}/{patch.replace("/","#")}_{test}.txt'): continue
             branch=parse(f'{tool}/result/branch/{project}/{patch.replace("/","#")}_{test}.txt')
             diff=get_diff(branch,orig_patches[project][test])
             for b in diff:
