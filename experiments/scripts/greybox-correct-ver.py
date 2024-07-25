@@ -138,6 +138,13 @@ ALPHAREPAIR_LIST=['Chart_1','Chart_8','Chart_9','Chart_11','Chart_24','Chart_26'
 'Time_4','Time_7'
 ]
 
+RECODER_LIST=['Chart-1','Chart-3','Chart-4','Chart-8','Chart-9','Chart-11','Chart-12','Chart-20','Chart-24','Chart-26',
+'Closure-2','Closure-7','Closure-14','Closure-21','Closure-33','Closure-40','Closure-46','Closure-57','Closure-62','Closure-63','Closure-73','Closure-86','Closure-92','Closure-93','Closure-104','Closure-109','Closure-115','Closure-118','Closure-126',
+'Lang-6','Lang-26','Lang-29','Lang-33','Lang-43','Lang-51','Lang-55','Lang-57','Lang-59',
+'Math-5','Math-27','Math-30','Math-33','Math-34','Math-41','Math-50','Math-57','Math-58','Math-65','Math-70','Math-75','Math-82','Math-94','Math-96','Math-98','Math-105',
+'Time-4','Time-7'
+]
+
 if __name__ == "__main__":
     if sys.argv[1]=='tbar':
         tool='TBar'
@@ -162,6 +169,8 @@ if __name__ == "__main__":
         benchmarks=AVATAR_LIST
     elif sys.argv[1]=='alpharepair':
         benchmarks=ALPHAREPAIR_LIST
+    elif sys.argv[1]=='recoder':
+        benchmarks=RECODER_LIST
 
     for project in benchmarks:
         project_name, bug_id = project.split('_')
