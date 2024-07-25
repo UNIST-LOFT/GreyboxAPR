@@ -21,8 +21,9 @@ def calculate(project:str,tool:str):
     
     orig_time=parse_time(f'{tool}/result/{project}-orig/simapr-finished.txt')
     for i in range(MAX_EXP):
-        greybox_time=parse_time(f'{tool}/result/{project}-greybox-{i}/simapr-finished.txt')
-        print(f'{greybox_time},{orig_time},{greybox_time-orig_time},{(greybox_time-orig_time)/orig_time},{(greybox_time-orig_time)/greybox_time}',file=sys.stdout)
+        if os.path.exists(f'{tool}/result/{project}-greybox-{i}/simapr-finished.txt'):
+            greybox_time=parse_time(f'{tool}/result/{project}-greybox-{i}/simapr-finished.txt')
+            print(f'{greybox_time},{orig_time},{greybox_time-orig_time},{(greybox_time-orig_time)/orig_time},{(greybox_time-orig_time)/greybox_time}',file=sys.stdout)
 
 tool=sys.argv[1]
 
