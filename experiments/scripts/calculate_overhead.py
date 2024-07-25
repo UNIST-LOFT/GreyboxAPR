@@ -1,4 +1,6 @@
 import os
+
+from matplotlib import pyplot as plt
 import d4j
 import sys
 import numpy as np
@@ -25,11 +27,12 @@ def calculate(project:str,tool:str):
     for i in range(MAX_EXP):
         if os.path.exists(f'{tool}/result/{project}-greybox-{i}/simapr-finished.txt'):
             greybox_time=parse_time(f'{tool}/result/{project}-greybox-{i}/simapr-finished.txt')
-            try:
-                print(f'{greybox_time},{orig_time},{greybox_time-orig_time},{(greybox_time-orig_time)/orig_time},{(greybox_time-orig_time)/greybox_time}',file=sys.stdout)
-                res.append((greybox_time-orig_time)/orig_time)
-            except ZeroDivisionError:
-                pass
+            if greybox_time-orig_time>0:
+                try:
+                    print(f'{greybox_time},{orig_time},{greybox_time-orig_time},{(greybox_time-orig_time)/orig_time},{(greybox_time-orig_time)/greybox_time}',file=sys.stdout)
+                    res.append((greybox_time-orig_time)/orig_time)
+                except ZeroDivisionError:
+                    pass
 
     return res
 tool=sys.argv[1]
@@ -41,3 +44,6 @@ for project in d4j.D4J_1_2_LIST:
         final_res+=res
 
 print(f'{np.mean(final_res)},{np.std(final_res)}',file=sys.stderr)
+with open(f'{tool}-overhead.txt','w') as f:
+    for r in final_res:
+        f.write(f'{r}\n')
