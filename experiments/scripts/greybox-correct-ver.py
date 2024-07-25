@@ -171,7 +171,10 @@ SREPAIR_LIST=[
 ]
 
 SELFAPR_LIST=[
-
+'Chart_11','Chart_1','Chart_20','Chart_5','Chart_7','Chart_8',
+'Closure_106','Closure_113','Closure_115','Closure_123','Closure_125','Closure_126','Closure_18','Closure_38','Closure_46','Closure_57','Closure_62','Closure_6','Closure_70','Closure_73','Closure_75','Closure_79','Closure_86','Closure_92',
+'Lang_21','Lang_26','Lang_34','Lang_59','Lang_60','Lang_6','Lang_7',
+'Math_104','Math_22','Math_30','Math_33','Math_41','Math_49','Math_50','Math_57','Math_5','Math_70','Math_72','Math_75','Math_77','Math_79','Math_80','Math_82','Math_85'
 ]
 
 if __name__ == "__main__":
@@ -206,7 +209,8 @@ if __name__ == "__main__":
         benchmarks=RECODER_LIST
     elif sys.argv[1]=='srepair':
         benchmarks=SREPAIR_LIST
-
+    elif sys.argv[1]=='selfapr':
+        benchmarks=SELFAPR_LIST
 
     for project in benchmarks:
         project_name, bug_id = project.split('_')
