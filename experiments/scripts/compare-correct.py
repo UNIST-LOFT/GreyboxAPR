@@ -67,6 +67,7 @@ def compare_each_branch(project:str):
 
     # diff of each patches
     plau_patches:List[str]=[]
+    if not os.path.exists(f'{tool}/result/cache/{project}-cache.json'): return
     with open(f'{tool}/result/cache/{project}-cache.json','r') as f:
         cache=json.load(f)
         for p in cache:
