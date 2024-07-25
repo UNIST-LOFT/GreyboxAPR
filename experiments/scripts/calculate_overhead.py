@@ -25,8 +25,11 @@ def calculate(project:str,tool:str):
     for i in range(MAX_EXP):
         if os.path.exists(f'{tool}/result/{project}-greybox-{i}/simapr-finished.txt'):
             greybox_time=parse_time(f'{tool}/result/{project}-greybox-{i}/simapr-finished.txt')
-            print(f'{greybox_time},{orig_time},{greybox_time-orig_time},{(greybox_time-orig_time)/orig_time},{(greybox_time-orig_time)/greybox_time}',file=sys.stdout)
-            res.append((greybox_time-orig_time)/orig_time)
+            try:
+                print(f'{greybox_time},{orig_time},{greybox_time-orig_time},{(greybox_time-orig_time)/orig_time},{(greybox_time-orig_time)/greybox_time}',file=sys.stdout)
+                res.append((greybox_time-orig_time)/orig_time)
+            except ZeroDivisionError:
+                pass
 
     return res
 tool=sys.argv[1]
