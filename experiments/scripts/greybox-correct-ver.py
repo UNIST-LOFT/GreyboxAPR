@@ -114,9 +114,6 @@ def test(subject:str,id:int):
         res=subprocess.run(['defects4j','test','-w',
                             f'/root/project/GreyboxAPR/experiments/scripts/correct-version/{subject}_{id}',
                             '-t',test],stdout=subprocess.PIPE, stderr=subprocess.STDOUT,env=new_env)
-        
-        if os.path.exists(new_env['GREYBOX_RESULT']):
-            os.rename(new_env['GREYBOX_RESULT'],f'/root/project/GreyboxAPR/experiments/scripts/correct-branch/{subject}_{id}/{test.replace("::","#")}.txt')
 
 TBAR_LIST=['Chart_1','Chart_4','Chart_8','Chart_9','Chart_11','Chart_12','Chart_20','Chart_24','Chart_26',
 'Closure_10','Closure_11','Closure_18','Closure_31','Closure_38','Closure_46','Closure_62','Closure_63','Closure_86','Closure_115','Closure_126',
