@@ -2,6 +2,32 @@ import d4j
 import subprocess
 import json
 import os
+import shutil
+
+def get_src_paths(project):
+    project_name, bug_id = project.split('_')
+    if len(bug_id)>=4:
+        bug_id=bug_id[:-3]
+    bug_id = int(bug_id)
+
+    if project_name=='Math':
+        if bug_id < 85:
+            return '/src/main/java/','/src/test/java/'
+        else:
+            return '/src/java/','/src/test/'
+    elif project_name=='Time':
+        return '/src/main/java/','/src/test/java/'
+    elif project_name=='Lang':
+        if bug_id <= 35:
+            return '/src/main/java/','/src/test/java/'
+        else:
+            return '/src/java/','/src/test/'
+    elif project_name=='Chart':
+        return '/source/','/tests/'
+    elif project_name=='Closure':
+        return '/src/','/test/'
+    elif project_name=='Mockito':
+        return '/src/','/test/'
 
 def get_target_paths(project):
     project_name, bug_id = project.split('_')
@@ -31,6 +57,7 @@ def get_target_paths(project):
 
 def checkout(subject:str,id:int):
     print(f'checkout {subject}-{id}')
+    shutil.rmtree(f'/root/project/GreyboxAPR/experiments/scripts/correct-version/{subject}_{id}',ignore_errors=True)
     res=subprocess.run(['defects4j','checkout','-p',subject,'-v',f'{id}f','-w',
                         f'/root/project/GreyboxAPR/experiments/scripts/correct-version/{subject}_{id}'],
                         stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -44,7 +71,10 @@ def checkout(subject:str,id:int):
     if res.returncode!=0:
         print(res.stdout.decode())
         print(f'checkout {subject}-{id} failed')
-    
+
+    src_path=f'/root/project/GreyboxAPR/experiments/scripts/correct-version/{subject}_{id}'+get_src_paths(f'{subject}_{id}')[0]
+    shutil.copytree(f'/root/project/JPatchInst/src/main/resources/kr',src_path+'/kr',dirs_exist_ok=True)
+
     print(f'compile {subject}-{id}')
     res=subprocess.run(['defects4j','compile','-w',
                         f'/root/project/GreyboxAPR/experiments/scripts/correct-version/{subject}_{id}'],
@@ -79,11 +109,11 @@ def test(subject:str,id:int):
     for test in failing_tests:
         new_env=os.environ.copy()
         new_env['GREYBOX_BRANCH']='1'
-        new_env['GREYBOX_RESULT']=f'/tmp/{subject}_{id}-{test.replace("::","#")}.txt'
+        new_env['GREYBOX_RESULT']=f'/root/project/GreyboxAPR/experiments/scripts/correct-branch/{subject}_{id}-{test.replace("::","#")}.txt'
 
         res=subprocess.run(['defects4j','test','-w',
                             f'/root/project/GreyboxAPR/experiments/scripts/correct-version/{subject}_{id}',
-                            '-t',test],stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                            '-t',test],stdout=subprocess.PIPE, stderr=subprocess.STDOUT,env=new_env)
         
         if os.path.exists(new_env['GREYBOX_RESULT']):
             os.rename(new_env['GREYBOX_RESULT'],f'/root/project/GreyboxAPR/experiments/scripts/correct-branch/{subject}_{id}/{test.replace("::","#")}.txt')
