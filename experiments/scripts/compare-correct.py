@@ -13,6 +13,7 @@ def parse(file:str):
                 continue
             branch,count=line.strip().split(':')
             result[int(branch)]=int(count)
+    return result
 
 correct_patches:Dict[str,Dict[str,Dict[int,int]]]=dict()
 for file in os.listdir('scripts/correct-branch'):
@@ -23,13 +24,14 @@ for file in os.listdir('scripts/correct-branch'):
 
 orig_patches:Dict[str,Dict[str,Dict[int,int]]]=dict()
 for project in os.listdir(f'{tool}/result/branch'):
+    if project not in correct_patches: continue
     if project not in orig_patches:
         orig_patches[project]=dict()
 
     for file in os.listdir(f'{tool}/result/branch/{project}'):
         if file.startswith('original'):
-            test=file.split('_')[1]
-            orig_patches[project][test]=parse(f'{tool}/result/branch/{project}/original_{test}.txt')
+            test='_'.join(file.split('_')[1])
+            orig_patches[project][test]=parse(f'{tool}/result/branch/{project}/original_{test}')
 
 def get_diff(source:Dict[int,int],target:Dict[int,int]):
     result:Dict[int,str]=dict()
@@ -55,7 +57,10 @@ def compare_each_branch(project:str):
     # diff of correct patches
     correct_diff:Dict[str,Dict[int,str]]=dict()
     for test in orig_patches[project]:
-        correct_diff[test]=get_diff(correct_patches[project][test],orig_patches[project][test])
+        for _test in correct_patches[project]:
+            if _test.endswith(test.replace('::','#')):
+                correct_diff[test]=get_diff(correct_patches[project][_test],orig_patches[project][test])
+                break
 
     # diff of each patches
     plau_patches:List[str]=[]
@@ -67,8 +72,8 @@ def compare_each_branch(project:str):
     result:List[int]=[0,0]
     for patch in plau_patches:
         for test in correct_diff:
-            if not os.path.exists(f'{tool}/result/branch/{project}/{patch.replace("/","#")}_{test}.txt'): continue
-            branch=parse(f'{tool}/result/branch/{project}/{patch.replace("/","#")}_{test}.txt')
+            if not os.path.exists(f'{tool}/result/branch/{project}/{patch.replace("/","#")}_{test}'): continue
+            branch=parse(f'{tool}/result/branch/{project}/{patch.replace("/","#")}_{test}')
             diff=get_diff(branch,orig_patches[project][test])
             for b in diff:
                 if b in correct_diff[test]:
