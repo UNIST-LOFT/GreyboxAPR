@@ -13,9 +13,12 @@ MAX_EXP=10
 def calculate(project:str,tool:str):
     global MAX_EXP
     if not os.path.exists(f'{tool}/result/{project}-greybox-{MAX_EXP-1}/simapr-finished.txt'):
-                # Skip if experiment not end
-                return
+        # Skip if experiment not end
+        return
 
+    if not os.path.exists(f'{tool}/result/{project}-orig/simapr-finished.txt'):
+         return
+    
     orig_time=parse_time(f'{tool}/result/{project}-orig/simapr-finished.txt')
     for i in range(MAX_EXP):
         greybox_time=parse_time(f'{tool}/result/{project}-greybox-{i}/simapr-finished.txt')
