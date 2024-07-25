@@ -138,11 +138,11 @@ ALPHAREPAIR_LIST=['Chart_1','Chart_8','Chart_9','Chart_11','Chart_24','Chart_26'
 'Time_4','Time_7'
 ]
 
-RECODER_LIST=['Chart-1','Chart-3','Chart-4','Chart-8','Chart-9','Chart-11','Chart-12','Chart-20','Chart-24','Chart-26',
-'Closure-2','Closure-7','Closure-14','Closure-21','Closure-33','Closure-40','Closure-46','Closure-57','Closure-62','Closure-63','Closure-73','Closure-86','Closure-92','Closure-93','Closure-104','Closure-109','Closure-115','Closure-118','Closure-126',
-'Lang-6','Lang-26','Lang-29','Lang-33','Lang-43','Lang-51','Lang-55','Lang-57','Lang-59',
-'Math-5','Math-27','Math-30','Math-33','Math-34','Math-41','Math-50','Math-57','Math-58','Math-65','Math-70','Math-75','Math-82','Math-94','Math-96','Math-98','Math-105',
-'Time-4','Time-7'
+RECODER_LIST=['Chart_1','Chart_3','Chart_4','Chart_8','Chart_9','Chart_11','Chart_12','Chart_20','Chart_24','Chart_26',
+'Closure_2','Closure_7','Closure_14','Closure_21','Closure_33','Closure_40','Closure_46','Closure_57','Closure_62','Closure_63','Closure_73','Closure_86','Closure_92','Closure_93','Closure_104','Closure_109','Closure_115','Closure_118','Closure_126',
+'Lang_6','Lang_26','Lang_29','Lang_33','Lang_43','Lang_51','Lang_55','Lang_57','Lang_59',
+'Math_5','Math_27','Math_30','Math_33','Math_34','Math_41','Math_50','Math_57','Math_58','Math_65','Math_70','Math_75','Math_82','Math_94','Math_96','Math_98','Math_105',
+'Time_4','Time_7'
 ]
 
 if __name__ == "__main__":
