@@ -12,7 +12,10 @@ def parse(file:str):
             if ':' not in line:
                 continue
             branch,count=line.strip().split(':')
-            result[int(branch)]=int(count)
+            try:
+                result[int(branch)]=int(count)
+            except ValueError:
+                pass
     return result
 
 correct_patches:Dict[str,Dict[str,Dict[int,int]]]=dict()
