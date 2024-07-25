@@ -1,3 +1,4 @@
+import sys
 import d4j
 import subprocess
 import json
@@ -101,8 +102,8 @@ def instrument(subject:str,id:int):
         print(res.stdout.decode())
         print(f'instrument {subject}-{id} failed')
 
-def test(subject:str,id:int):
-    with open(f'/root/project/GreyboxAPR/TBar/d4j/{subject}_{id}/switch-info.json') as f:
+def test(subject:str,id:int,tool:str):
+    with open(f'/root/project/GreyboxAPR/{tool}/d4j/{subject}_{id}/switch-info.json') as f:
         switch_info=json.load(f)
         failing_tests=switch_info['failing_test_cases']
 
@@ -123,10 +124,48 @@ TBAR_LIST=['Chart_1','Chart_4','Chart_8','Chart_9','Chart_11','Chart_12','Chart_
 'Time_19',
 ]
 
+AVATAR_LIST=['Chart_1','Chart_4','Chart_7','Chart_8','Chart_11','Chart_14','Chart_19','Chart_24','Chart_26',
+'Closure_2','Closure_11','Closure_18','Closure_21','Closure_22','Closure_31','Closure_38','Closure_46','Closure_62','Closure_63','Closure_73','Closure_115','Closure_126',
+'Lang_6','Lang_10','Lang_24','Lang_26','Lang_33','Lang_39','Lang_51','Lang_57','Lang_59',
+'Math_5','Math_11','Math_30','Math_33','Math_34','Math_50','Math_57','Math_58','Math_59','Math_65','Math_70','Math_75','Math_80','Math_82','Math_85',
+'Time_19'
+]
+
+ALPHAREPAIR_LIST=['Chart_1','Chart_8','Chart_9','Chart_11','Chart_24','Chart_26',
+'Closure_2','Closure_19','Closure_21','Closure_46','Closure_57','Closure_62','Closure_73','Closure_77','Closure_86','Closure_92','Closure_93','Closure_109','Closure_115',
+'Lang_4','Lang_6','Lang_10','Lang_29','Lang_33','Lang_38','Lang_43','Lang_45','Lang_51','Lang_55','Lang_57','Lang_59','Lang_61',
+'Math_2','Math_5','Math_11','Math_30','Math_34','Math_41','Math_50','Math_56','Math_57','Math_59','Math_63','Math_65','Math_70','Math_75','Math_80','Math_90','Math_94','Math_96','Math_98',
+'Time_4','Time_7'
+]
+
 if __name__ == "__main__":
-    for project in TBAR_LIST:
+    if sys.argv[1]=='tbar':
+        tool='TBar'
+    elif sys.argv[1]=='avatar':
+        tool='Avatar'
+    elif sys.argv[1]=='fixminer':
+        tool='Fixminer'
+    elif sys.argv[1]=='kpar':
+        tool='kPar'
+    elif sys.argv[1]=='alpharepair':
+        tool='AlphaRepair'
+    elif sys.argv[1]=='recoder':
+        tool='Recoder'
+    elif sys.argv[1]=='srepair':
+        tool='SRepair'
+    elif sys.argv[1]=='selfapr':
+        tool='SelfAPR'
+
+    if sys.argv[1]=='tbar':
+        benchmarks=TBAR_LIST
+    elif sys.argv[1]=='avatar':
+        benchmarks=AVATAR_LIST
+    elif sys.argv[1]=='alpharepair':
+        benchmarks=ALPHAREPAIR_LIST
+
+    for project in benchmarks:
         project_name, bug_id = project.split('_')
         bug_id = int(bug_id)
         checkout(project_name,bug_id)
         instrument(project_name,bug_id)
-        test(project_name,bug_id)
+        test(project_name,bug_id,tool)
