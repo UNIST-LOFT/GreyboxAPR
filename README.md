@@ -1,7 +1,8 @@
 # SimAPR
 SimAPR is a patch scheduling framework for the patch searching problem. It supports various patch-scheduling algorithm including
 
-- Gresino, our own patch-scheduling algorithm described in [our ASE'24 paper](./paper.pdf)
+- Gresino, our own patch-scheduling algorithm described in [our ASE'24 paper](https://www.jooyongyi.com/papers/ASE24.pdf)
+- Casino, our previous patch-scheduling algorithm described in [our ISSTA'23 paper](https://www.jooyongyi.com/papers/ISSTA23.pdf)
 - The original algorithm of the eight APR tools (AlphaRepair, Recoder, TBar, Avatar, FixMiner, kPar, SRepair and SelfAPR)
 <!-- - SeAPR, an existing deterministic patch scheduling algorithm -->
 <!-- - Our implementation of the GenProg algorithm -->
