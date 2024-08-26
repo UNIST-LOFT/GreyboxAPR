@@ -56,13 +56,19 @@ ENV PATH="/defects4j/framework/bin:${PATH}"
 RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/g' /etc/ssh/sshd_config
 RUN sed -i 's/#force_color_prompt=yes/force_color_prompt=yes/g' /root/.bashrc
 
+# Clone and setup JPatchInst
+WORKDIR /root
+RUN git clone https://github.com/UNIST-LOFT/JPatchInst.git
+WORKDIR /root/JPatchInst
+RUN ./gradlew shadowJar
+
 # Clone and setup GreyboxAPR
 WORKDIR /root
 # COPY . /root/GreyboxAPR
 RUN git clone https://github.com/UNIST-LOFT/GreyboxAPR.git
 WORKDIR /root/GreyboxAPR/Avatar
 RUN ./compile.sh
-WORKDIR /root/GreyboxAPR/Fixminer 
+WORKDIR /root/GreyboxAPR/Fixminer
 RUN ./compile.sh
 WORKDIR /root/GreyboxAPR/kPar
 RUN ./compile.sh
@@ -72,24 +78,31 @@ RUN ./compile.sh
 WORKDIR /root/GreyboxAPR/experiments/alpharepair
 RUN mkdir result
 RUN mkdir result/cache
+RUN mkdir result/branch
 WORKDIR /root/GreyboxAPR/experiments/avatar
 RUN mkdir result
 RUN mkdir result/cache
+RUN mkdir result/branch
 WORKDIR /root/GreyboxAPR/experiments/fixminer
 RUN mkdir result
 RUN mkdir result/cache
+RUN mkdir result/branch
 WORKDIR /root/GreyboxAPR/experiments/kpar
 RUN mkdir result
 RUN mkdir result/cache
+RUN mkdir result/branch
 WORKDIR /root/GreyboxAPR/experiments/recoder
 RUN mkdir result
 RUN mkdir result/cache
+RUN mkdir result/branch
 WORKDIR /root/GreyboxAPR/experiments/tbar
 RUN mkdir result
 RUN mkdir result/cache
+RUN mkdir result/branch
 WORKDIR /root/GreyboxAPR/experiments/srepair
 RUN mkdir result
 RUN mkdir result/cache
+RUN mkdir result/branch
 
 WORKDIR /root/GreyboxAPR/SimAPR
 RUN python3 -m pip install -r requirements.txt
@@ -98,9 +111,9 @@ WORKDIR /root
 RUN update-alternatives --set java /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java
 
 # Install learning-based tools
-RUN wget https://repo.anaconda.com/archive/Anaconda3-2022.10-Linux-x86_64.sh
-RUN chmod 751 Anaconda3-2022.10-Linux-x86_64.sh
-RUN ./Anaconda3-2022.10-Linux-x86_64.sh -b
+RUN wget https://repo.anaconda.com/archive/Anaconda3-2024.06-1-Linux-x86_64.sh
+RUN chmod 751 Anaconda3-2024.06-1-Linux-x86_64.sh
+RUN ./Anaconda3-2024.06-1-Linux-x86_64.sh -b
 ENV PATH="/root/anaconda3/bin:${PATH}"
 RUN echo 'export PATH=/defects4j/framework/bin:/root/anaconda3/bin:$PATH' > /root/.bash_aliases
 RUN conda init bash

@@ -62,7 +62,7 @@ The generated patch space will be stored in ~/GreyboxAPR/TBar/d4j/Closure_62, an
 ### 3. Run SimAPR engine
 After generating the patch space, run SimAPR by executing the following command:
 ```
-# python3 ~/GreyboxAPR/SimAPR/simapr.py -o ~/GreyboxAPR/experiments/tbar/result/Closure_62-out -m <orig/greybox/casino/seapr/genprog> -k template -w ~/GreyboxAPR/TBar/d4j/Closure_62 -t 180000 -T 600 -- python3 ~/GreyboxAPR/SimAPR/script/d4j_run_test.py ~/GreyboxAPR/TBar/buggy
+# python3 ~/GreyboxAPR/SimAPR/simapr.py -o ~/GreyboxAPR/experiments/tbar/result/Closure_62-out -m <orig/greybox/casino/seapr/genprog> -k template -w ~/GreyboxAPR/TBar/d4j/Closure_62 -t 180000 -T 600 --instr-cp ~/JPatchInst --branch-output result/branch/Closure_62 -- python3 ~/GreyboxAPR/SimAPR/script/d4j_run_test.py ~/GreyboxAPR/TBar/buggy
 ```
 
 SimAPR provides various scheduling algorithms: original, Gresino, Casino, SeAPR and GenProg.

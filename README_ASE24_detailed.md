@@ -161,8 +161,9 @@ There are three scripts available for each tool:
 * SimAPR for Defects4j v2.0
 * SimAPR for ablation study
 
-Each version and algorithm have a 5-hour timeout. 
-However, thanks to the simulation mode in SimAPR, it may not require the full 5 hours for every version, but it still requires a significant amount of time.
+<!-- Each version and algorithm have a 3000 iteration.
+However, thanks to the simulation mode in SimAPR, it may not require the full 5 hours for every version, but it still requires a significant amount of time. -->
+It requires a significant amount of time to run SimAPR for each tool.
 
 In our experiments, we used 30 CPU cores for each tool, and it took approximately 3 days to complete for each tool with Defects4j v1.2.0.
 ### RQ 1 & 2: SimAPR for Defects4j v1.2.0
@@ -171,8 +172,8 @@ To run SimAPR for Defects4j v1.2.0 for each tool, use the following command:
 # cd experiments/<tool>
 # python3 search.py <# of CPU>
 ```
-This will run the original order from the original tools once, followed by the SeAPR algorithm once.
-Then, the Casino algorithm and the GenProg algorithm will be performed 10 times each.
+This will run the original order from the original tools once.
+Then, the Gresino, Casino and the GenProg algorithm will be performed 10 times each.
 
 The results will be stored in `experiments/<tool>/result`.
 
@@ -198,7 +199,7 @@ Similar to SimAPR for Defects4j v1.2.0, to run SimAPR for Defects4j v2.0 for eac
 # cd experiments/<tool>
 # python3 search-d4j2.py <# of CPU>
 ```
-This will run the original order from the original tools once and the Casino algorithm 10 times with Defects4j v2.0.
+This will run the original order from the original tools once, the Gresino and Casino algorithm 10 times each with Defects4j v2.0.
 
 The results will be stored in `experiments/<tool>/result`, similar to SimAPR for Defects4j v1.2.0.
 
@@ -268,7 +269,7 @@ To generate plots for RQ 2 (Figure 8 in the paper), first run the following comm
 ```
 This will generate a JSON file in `experiments/rq2-time-<tool>.json`.
 
-To generate final plots, run the following command:
+Then, to generate final plots, run the following command:
 ```
 # python3 scripts/rq2-time.py
 ```
@@ -282,7 +283,7 @@ To generate a plot for RQ 3 (Figure 8 in the paper), first run the following com
 ```
 This will generate a JSON file in `experiments/rq3-time-<tool>.json`.
 
-To generate a final plot, use the following command:
+Then, to generate a final plot, use the following command:
 ```
 # cd experiments
 # python3 scripts/rq3-time.py
@@ -472,6 +473,6 @@ For example, to compile `TBar`, use the following commands:
 # ./compile.sh
 ```
 
-On the other hand, the learning-based APR tools except `SRepair` (`AlphaRepair`,  `Recoder`, `SelfAPR`) are written in Python, so there is no need to compile them.
+On the other hand, the learning-based APR tools except `SRepair` (i.e. `AlphaRepair`,  `Recoder`, and `SelfAPR`) are written in Python, so there is no need to compile them.
 
 We have provided scripts in the [experiments](./experiments/) directory to generate the patch space easily for each tool.
