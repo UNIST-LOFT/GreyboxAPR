@@ -27,3 +27,4 @@ experiments/yechan/
 !kPar/SuspiciousCodePositions/**/*.txt
 !Fixminer/BugPositions/**/*.txt
 !SRepair/SuspiciousCodePositions/**/*.txt
+!paper.pdf
