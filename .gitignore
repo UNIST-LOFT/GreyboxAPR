@@ -12,6 +12,7 @@
 **/*.pdf
 **/*.log
 **/*.jpg
+**/.DS_Store
 
 rq1.py
 experiments/yechan/
