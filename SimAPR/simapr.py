@@ -37,10 +37,11 @@ def parse_args(argv: list) -> GlobalState:
               'finish-correct-patch','not-count-compile-fail','not-use-guide','not-use-epsilon',
               'finish-top-method','instr-cp=','branch-output=', 'use-fl-score-in-greybox',
               'weight-critical-branch', 'optimized-instrumentation', 'only-get-test-time-data-mode',
-              'test-time-data-location=']
+              'test-time-data-location=', 'field-output=']
   opts, args = getopt.getopt(argv[1:], "ho:w:t:m:c:T:E:k:", longopts)
   state = GlobalState()
   state.critical_branch_up_down_manager = CriticalBranchesUpDownManager(is_this_critical_branches = True)
+  state.critical_field_up_down_manager = CriticalFieldsUpDownManager(is_this_critical_fields = True)
   state.original_args = argv
   state.args = args  # After --
   for o, a in opts:
@@ -158,6 +159,10 @@ def parse_args(argv: list) -> GlobalState:
       state.only_get_test_time_data_mode = True 
     elif o in ['--test-time-data-location']:
       state.test_time_data_location = a
+      
+    # Greybox field stuffs
+    elif o in ['--field-output']:
+      state.field_output=a
 
   # make output directory if not exists
   if not os.path.exists(state.out_dir):
@@ -170,6 +175,14 @@ def parse_args(argv: list) -> GlobalState:
         os.makedirs(os.path.join(state.out_dir,'branch'))
     elif not os.path.exists(state.branch_output):
       os.makedirs(state.branch_output)
+      
+  # make field output directory if not exists. if the field output directory is not given in arguments, it makes default field output directory.
+  if state.use_simulation_mode:
+    if state.field_output=='':
+      if not os.path.exists(os.path.join(state.out_dir,'field')):
+        os.makedirs(os.path.join(state.out_dir,'field'))
+    elif not os.path.exists(state.field_output):
+      os.makedirs(state.field_output)
   
   # make tmp directory. if the tmp directory already exsists, remove and make it again.
   state.tmp_dir = os.path.join(state.out_dir, 'tmp')
@@ -182,6 +195,12 @@ def parse_args(argv: list) -> GlobalState:
       os.makedirs(state.branch_output)
   elif state.instrumenter_classpath!='':
     state.branch_output=os.path.join(state.out_dir,'branch')
+    
+  if state.field_output!='':
+    if not os.path.exists(state.field_output):
+      os.makedirs(state.field_output)
+  elif state.instrumenter_classpath!='':
+    state.field_output=os.path.join(state.out_dir,'field')
 
   return state
 

@@ -321,14 +321,14 @@ def update_result_branch(state:GlobalState,selected_patch:Union[TbarPatchInfo,Re
       cur_node=state
     else:
       cur_node=cur_node.parent
-    critical_branch_list:List[int] = list(cur_node.critical_branch_up_down_manager.upDownDict.keys())
+    critical_field_list:List[int] = list(cur_node.critical_branch_up_down_manager.upDownDict.keys())
 
     if state.optimized_instrumentation and state.use_simulation_mode:
       for testName in state.d4j_negative_test:
         if each_result[testName]:
           # If the patch is cached and interesting, prune non-critical branches
           if testName in each_result and testName in branch_coverage and testName in state.original_branch_cov:
-              branch_coverage[testName].branch_coverage = {key: value for key, value in branch_coverage[testName].branch_coverage.items() if key in critical_branch_list}
+              branch_coverage[testName].branch_coverage = {key: value for key, value in branch_coverage[testName].branch_coverage.items() if key in critical_field_list}
           else:
             state.logger.debug(f"testName in each_result: {testName in each_result}, "
                               f"each_result[testName]: {each_result[testName]}, "
@@ -354,3 +354,84 @@ def update_result_branch(state:GlobalState,selected_patch:Union[TbarPatchInfo,Re
                           f"each_result[testName]: {each_result[testName]}, "
                           f"testName in branch_coverage: {testName in branch_coverage}, "
                           f"testName in state.original_branch_cov: {testName in state.original_branch_cov}")
+
+def update_result_field(state:GlobalState,selected_patch:Union[TbarPatchInfo,RecoderPatchInfo],field_change:Dict[str,field_change.FieldChange],
+                         is_compilable:bool,each_result:Dict[str,bool],pass_result:bool):
+  """
+  This function is used for the GreyBox Approach of the Casino.
+  It deals with the field data of patched program runs when each test has end.
+  This function basically handle the every patch testing result that has to be done for the GreyBox approach. 
+  
+  This function does the jobs below.
+  - Finds critical field.
+    - For each failing test, if the test for patched program is passed, the fields that has different count to that of buggy program is now critical fields
+  - Compare the first different value of field changes between the buggy(=original) program and the patched one, and update the field data in GlobalState and each PatchTreeNode that is ancester of patch.
+    - Critical fields are saved as state.critical_fields:Dict[str, Set[Tuple[int,int]]], where the tuple[0] is the field name and tuple[1] is difference. 
+    - examples: 
+      for some field[1] and test_A, if field[1] has changes of [10, 11, 12] in patched version and [10, 11, 15] in original buggy version, then (1, -3) becomes an element of critical_fields[test_A].
+      for some field[0] and test_B, if field[0] has changes of [24, 10, -5] in patched version and [24, 3, 100] in original buggy version, then (0, 7) becomes an element of critical_fields[test_B].
+  - However, if the patch is not compilable (is_compilable == false), this function does nothing.
+  
+  This function is composed of following parts.
+  - A loop for comparing the fields of the buggy program and the patched program to find out the critical fields and save the field informations.
+
+  Args:
+      state (GlobalState): The global state. It is a object that saves every information of total run of SimAPR and is used just like a singleton.
+      selected_patch (Union[TbarPatchInfo,RecoderPatchInfo]): Patch information. It varies depending on the 
+      field_change (Dict[str,field_change.FieldCoverage]): field
+      is_compilable (bool): whether the patched program is compilable.
+      each_result (Dict[str,bool]): The test results of each test on the patched program. Key(:str) is the name of a test, and value(:bool) is the result (true if the test is passedm otherwise false).
+      pass_result (bool): whether the all tests has passed. It has to be true when every value of 'each_result(:Dict[str,bool])' is true, otherwise it is false.
+  """
+  
+  if not is_compilable:
+    return
+  
+  state.logger.debug(f"update_result_field is called, d4j_negative_test length: {len(state.d4j_negative_test)}")
+  
+  if isinstance(selected_patch,TbarPatchInfo):
+    cur_node=selected_patch.tbar_case_info
+  elif isinstance(selected_patch,RecoderPatchInfo):
+    cur_node=selected_patch.recoder_case_info
+  else:
+    raise RuntimeError(f'Invalid patch type: {type(selected_patch)}, it should be TbarPatchInfo or RecoderPatchInfo')
+
+  while not isinstance(cur_node,GlobalState):
+    # Update critical fields in each nodes
+    if isinstance(cur_node,FileInfo):
+      cur_node=state
+    else:
+      cur_node=cur_node.parent
+    critical_field_list:List[int] = list(cur_node.critical_field_up_down_manager.upDownDict.keys())
+
+    if state.optimized_instrumentation and state.use_simulation_mode:
+      for testName in state.d4j_negative_test:
+        if each_result[testName]:
+          # If the patch is cached and interesting, prune non-critical fields
+          if testName in each_result and testName in field_change and testName in state.original_field_change:
+              field_change[testName].field_change = {key: value for key, value in field_change[testName].field_change.items() if key in critical_field_list}
+          else:
+            state.logger.debug(f"testName in each_result: {testName in each_result}, "
+                              f"each_result[testName]: {each_result[testName]}, "
+                              f"testName in field_change: {testName in field_change}, "
+                              f"testName in state.original_field_change: {testName in state.original_field_change}")
+    
+    for testName in state.d4j_negative_test:
+      if testName in each_result and testName in field_change and testName in state.original_field_change:
+        # get field difference
+        field_difference_list: list[Tuple[int,float]] = field_change[testName].diff(state.original_field_change[testName]) # list of (field name, field difference)
+
+        if each_result[testName]:
+          # update if the patch is interesting
+          for field_tuple in field_difference_list:
+            print(f'grey-box field alpha updated')
+            field_name:int=field_tuple[0]
+            field_difference=field_tuple[1]
+            
+            # update the critical field data in current node
+            cur_node.critical_field_up_down_manager.update(state,field_name, field_difference)
+      else:
+        state.logger.debug(f"testName in each_result: {testName in each_result}, "
+                          f"each_result[testName]: {each_result[testName]}, "
+                          f"testName in field_change: {testName in field_change}, "
+                          f"testName in state.original_field_change: {testName in state.original_field_change}")
