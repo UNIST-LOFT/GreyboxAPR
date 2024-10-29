@@ -257,8 +257,8 @@ class CriticalFieldUpDown:
     - the amount of increasement can be modified in this source code.
 
     Args:
-        original_field_last_value (int): _description_
-        patched_field_last_value (int): _description_
+        original_field_last_value (str): _description_
+        patched_field_last_value (str): _description_
     """
     print('grey-box field alpha updated')
     if field_difference<0:
@@ -308,10 +308,10 @@ class CriticalFieldsUpDownManager:
   Also it is instantiated in each PatchTreeNode. it is for ~~~
   """
   def __init__(self, is_this_critical_fields = False):
-    self.upDownDict:Dict[int, CriticalFieldUpDown]=dict()
+    self.upDownDict:Dict[str, CriticalFieldUpDown]=dict()
     self.is_this_critical_fields=is_this_critical_fields
     
-  def update(self, state:'GlobalState', field_name:int, field_difference:float):
+  def update(self, state:'GlobalState', field_name:str, field_difference:float):
     if field_name not in self.upDownDict:
       self.upDownDict[field_name]=CriticalFieldUpDown()
       if self.is_this_critical_fields:
@@ -322,12 +322,12 @@ class CriticalFieldsUpDownManager:
   def is_empty(self):
     return not bool(self.upDownDict)
     
-  def select_value(self, field_name:int, isUp:bool)->float:
+  def select_value(self, field_name:str, isUp:bool)->float:
     if field_name not in self.upDownDict:
       self.upDownDict[field_name]=CriticalFieldUpDown()
     return self.upDownDict[field_name].select_value(isUp)
   
-  def get_isUp(self, field_name:int):
+  def get_isUp(self, field_name:str):
     """
     TODO: more description
     IMPORTANT: it return False when up score == down score

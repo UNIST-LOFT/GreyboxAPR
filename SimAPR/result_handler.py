@@ -402,7 +402,7 @@ def update_result_field(state:GlobalState,selected_patch:Union[TbarPatchInfo,Rec
       cur_node=state
     else:
       cur_node=cur_node.parent
-    critical_field_list:List[int] = list(cur_node.critical_field_up_down_manager.upDownDict.keys())
+    critical_field_list:List[str] = list(cur_node.critical_field_up_down_manager.upDownDict.keys())
 
     if state.optimized_instrumentation and state.use_simulation_mode:
       for testName in state.d4j_negative_test:
@@ -419,13 +419,13 @@ def update_result_field(state:GlobalState,selected_patch:Union[TbarPatchInfo,Rec
     for testName in state.d4j_negative_test:
       if testName in each_result and testName in field_change and testName in state.original_field_change:
         # get field difference
-        field_difference_list: list[Tuple[int,float]] = field_change[testName].diff(state.original_field_change[testName]) # list of (field name, field difference)
+        field_difference_list: list[Tuple[str,float]] = field_change[testName].diff(state.original_field_change[testName]) # list of (field name, field difference)
 
         if each_result[testName]:
           # update if the patch is interesting
           for field_tuple in field_difference_list:
             print(f'grey-box field alpha updated')
-            field_name:int=field_tuple[0]
+            field_name:str=field_tuple[0]
             field_difference=field_tuple[1]
             
             # update the critical field data in current node
