@@ -37,7 +37,7 @@ def parse_args(argv: list) -> GlobalState:
               'finish-correct-patch','not-count-compile-fail','not-use-guide','not-use-epsilon',
               'finish-top-method','instr-cp=','branch-output=', 'use-fl-score-in-greybox',
               'weight-critical-branch', 'optimized-instrumentation', 'only-get-test-time-data-mode',
-              'test-time-data-location=', 'field-output=']
+              'test-time-data-location=', 'field-output=', 'use-field']
   opts, args = getopt.getopt(argv[1:], "ho:w:t:m:c:T:E:k:", longopts)
   state = GlobalState()
   state.critical_branch_up_down_manager = CriticalBranchesUpDownManager(is_this_critical_branches = True)
@@ -162,7 +162,9 @@ def parse_args(argv: list) -> GlobalState:
       
     # Greybox field stuffs
     elif o in ['--field-output']:
-      state.field_output=a
+      state.field_output = a
+    elif o in ['--use-field']:
+      state.use_field = True
 
   # make output directory if not exists
   if not os.path.exists(state.out_dir):

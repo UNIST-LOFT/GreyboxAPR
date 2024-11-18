@@ -777,7 +777,7 @@ class RecoderPatchInfo:
     self.func_info.critical_branch_up_down_manager.update(state,branch_index, branch_difference)
     self.file_info.critical_branch_up_down_manager.update(state,branch_index, branch_difference)
   
-  def update_branch_result(self, state:'GlobalState', field_name:int, field_difference:float) -> None:
+  def update_field_result(self, state:'GlobalState', field_name:str, field_difference:float) -> None:
     """
     Used for the GreyBox Approach.
     
@@ -986,7 +986,7 @@ class GlobalState(metaclass=SingletonMeta):
 
     self.correct_patch_list:List[str]=[]  # List of correct patch ids
 
-    # Added in greybox-APRC
+    # Added in greybox-APR
     self.instrumenter_classpath=''
     self.branch_output=''
     self.diff_patch_num=0  # # of patches that has diff coverage with orig
@@ -1015,8 +1015,9 @@ class GlobalState(metaclass=SingletonMeta):
     self.only_get_test_time_data_mode = False
     self.test_time_data_location = ""
     
-    # Added in greybox-APRC field change
+    # Added in greybox-APR field change
     self.field_output=''
+    self.use_field=False
     self.original_field_change:Dict[str,field_change.FieldChange]=dict()  # [test, change]
     self.hq_patch_diff_change_set:Set[field_change.FieldChange]=set()  # Every (change_patch - change_original) change of HQ patches
     self.critical_field_up_down_manager:CriticalFieldsUpDownManager = None

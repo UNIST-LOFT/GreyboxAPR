@@ -321,14 +321,14 @@ def update_result_branch(state:GlobalState,selected_patch:Union[TbarPatchInfo,Re
       cur_node=state
     else:
       cur_node=cur_node.parent
-    critical_field_list:List[int] = list(cur_node.critical_branch_up_down_manager.upDownDict.keys())
+    critical_branch_list:List[int] = list(cur_node.critical_branch_up_down_manager.upDownDict.keys())
 
     if state.optimized_instrumentation and state.use_simulation_mode:
       for testName in state.d4j_negative_test:
         if each_result[testName]:
           # If the patch is cached and interesting, prune non-critical branches
           if testName in each_result and testName in branch_coverage and testName in state.original_branch_cov:
-              branch_coverage[testName].branch_coverage = {key: value for key, value in branch_coverage[testName].branch_coverage.items() if key in critical_field_list}
+              branch_coverage[testName].branch_coverage = {key: value for key, value in branch_coverage[testName].branch_coverage.items() if key in critical_branch_list}
           else:
             state.logger.debug(f"testName in each_result: {testName in each_result}, "
                               f"each_result[testName]: {each_result[testName]}, "

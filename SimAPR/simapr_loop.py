@@ -424,8 +424,9 @@ class RecoderLoop(TBarLoop):
       self.state.is_alive=False
     return self.state.is_alive
   
-  def run_test(self, patch: RecoderPatchInfo, test: str, get_greybox_info:bool=False) -> Tuple[bool, bool, float, branch_coverage.BranchCoverage]:
-    cur_cov=None
+  def run_test(self, patch: RecoderPatchInfo, test: str, get_greybox_info:bool=False) -> Tuple[bool, bool, float, branch_coverage.BranchCoverage, field_change.FieldChange]:
+    branch_info=None
+    field_info=None
     new_env=EnvGenerator.get_new_env_recoder(self.state, patch, test)
     start_time=time.time()
     compilable, run_result, is_timeout = run_test.run_fail_test_d4j(self.state, new_env)
@@ -438,7 +439,7 @@ class RecoderLoop(TBarLoop):
         _, _, _ = run_test.run_fail_test_d4j(self.state, new_env)
 
       try:
-        cur_cov=branch_coverage.parse_cov(self.state.logger,new_env['GREYBOX_RESULT'])
+        branch_info=branch_coverage.parse_cov(self.state.logger,new_env['GREYBOX_RESULT'])
         self.state.logger.info("everything is fine")
         dest_file_name = os.path.join(self.state.branch_output,f'{patch.recoder_case_info.location.replace("/","#")}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt')
         os.makedirs(os.path.dirname(dest_file_name), exist_ok=True)
@@ -446,12 +447,26 @@ class RecoderLoop(TBarLoop):
         os.remove(new_env['GREYBOX_RESULT'])
 
         if patch.recoder_case_info.location=='original':
-          self.state.original_branch_cov[test]=cur_cov
+          self.state.original_branch_cov[test]=branch_info
       except OSError as e:
         self.state.logger.error(e)
         self.state.logger.warning(f"Greybox result not found for {patch.recoder_case_info.location} {test}. expected location: {new_env['GREYBOX_RESULT']}")
 
-    return compilable, run_result,run_time,cur_cov
+      try:
+        field_info=field_change.parse_change(self.state.logger,new_env['GREYBOX_FIELD_RESULT'])
+        dest_file_name = os.path.join(self.state.field_output,f'{patch.recoder_case_info.location.replace("/","#")}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt')
+        self.state.logger.info(f"field dest: {dest_file_name}")
+        os.makedirs(os.path.dirname(dest_file_name), exist_ok=True)
+        shutil.copyfile(new_env['GREYBOX_FIELD_RESULT'],dest_file_name)
+        os.remove(new_env['GREYBOX_FIELD_RESULT'])
+        
+        if patch.recoder_case_info.location=='original':
+          self.state.original_field_change[test]=field_info
+          
+      except OSError as e:
+        self.state.logger.warning(f"Greybox result not found for {patch.recoder_case_info.location} {test}. expected location: {new_env['GREYBOX_FIELD_RESULT']}")
+
+    return compilable, run_result,run_time,branch_info,field_info
   
   def run_test_positive(self, patch: RecoderPatchInfo) -> Tuple[bool,float]:
     start_time=time.time()
@@ -465,7 +480,7 @@ class RecoderLoop(TBarLoop):
     original = self.state.patch_location_map["original"]
     op = RecoderPatchInfo(original)
     for neg in self.state.d4j_negative_test.copy():
-      compilable, run_result,_,_ = self.run_test(op, neg,get_greybox_info=True)
+      compilable, run_result,_,_,_ = self.run_test(op, neg,get_greybox_info=True)
       if not compilable:
         self.state.logger.warning("Project is not compilable")
         self.state.is_alive = False
@@ -512,9 +527,11 @@ class RecoderLoop(TBarLoop):
       pass_time=0
       each_result=dict()
       coverages:Dict[str,branch_coverage.BranchCoverage]=dict()
+      changes:Dict[str,field_change.FieldChange]=dict()
       self.state.new_critical_list = []
+      
       for neg in self.state.d4j_negative_test:
-        compilable, run_result,fail_time,cur_cov = self.run_test(patch, neg)
+        compilable, run_result,fail_time,cur_cov,cur_change = self.run_test(patch, neg)
         self.state.test_time+=fail_time
         if not compilable:
           is_compilable = False
@@ -531,12 +548,16 @@ class RecoderLoop(TBarLoop):
 
         if cur_cov is not None:
           coverages[neg]=cur_cov
+        
+        if cur_change is not None:
+          changes[neg]=cur_change
 
       if is_compilable:
         self.state.visited_tbar_patch.append(patch.recoder_case_info.location)
         self.state.patch_to_branches_map[patch.recoder_case_info.location] = []
       if self.state.mode==Mode.greybox:
         result_handler.update_result_branch(self.state,patch,coverages,is_compilable,each_result,pass_result)
+        result_handler.update_result_field(self.state,patch,changes,is_compilable,each_result,pass_result)
 
       if is_compilable or self.state.count_compile_fail:
         self.state.iteration += 1
@@ -551,7 +572,7 @@ class RecoderLoop(TBarLoop):
 
   def run_sim(self) -> None:
     self.state.start_time = time.time()
-    self.state.cycle = 0    
+    self.state.cycle = 0
     
     while(self.is_alive()):
       self.state.logger.info(f'[{self.state.cycle}]: executing')
@@ -572,8 +593,9 @@ class RecoderLoop(TBarLoop):
         
         each_result=dict()
         coverages:Dict[str,branch_coverage.BranchCoverage]=dict()
+        changes:Dict[str,field_change.FieldChange]=dict()
         for neg in self.state.d4j_negative_test:
-          compilable, run_result,fail_time,cur_cov = self.run_test(patch, neg)
+          compilable, run_result,fail_time,cur_cov,cur_change = self.run_test(patch, neg)
           self.state.test_time+=fail_time
           if not compilable:
             is_compilable = False
@@ -590,14 +612,18 @@ class RecoderLoop(TBarLoop):
 
           if cur_cov is not None:
             coverages[neg]=cur_cov
+          
+          if cur_change is not None:
+            changes[neg]=cur_change
 
-        #add an entry that maps this patch to its branchess
+        #add an entry that maps this patch to its branches and fields
         if is_compilable:
           self.state.visited_tbar_patch.append(patch.recoder_case_info.location)
           self.state.patch_to_branches_map[patch.recoder_case_info.location] = []
         if self.state.mode==Mode.greybox:
           result_handler.update_result_branch(self.state,patch,coverages,is_compilable,each_result,pass_result)
-
+          result_handler.update_result_field(self.state,patch,changes,is_compilable,each_result,pass_result)
+        
         if is_compilable or self.state.ignore_compile_error:
           result_handler.update_result_recoder(self.state, patch, pass_exists)
           if result and self.state.use_pass_test:
@@ -617,27 +643,37 @@ class RecoderLoop(TBarLoop):
         is_compilable=simapr_result['compilable']
         greybox_done=simapr_result['done_greybox'] if 'done_greybox' in simapr_result else False
 
-        #add an entry that maps this patch to its branchess
+        #add an entry that maps this patch to its branches and fields
         if is_compilable:
           self.state.visited_tbar_patch.append(patch.recoder_case_info.location)
           self.state.patch_to_branches_map[patch.recoder_case_info.location] = []
 
         if self.state.mode==Mode.greybox:
           coverages:Dict[str,branch_coverage.BranchCoverage]=dict()
+          changes:Dict[str,field_change.FieldChange]=dict()
+          
           if is_compilable:
             for test in each_result.keys():
               if each_result[test]:
                 cov_file=os.path.join(self.state.branch_output,
                                       f'{patch.recoder_case_info.location.replace("/","#")}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt')
-                if not os.path.exists(cov_file) and not greybox_done:
+                change_file=os.path.join(self.state.field_output,
+                                    f'{patch.recoder_case_info.location.replace("/","#")}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt')
+                if not greybox_done and not (os.path.exists(cov_file) and os.path.exists(change_file)):
                   # Retry if greybox not done yet
-                  compilable, run_result,fail_time,cur_cov = self.run_test(patch, test,get_greybox_info=True)
+                  compilable, run_result,fail_time,cur_cov,cur_change = self.run_test(patch, test,get_greybox_info=True)
                 if os.path.exists(cov_file):
                   cur_cov=branch_coverage.parse_cov(self.state.logger,cov_file)
                   coverages[test]=cur_cov
                 else:
                   self.state.logger.warning(f"Greybox result not found for {patch.recoder_case_info.location} {test}. expected location: {cov_file}")
+                if os.path.exists(change_file):
+                  cur_change=field_change.parse_change(self.state.logger,change_file)
+                  changes[test]=cur_change
+                else:
+                  self.state.logger.warning(f"Greybox result not found for {patch.recoder_case_info.location} {test}. expected location: {change_file}")
           result_handler.update_result_branch(self.state,patch,coverages,is_compilable,each_result,pass_result)
+          result_handler.update_result_field(self.state,patch,changes,is_compilable,each_result,pass_result)
 
         if is_compilable or self.state.ignore_compile_error:
           result_handler.update_result_recoder(self.state, patch, pass_exists)
@@ -674,7 +710,7 @@ class RecoderLoop(TBarLoop):
               test_time_data[self.state.mode.name][patch] = {}
               for neg in self.state.d4j_negative_test:
                 self.state.logger.info("run test: "+ neg)
-                compilable, run_result,fail_time,cur_cov = self.run_test(RecoderPatchInfo(case_info), neg)
+                compilable, run_result,fail_time,cur_cov,cur_change = self.run_test(RecoderPatchInfo(case_info), neg)
                 test_time_data[self.state.mode.name][patch][neg] = fail_time
               break
           if found_patch:
