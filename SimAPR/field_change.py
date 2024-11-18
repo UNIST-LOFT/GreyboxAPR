@@ -10,16 +10,16 @@ def toNumeric(v: str):
 
 class FieldChange:
     def __init__(self):
-        self.field_change:Dict[int,float]=dict() # key: field_name, value: history
+        self.field_change:Dict[str,float]=dict() # key: field_name, value: history
 
-    def append(self, field:int, value):
+    def append(self, field:str, value):
         if field in self.field_change:
             self.field_change[field].append(value)
         else:
             self.field_change[field]=[value]
     
-    def diff(self,other:'FieldChange')->List[Tuple[int,float]]:
-        diff:List[Tuple[int,float]]=[]
+    def diff(self,other:'FieldChange')->List[Tuple[str,float]]:
+        diff:List[Tuple[str,float]]=[]
         for field in self.field_change:
             if field in other.field_change:
                 if self.field_change[field]!=other.field_change[field]:
@@ -57,7 +57,7 @@ def parse_change(logger:Logger, change_file: str):
         for line in f:
             try:
                 field_name,value = line.strip().split(":")
-                change.field_change[int(field_name)] = toNumeric(value)
+                change.field_change[field_name] = toNumeric(value)
             except:
                 logger.warning(f"Error parsing field change: {line.strip()}")
         

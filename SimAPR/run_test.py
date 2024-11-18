@@ -21,8 +21,6 @@ def run_fail_test_d4j(state: GlobalState, new_env: Dict[str, str]) -> Tuple[bool
         - tuple[2]: is time out
   """
   
-  # SIMAPR_TEST: test name (e.g. com.google.javascript.jscomp.LightweightMessageFormatterTest::testFormatErrorSpaceEndOfLine2)
-  # SIMAPR_LOCATION: patch location (e.g. 3/StatementRemover/71/LightweightMessageFormatter.java)
   state.cycle += 1
   state.logger.info(f"@{state.cycle} Run tbar test {new_env['SIMAPR_TEST']} with {new_env['SIMAPR_LOCATION']}")
   args = state.args

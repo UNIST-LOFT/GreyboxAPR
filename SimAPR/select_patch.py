@@ -51,15 +51,16 @@ def second_vertical_search_recursion(state:GlobalState, source:PatchTreeNode):
     
   is_branch_empty = _source.critical_branch_up_down_manager.is_empty()
   is_field_empty = _source.critical_field_up_down_manager.is_empty()
-  
-  if is_branch_empty and is_field_empty:
+  use_field = state.use_field
+
+  if (use_field and is_branch_empty) or (not use_field and is_branch_empty and is_field_empty):
     return epsilon_select(state, source)
 
   selected_branch = None if is_branch_empty else random.choice(list(_source.critical_branch_up_down_manager.upDownDict.keys()))
   isBranchUp = None if is_branch_empty else _source.critical_branch_up_down_manager.get_isUp(selected_branch)
   
-  selected_field = None if is_field_empty else random.choice(list(_source.critical_field_up_down_manager.upDownDict.keys()))
-  isFieldUp = None if is_field_empty else _source.critical_field_up_down_manager.get_isUp(selected_field)
+  selected_field = None if not use_field or is_field_empty else random.choice(list(_source.critical_field_up_down_manager.upDownDict.keys()))
+  isFieldUp = None if not use_field or is_field_empty else _source.critical_field_up_down_manager.get_isUp(selected_field)
 
   state.logger.debug(f"during second vertical search. source: {_source}")
   if source is None:
@@ -204,7 +205,8 @@ def epsilon_select(state:GlobalState,source:PatchTreeNode=None):
     else:
       _source=source
 
-    if state.mode == Mode.greybox and (not _source.critical_branch_up_down_manager.is_empty() or not _source.critical_field_up_down_manager.is_empty()) and \
+    can_use_critical_values = (state.use_field == None and not _source.critical_branch_up_down_manager.is_empty()) or (state.use_field != None and (not _source.critical_branch_up_down_manager.is_empty() or not _source.critical_field_up_down_manager.is_empty()))
+    if state.mode == Mode.greybox and can_use_critical_values and \
             ((source is not None and source.children_basic_patches > 0) or (source is None and state.total_basic_patch > 0)):
       state.logger.debug(f"Use second vertical search, epsilon: {epsilon}")
       return second_vertical_search_recursion(state, source)
