@@ -114,7 +114,7 @@ for j in range(MAX_EXP):
             else:
                 guided_y.append(guided_y[-1])
 guided_df=pd.DataFrame({'Time':guided_x,'Number of valid patches':guided_y})
-seaborn.lineplot(data=guided_df,x='Time',y='Number of valid patches',color='g',label='Casino')
+seaborn.lineplot(data=guided_df,x='Time',y='Number of valid patches',color='g',label='Casino',errorbar=('ci',100))
 
 # Greybox
 genprog_list:List[List[int]]=[]
@@ -145,7 +145,7 @@ for j in range(MAX_EXP):
             else:
                 guided_y.append(guided_y[-1])
 other_df=pd.DataFrame({'Time':guided_x,'Number of valid patches':guided_y})
-seaborn.lineplot(data=other_df,x='Time',y='Number of valid patches',color='r',label='Gresino',linestyle='dashed')
+seaborn.lineplot(data=other_df,x='Time',y='Number of valid patches',color='r',label='Gresino',linestyle='dashed',errorbar=('ci',100))
 
 plt.legend(fontsize=12)
 plt.xlabel('Time (min)',fontsize=15)
@@ -155,6 +155,7 @@ plt.locator_params(axis='x',nbins=8)
 plt.yticks(fontsize=15)
 plt.savefig(f'rq2-top-1-time.jpg',bbox_inches='tight')
 plt.savefig(f'rq2-top-1-time.pdf',bbox_inches='tight')
+plt.savefig(f'rq2-top-1-time.png',bbox_inches='tight')
 
 # Top-3
 plt.clf()
@@ -290,7 +291,7 @@ for j in range(MAX_EXP):
             else:
                 guided_y.append(guided_y[-1])
 guided_df=pd.DataFrame({'Time':guided_x,'Number of valid patches':guided_y})
-seaborn.lineplot(data=guided_df,x='Time',y='Number of valid patches',color='g',label='Casino')
+seaborn.lineplot(data=guided_df,x='Time',y='Number of valid patches',color='g',label='Casino',errorbar=('ci',100))
 
 # Greybox
 genprog_list:List[List[int]]=[]
@@ -322,7 +323,7 @@ for j in range(MAX_EXP):
                 guided_y.append(guided_y[-1])
 guided_y[-1]=guided_y[-1]+10
 other_df=pd.DataFrame({'Time':guided_x,'Number of valid patches':guided_y})
-seaborn.lineplot(data=other_df,x='Time',y='Number of valid patches',color='r',label='Gresino',linestyle='dashed')
+seaborn.lineplot(data=other_df,x='Time',y='Number of valid patches',color='r',label='Gresino',linestyle='dashed',errorbar=('ci',100))
 
 plt.legend(fontsize=12)
 plt.xlabel('Time (min)',fontsize=15)
@@ -332,6 +333,7 @@ plt.locator_params(axis='x',nbins=8)
 plt.yticks(fontsize=15)
 plt.savefig(f'rq2-top-5-time.jpg',bbox_inches='tight')
 plt.savefig(f'rq2-top-5-time.pdf',bbox_inches='tight')
+plt.savefig(f'rq2-top-5-time.png',bbox_inches='tight')
 
 # Top-10
 plt.clf()
