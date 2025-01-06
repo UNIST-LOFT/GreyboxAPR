@@ -48,11 +48,19 @@ def second_vertical_search_recursion(state:GlobalState, source:PatchTreeNode):
     _source=state
   else:
     _source=source
-  if _source.critical_branch_up_down_manager.is_empty():
+    
+  is_branch_empty = _source.critical_branch_up_down_manager.is_empty()
+  is_field_empty = _source.critical_field_up_down_manager.is_empty()
+  use_field = state.use_field
+
+  if (use_field and is_branch_empty) or (not use_field and is_branch_empty and is_field_empty):
     return epsilon_select(state, source)
 
-  selected_branch:int = random.choice(list(_source.critical_branch_up_down_manager.upDownDict.keys()))
-  isUp:bool=_source.critical_branch_up_down_manager.get_isUp(selected_branch)
+  selected_branch = None if is_branch_empty else random.choice(list(_source.critical_branch_up_down_manager.upDownDict.keys()))
+  isBranchUp = None if is_branch_empty else _source.critical_branch_up_down_manager.get_isUp(selected_branch)
+  
+  selected_field = None if not use_field or is_field_empty else random.choice(list(_source.critical_field_up_down_manager.upDownDict.keys()))
+  isFieldUp = None if not use_field or is_field_empty else _source.critical_field_up_down_manager.get_isUp(selected_field)
 
   state.logger.debug(f"during second vertical search. source: {_source}")
   if source is None:
@@ -60,43 +68,52 @@ def second_vertical_search_recursion(state:GlobalState, source:PatchTreeNode):
     children_map = state.file_info_map
     if state.use_fl_score_in_greybox:
       children_map = filter_children_list_by_fl_score(state, source, children_map)
-    state.logger.debug(f"second vertical traversing on root. file_info_map len: {len(children_map)}, isUp: {isUp}, selected_branch: {selected_branch}")
+    state.logger.debug(f"second vertical traversing on root. file_info_map len: {len(children_map)}, isBranchUp: {isBranchUp}, selected_branch: {selected_branch}, isFieldUp: {isFieldUp}, selected_field: {selected_field}")
   if isinstance(source, FileInfo):
     children_map = source.func_info_map
     if state.use_fl_score_in_greybox:
       children_map = filter_children_list_by_fl_score(state, source, children_map)
-    state.logger.debug(f"second vertical traversing on file level. func_info_map len: {len(children_map)}, isUp: {isUp}, selected_branch: {selected_branch}")
+    state.logger.debug(f"second vertical traversing on file level. func_info_map len: {len(children_map)}, isBranchUp: {isBranchUp}, selected_branch: {selected_branch}, isFieldUp: {isFieldUp}, selected_field: {selected_field}")
   elif isinstance(source, FuncInfo):
     children_map = source.line_info_map
     if state.use_fl_score_in_greybox:
       children_map = filter_children_list_by_fl_score(state, source, children_map)
-    state.logger.debug(f"second vertical traversing on func level. line_info_map len: {len(children_map)}, isUp: {isUp}, selected_branch: {selected_branch}")
+    state.logger.debug(f"second vertical traversing on func level. line_info_map len: {len(children_map)}, isBranchUp: {isBranchUp}, selected_branch: {selected_branch}, isFieldUp: {isFieldUp}, selected_field: {selected_field}")
   elif isinstance(source, LineInfo):
     if state.tool_type == ToolType.TEMPLATE:
       children_map = source.tbar_type_info_map
-      state.logger.debug(f"second vertical traversing on line level. type_info_map len: {len(children_map)}, isUp: {isUp}, selected_branch: {selected_branch}")
+      state.logger.debug(f"second vertical traversing on line level. type_info_map len: {len(children_map)}, isBranchUp: {isBranchUp}, selected_branch: {selected_branch}, isFieldUp: {isFieldUp}, selected_field: {selected_field}")
     elif state.tool_type == ToolType.LEARNING:
       children_map = source.recoder_case_info_map
-      state.logger.debug(f"second vertical traversing on line level. recoder_case_info_map len: {len(children_map)}, isUp: {isUp}, selected_branch: {selected_branch}")
+      state.logger.debug(f"second vertical traversing on line level. recoder_case_info_map len: {len(children_map)}, isBranchUp: {isBranchUp}, selected_branch: {selected_branch}, isFieldUp: {isFieldUp}, selected_field: {selected_field}")
   elif isinstance(source, TbarTypeInfo): # Only for Tbar
     children_map = source.tbar_case_info_map
-    state.logger.debug(f"second vertical traversing on type level. case_info_map len: {len(children_map)}, isUp: {isUp}, selected_branch: {selected_branch}")
+    state.logger.debug(f"second vertical traversing on type level. case_info_map len: {len(children_map)}, isBranchUp: {isBranchUp}, selected_branch: {selected_branch}, isFieldUp: {isFieldUp}, selected_field: {selected_field}")
   elif isinstance(source, TbarCaseInfo): # Only for Tbar
-    state.logger.debug(f"second vertical search done. isUp: {isUp}, selected_branch: {selected_branch}")
+    state.logger.debug(f"second vertical search done. isBranchUp: {isBranchUp}, selected_branch: {selected_branch}, isFieldUp: {isFieldUp}, selected_field: {selected_field}")
     return source
   elif isinstance(source, RecoderCaseInfo): # Only for Recoder
-    state.logger.debug(f"second vertical search done. isUp: {isUp}, selected_branch: {selected_branch}")
+    state.logger.debug(f"second vertical search done. isBranchUp: {isBranchUp}, selected_branch: {selected_branch}, isFieldUp: {isFieldUp}, selected_field: {selected_field}")
     return source  
 
   randomly_selected_values = []
   for child in children_map.values():
-    randomly_selected_values.append(child.critical_branch_up_down_manager.select_value(selected_branch, isUp))
+    branch_value = 0 if selected_branch == None else child.critical_branch_up_down_manager.select_value(selected_branch, isBranchUp)
+    field_value = 0 if selected_field == None else child.critical_field_up_down_manager.select_value(selected_field, isFieldUp)
+    randomly_selected_values.append(branch_value + field_value)
 
-  _debug=f'Mode of 2nd vertical: {_source}: '
-  for child in children_map.values():
-    _debug+=f'{child.critical_branch_up_down_manager.upDownDict[selected_branch].mode()},'
-  state.logger.debug(_debug)
+  if selected_branch != None:
+    _debug=f'Mode of 2nd vertical branch: {_source}: '
+    for child in children_map.values():
+      _debug+=f'{child.critical_branch_up_down_manager.upDownDict[selected_branch].mode()},'
+    state.logger.debug(_debug)
 
+  if selected_field != None:
+    _debug=f'Mode of 2nd vertical field: {_source}: '
+    for child in children_map.values():
+      _debug+=f'{child.critical_field_up_down_manager.upDownDict[selected_field].mode()},'
+    state.logger.debug(_debug)
+    
   _debug=f'Prob of 2nd vertical: {_source}: '
   for i in randomly_selected_values:
     _debug+=f'{i},'
@@ -188,13 +205,14 @@ def epsilon_select(state:GlobalState,source:PatchTreeNode=None):
     else:
       _source=source
 
-    if state.mode == Mode.greybox and not _source.critical_branch_up_down_manager.is_empty() and \
+    can_use_critical_values = (state.use_field == None and not _source.critical_branch_up_down_manager.is_empty()) or (state.use_field != None and (not _source.critical_branch_up_down_manager.is_empty() or not _source.critical_field_up_down_manager.is_empty()))
+    if state.mode == Mode.greybox and can_use_critical_values and \
             ((source is not None and source.children_basic_patches > 0) or (source is None and state.total_basic_patch > 0)):
       state.logger.debug(f"Use second vertical search, epsilon: {epsilon}")
       return second_vertical_search_recursion(state, source)
     # Perform random search in epsilon probability
     else:
-      state.logger.debug(f'is critical_branch empty: {_source.critical_branch_up_down_manager.is_empty()}, is source none: {source is None}')
+      state.logger.debug(f'is critical_branch empty: {_source.critical_branch_up_down_manager.is_empty()}, is critical_field empty: {_source.critical_field_up_down_manager.is_empty()}, is source none: {source is None}')
     state.logger.debug(f'Use epsilon greedy method, epsilon: {epsilon}')
 
     # Choose random element in candidates

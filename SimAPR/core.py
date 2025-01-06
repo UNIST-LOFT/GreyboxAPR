@@ -10,6 +10,7 @@ import uuid
 import math
 
 import branch_coverage
+import field_change
 
 
 class Mode(Enum):
@@ -225,6 +226,123 @@ class CriticalBranchesUpDownManager:
       return True
     else:
       return False
+    
+    
+class CriticalFieldUpDown:
+  """
+  used for GreyBox approach
+  multiple of instances are stored in CriticalFields as the value of the dictionary, with the field name as a key.
+  saves and handle the data that are related to the fitness score of one field
+
+  Returns:
+      _type_: _description_
+  """
+  def __init__(self, fieldUpInit: float = 1., fieldDownInit: float = 1.) -> None:
+    """_summary_
+
+    Args:
+        fieldUpInit (float, optional): _description_. Defaults to 0..
+        fieldDownInit (float, optional): _description_. Defaults to 0..
+    """
+    self.fieldUpInit=fieldUpInit # a constant value. saves the initial value of the fieldUpScore.
+    self.fieldUpScore=fieldUpInit # it will be increase with some kinds of value (increasing amount depends on the update method)
+    self.fieldDownInit=fieldDownInit # a constant value. saves the initial value of the fieldDownScore.
+    self.fieldDownScore=fieldDownInit # it will be increase with some kinds of value (increasing amount depends on the update method)
+    
+  def update(self, field_difference:float):
+    """
+    Compare the original_field_last_value and the patched_field_last_value to update the scores.
+    - if original_field_last_value > patched_field_last_value then self.fieldDownScore increases.
+    - if original_field_last_value < patched_field_last_value then self.fieldUpScore increases.
+    - the amount of increasement can be modified in this source code.
+
+    Args:
+        original_field_last_value (str): _description_
+        patched_field_last_value (str): _description_
+    """
+    print('grey-box field alpha updated')
+    if field_difference<0:
+      self.fieldDownScore+=1 # increase the score with some value.
+    elif field_difference>0:
+      self.fieldUpScore+=1 # increase the score with some value.
+
+  def mode(self):
+    if self.fieldUpScore==0:
+      up_score=0.
+    else:
+      up_score=self.fieldUpScore
+    if self.fieldDownScore==0:
+      down_score=0.
+    else:
+      down_score=self.fieldDownScore
+    
+    return down_score,up_score
+
+  def select_value(self,isUp:bool) -> float: # select a value randomly from the beta distribution
+    """
+    select a value randomly from the beta distribution.
+    The distribution for selecting varies depending on the 'isUp'.
+
+    Args:
+        isUp (bool): true if the field count increases in patched one then the buggy one, otherwise false.
+
+    Returns:
+        float: _description_
+    """
+    if isUp:
+      return np.random.beta(self.fieldUpScore, self.fieldUpInit)
+    else:
+      return np.random.beta(self.fieldDownScore, self.fieldDownInit)
+    
+
+class CriticalFieldsUpDownManager:
+  """
+  This class is used not only for the critical field data but also for the field difference data of each node in the patch tree 
+  although the name of the class is still "CriticalFieldUpDownManager"
+  
+  This class has a dictionary that saves the field names as key and CriticalFieldUpDown as value.
+  It helps you to call CriticalFieldUpDown with an specific index when calling 'update' and 'select_value'.
+  this class also can be used when there are some jobs that have to deal with multiple of CriticalFieldUpDown.
+  
+  This class will be instanciated when initiaing the GlobalState and it is used for the ~~~...
+  Also it is instantiated in each PatchTreeNode. it is for ~~~
+  """
+  def __init__(self, is_this_critical_fields = False):
+    self.upDownDict:Dict[str, CriticalFieldUpDown]=dict()
+    self.is_this_critical_fields=is_this_critical_fields
+    
+  def update(self, state:'GlobalState', field_name:str, field_difference:float):
+    if field_name not in self.upDownDict:
+      self.upDownDict[field_name]=CriticalFieldUpDown()
+      if self.is_this_critical_fields:
+        state.new_critical_list.append(field_name)
+
+    self.upDownDict[field_name].update(field_difference)
+  
+  def is_empty(self):
+    return not bool(self.upDownDict)
+    
+  def select_value(self, field_name:str, isUp:bool)->float:
+    if field_name not in self.upDownDict:
+      self.upDownDict[field_name]=CriticalFieldUpDown()
+    return self.upDownDict[field_name].select_value(isUp)
+  
+  def get_isUp(self, field_name:str):
+    """
+    TODO: more description
+    IMPORTANT: it return False when up score == down score
+
+    Args:
+        field_name (str): _description_
+
+    Returns:
+        _type_: _description_
+    """
+    the_field=self.upDownDict[field_name]
+    if the_field.fieldUpScore>the_field.fieldDownScore:
+      return True
+    else:
+      return False
 
 class PatchTreeNode:
   def __init__(self):
@@ -246,6 +364,10 @@ class PatchTreeNode:
     self.coverage_info=PassFail()
     self.patches_template_type:List[str] = []
     self.critical_branch_up_down_manager:CriticalBranchesUpDownManager=CriticalBranchesUpDownManager()
+    
+    # greybox field change things
+    self.change_info=PassFail()
+    self.critical_field_up_down_manager:CriticalFieldsUpDownManager=CriticalFieldsUpDownManager()
 
 class LocationNode(PatchTreeNode):
   def __init__(self):
@@ -441,11 +563,13 @@ class EnvGenerator:
     if state.mode==Mode.greybox and (instrument or state.only_get_test_time_data_mode):
       new_env['GREYBOX_BRANCH']='1'
       new_env['GREYBOX_RESULT']=f'/tmp/{state.d4j_buggy_project}-{test.replace("::","#")}.txt'
+      new_env['GREYBOX_FIELD_RESULT']=f'/tmp/field/{state.d4j_buggy_project}-{test.replace("::","#")}.txt'
       new_env['GREYBOX_INSTR_ROOT']=state.instrumenter_classpath
       new_env['CLASSPATH']=state.instrumenter_classpath
     else:
       new_env['GREYBOX_BRANCH']='0'
       new_env['CLASSPATH']=state.instrumenter_classpath
+      
     return new_env
   
   @staticmethod
@@ -462,11 +586,13 @@ class EnvGenerator:
     if state.mode==Mode.greybox and (instrument or state.only_get_test_time_data_mode):
       new_env['GREYBOX_BRANCH']='1'
       new_env['GREYBOX_RESULT']=f'/tmp/{state.d4j_buggy_project}-{test.replace("::","#")}.txt'
+      new_env['GREYBOX_FIELD_RESULT']=f'/tmp/field/{state.d4j_buggy_project}-{test.replace("::","#")}.txt'
       new_env['GREYBOX_INSTR_ROOT']=state.instrumenter_classpath
       new_env['CLASSPATH']=state.instrumenter_classpath
     else:
       new_env['GREYBOX_BRANCH']='0'
       new_env['CLASSPATH']=state.instrumenter_classpath
+      
     return new_env
   
   @staticmethod
@@ -474,6 +600,7 @@ class EnvGenerator:
     new_env["SIMAPR_TEST"] = "ALL"
     new_env['CLASSPATH']=state.instrumenter_classpath
     new_env['GREYBOX_BRANCH']='0'
+    new_env['GREYBOX_FIELD']='0'
     return new_env
 
 class TbarPatchInfo:
@@ -521,6 +648,22 @@ class TbarPatchInfo:
     self.line_info.critical_branch_up_down_manager.update(state,branch_index, branch_difference)
     self.func_info.critical_branch_up_down_manager.update(state,branch_index, branch_difference)
     self.file_info.critical_branch_up_down_manager.update(state,branch_index, branch_difference)
+  
+  def update_field_result(self, state:'GlobalState', field_name:str, field_difference:float) -> None:
+    """
+    Used for the GreyBox Approach.
+    
+    This function updates the CriticalFieldUpDown in every node in path to the patch
+
+    Args:
+        field_name (str): _description_
+        field_difference (float): _description_
+    """
+    self.tbar_case_info.critical_field_up_down_manager.update(state,field_name, field_difference)
+    self.tbar_type_info.critical_field_up_down_manager.update(state,field_name, field_difference)
+    self.line_info.critical_field_up_down_manager.update(state,field_name, field_difference)
+    self.func_info.critical_field_up_down_manager.update(state,field_name, field_difference)
+    self.file_info.critical_field_up_down_manager.update(state,field_name, field_difference)
     
   def remove_patch(self, state: 'GlobalState') -> None:
     """
@@ -633,6 +776,21 @@ class RecoderPatchInfo:
     self.line_info.critical_branch_up_down_manager.update(state,branch_index, branch_difference)
     self.func_info.critical_branch_up_down_manager.update(state,branch_index, branch_difference)
     self.file_info.critical_branch_up_down_manager.update(state,branch_index, branch_difference)
+  
+  def update_field_result(self, state:'GlobalState', field_name:str, field_difference:float) -> None:
+    """
+    Used for the GreyBox Approach.
+    
+    This function updates the CriticalFieldUpDown in every node in path to the patch
+
+    Args:
+        field_name (str): _description_
+        field_difference (float): _description_
+    """
+    self.recoder_case_info.critical_field_up_down_manager.update(state,field_name, field_difference)
+    self.line_info.critical_field_up_down_manager.update(state,field_name, field_difference)
+    self.func_info.critical_field_up_down_manager.update(state,field_name, field_difference)
+    self.file_info.critical_field_up_down_manager.update(state,field_name, field_difference)
 
   def remove_patch(self, state: 'GlobalState') -> None:
     if self.recoder_case_info.location not in self.line_info.recoder_case_info_map:
@@ -856,6 +1014,13 @@ class GlobalState(metaclass=SingletonMeta):
     # only_get_test_time_data_mode
     self.only_get_test_time_data_mode = False
     self.test_time_data_location = ""
+    
+    # Added in greybox-APR field change
+    self.field_output=''
+    self.use_field=False
+    self.original_field_change:Dict[str,field_change.FieldChange]=dict()  # [test, change]
+    self.hq_patch_diff_change_set:Set[field_change.FieldChange]=set()  # Every (change_patch - change_original) change of HQ patches
+    self.critical_field_up_down_manager:CriticalFieldsUpDownManager = None
     
 def patch_ochiai_calculator(state:GlobalState, str):
   valid_branches=0

@@ -11,4 +11,4 @@ pip3 install psutil tqdm tiktoken openai
 pip3 install torch torchvision torchaudio
 pip3 install git+https://github.com/huggingface/transformers.git@main
 
-python3 pull_models.py
+# python3 pull_models.py

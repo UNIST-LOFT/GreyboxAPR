@@ -3,6 +3,8 @@ import subprocess
 import multiprocessing as mp
 import seeds
 
+TRY_COUNT = 3
+
 def run(project):
    print(f'Run {project}-orig')
    result=subprocess.run(['python3','search-tbar-orig.py',project],stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
@@ -10,7 +12,7 @@ def run(project):
       f.write(result.stdout.decode("utf-8"))
    print(f'Finish {project}-orig with returncode {result.returncode}')
 
-   for i in range(10):
+   for i in range(TRY_COUNT):
       print(f'Run {project}-casino-{i}')
       result=subprocess.run(['python3','search-tbar-casino.py',project,str(seeds.SEEDS[i]),str(i)],
                             stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
@@ -24,6 +26,13 @@ def run(project):
       with open(f'result/{project}-greybox-{i}.log','w') as f:
          f.write(result.stdout.decode("utf-8"))
       print(f'Finish {project}-greybox-{i} with returncode {result.returncode}')
+      
+      print(f'Run {project}-greyboxfd-{i}')
+      result=subprocess.run(['python3','search-tbar-greyboxfd.py',project,str(seeds.SEEDS[i]),str(i)],
+                            stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+      with open(f'result/{project}-greyboxfd-{i}.log','w') as f:
+         f.write(result.stdout.decode("utf-8"))
+      print(f'Finish {project}-greyboxfd-{i} with returncode {result.returncode}')
 
 from sys import argv
 
