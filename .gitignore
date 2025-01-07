@@ -12,6 +12,9 @@
 **/*.pdf
 **/*.log
 **/*.jpg
+experiments/scripts/correct-*
+experiments/**/difftgen.csv
+experiments/ods*.csv
 
 rq1.py
 experiments/yechan/
