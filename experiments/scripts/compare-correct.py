@@ -12,7 +12,10 @@ def parse(file:str):
             if ':' not in line:
                 continue
             branch,count=line.strip().split(':')
-            result[int(branch)]=int(count)
+            try:
+                result[int(branch)]=int(count)
+            except ValueError:
+                pass
     return result
 
 correct_patches:Dict[str,Dict[str,Dict[int,int]]]=dict()
@@ -64,6 +67,7 @@ def compare_each_branch(project:str):
 
     # diff of each patches
     plau_patches:List[str]=[]
+    if not os.path.exists(f'{tool}/result/cache/{project}-cache.json'): return
     with open(f'{tool}/result/cache/{project}-cache.json','r') as f:
         cache=json.load(f)
         for p in cache:

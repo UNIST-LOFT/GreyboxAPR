@@ -5,12 +5,12 @@ import seeds
 
 def run(project):
    for i in range(10):
-      print(f'Run {project}-w/o-vertical-{i}')
-      result=subprocess.run(['python3','search-recoder-ablation.py',project,'vertical',str(seeds.SEEDS[i]),str(i)],
+      print(f'Run {project}-fieldonly-{i}')
+      result=subprocess.run(['python3','search-recoder-ablation.py',project,'field',str(seeds.SEEDS[i]),str(i)],
                             stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
-      with open(f'result/{project}-wo-vertical-{i}.log','w') as f:
+      with open(f'result/{project}-fieldonly-{i}.log','w') as f:
          f.write(result.stdout.decode("utf-8"))
-      print(f'Finish {project}-w/o-vertical-{i} with returncode {result.returncode}')
+      print(f'Finish {project}-fieldonly-{i} with returncode {result.returncode}')
 
 from sys import argv
 

@@ -125,7 +125,7 @@ plt.yticks(fontsize=15)
 
 if WITH_MOCKITO:
     plt.savefig(f'rq4-time-w-mockito.pdf',bbox_inches='tight')
-    plt.savefig(f'rq4-time-w-mockito.jpg',bbox_inches='tight')
+    plt.savefig(f'rq4-time-w-mockito.png',bbox_inches='tight')
 else:
     plt.savefig(f'rq4-time.pdf',bbox_inches='tight')
-    plt.savefig(f'rq4-time.jpg',bbox_inches='tight')
+    plt.savefig(f'rq4-time.png',bbox_inches='tight')

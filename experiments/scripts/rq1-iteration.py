@@ -11,14 +11,18 @@ from getopt import getopt
 
 import d4j
 
-MAX_EXP=10
+MAX_EXP=3
 WITH_MOCKITO=False
 MAX_ITERATION=3000
+
+# excepts = ['Closure_126']
+excepts = []
 
 def plot_patches_ci_java(mode='tbar'):
     orig_result:List[int]=[]
     casino_result:List[List[int]]=[]
     greybox_result:List[List[int]]=[]
+    greyboxfd_result:List[List[int]]=[]
 
     valid_patch_set:Dict[str,set]=dict()
 
@@ -26,7 +30,9 @@ def plot_patches_ci_java(mode='tbar'):
     for i in range(MAX_EXP):
         casino_result.append([])
         for result in d4j.D4J_1_2_LIST:
-            if not path.exists(f'{mode}/result/{result}-greybox-{MAX_EXP-1}/simapr-finished.txt'):
+            if result in excepts:
+                continue
+            if not path.exists(f'{mode}/result/{result}-greyboxfd-{MAX_EXP-1}/simapr-finished.txt'):
                 # Skip if experiment not end
                 continue
             if not WITH_MOCKITO and 'Mockito' in result:
@@ -37,7 +43,7 @@ def plot_patches_ci_java(mode='tbar'):
                 continue
             root=json.load(result_file)
             result_file.close()
-
+            
             if result not in valid_patch_set:
                 valid_patch_set[result]=set()
             for res in root:
@@ -60,7 +66,9 @@ def plot_patches_ci_java(mode='tbar'):
     for i in range(MAX_EXP):
         greybox_result.append([])
         for result in d4j.D4J_1_2_LIST:
-            if not path.exists(f'{mode}/result/{result}-greybox-{MAX_EXP-1}/simapr-finished.txt'):
+            if result in excepts:
+                continue
+            if not path.exists(f'{mode}/result/{result}-greyboxfd-{MAX_EXP-1}/simapr-finished.txt'):
                 # Skip if experiment not end
                 continue
             if not WITH_MOCKITO and 'Mockito' in result:
@@ -89,10 +97,48 @@ def plot_patches_ci_java(mode='tbar'):
                     break
 
     print(np.mean([len(l) for l in greybox_result]))
+    
+    # Greybox with critical field
+    for i in range(MAX_EXP):
+        greyboxfd_result.append([])
+        for result in d4j.D4J_1_2_LIST:
+            if result in excepts:
+                continue
+            if not path.exists(f'{mode}/result/{result}-greyboxfd-{MAX_EXP-1}/simapr-finished.txt'):
+                # Skip if experiment not end
+                continue
+            if not WITH_MOCKITO and 'Mockito' in result:
+                continue
+            try:
+                result_file=open(f'{mode}/result/{result}-greyboxfd-{i}/simapr-result.json','r')
+            except:
+                continue
+            root=json.load(result_file)
+            result_file.close()
+
+            if result not in valid_patch_set:
+                valid_patch_set[result]=set()
+            for res in root:
+                is_hq=res['result']
+                is_plausible=res['pass_result']
+                iteration=res['iteration']
+                time=res['time']
+                loc=res['config'][0]['location']
+
+                if is_plausible:
+                    valid_patch_set[result].add(loc)
+                    greyboxfd_result[-1].append(iteration)
+
+                if iteration>MAX_ITERATION:
+                    break
+
+    print(np.mean([len(l) for l in greyboxfd_result]))
 
     # Original
     for result in d4j.D4J_1_2_LIST:
-        if not path.exists(f'{mode}/result/{result}-greybox-{MAX_EXP-1}/simapr-finished.txt'):
+        if result in excepts:
+            continue
+        if not path.exists(f'{mode}/result/{result}-greyboxfd-{MAX_EXP-1}/simapr-finished.txt'):
             # Skip if experiment not end
             continue
         if not WITH_MOCKITO and 'Mockito' in result:
@@ -207,6 +253,32 @@ def plot_patches_ci_java(mode='tbar'):
                     guided_y.append(guided_y[-1])
     guided_df=pd.DataFrame({'Time':guided_x,'Number of valid patches':guided_y})
     seaborn.lineplot(data=guided_df,x='Time',y='Number of valid patches',color='r',label='Gresino',linestyle='dashed')
+    
+    # Greybox with critical field
+    guided_list:List[List[int]]=[]
+    guided_x=[]
+    guided_y=[]
+    temp_=[[],[],[],[],[],[]]
+    for j in range(MAX_EXP):
+        cur_result=sorted(greyboxfd_result[j])
+        guided_list.append([0])
+        for i in range(0,MAX_ITERATION+1):
+            if i in cur_result:
+                guided_list[-1].append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
+                guided_x.append(i)
+                if i==0:
+                    guided_y.append(0)
+                else:
+                    guided_y.append(guided_y[-1]+cur_result.count(i))
+            else:
+                guided_list[-1].append(guided_list[-1][-1])
+                guided_x.append(i)
+                if i==0:
+                    guided_y.append(0)
+                else:
+                    guided_y.append(guided_y[-1])
+    guided_df=pd.DataFrame({'Time':guided_x,'Number of valid patches':guided_y})
+    seaborn.lineplot(data=guided_df,x='Time',y='Number of valid patches',color='y',label='Gresino + field',linestyle='dotted')
 
     plt.legend(fontsize=12)
     plt.xlabel('Iteration',fontsize=15)
@@ -227,5 +299,5 @@ if __name__=='__main__':
     for opt,arg in o:
         if o=='--with-mockito':
             WITH_MOCKITO=True
-
+    
     plot_patches_ci_java(a[0])

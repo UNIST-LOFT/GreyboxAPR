@@ -20,6 +20,7 @@ def run_fail_test_d4j(state: GlobalState, new_env: Dict[str, str]) -> Tuple[bool
         - tuple[1]: run result
         - tuple[2]: is time out
   """
+  
   state.cycle += 1
   state.logger.info(f"@{state.cycle} Run tbar test {new_env['SIMAPR_TEST']} with {new_env['SIMAPR_LOCATION']}")
   args = state.args

@@ -7,8 +7,11 @@ def is_d4j2(bug_id):
     subject, bug = bug_id.split("_")
     if subject in ['Chart','Lang','Math','Mockito','Time']:
         return False
-    elif subject=='Closure' and 133<=int(bug)<175:
-        return True
+    elif subject=='Closure':
+        if 133<=int(bug)<175:
+            return True
+        else:
+            return False
     else:
         return True
     

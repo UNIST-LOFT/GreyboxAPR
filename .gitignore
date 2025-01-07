@@ -15,6 +15,8 @@
 experiments/scripts/correct-*
 experiments/**/difftgen.csv
 experiments/ods*.csv
+**/*.png
+**/.DS_Store
 
 rq1.py
 experiments/yechan/
@@ -30,3 +32,4 @@ experiments/yechan/
 !kPar/SuspiciousCodePositions/**/*.txt
 !Fixminer/BugPositions/**/*.txt
 !SRepair/SuspiciousCodePositions/**/*.txt
+!paper.pdf
