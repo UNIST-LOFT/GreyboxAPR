@@ -31,7 +31,7 @@ def run(project,mode,seed,trial):
     elif mode=='field':
         print(f"Run {project}-fieldonly-{trial}")
         result=subprocess.run(['python3',f'{new_cur_dir}/SimAPR/simapr.py','-o',f'result/{project}-fieldonly-{trial}',
-                               '-m','greybox','--seed',f'{seed}','-k','learning','--skip-valid','--use-field'
+                               '-m','greybox','--seed',f'{seed}','-k','learning','--skip-valid','--use-field',
                                '-w',f'{new_cur_dir}/AlphaRepair/d4j/{project}','-t','180000','--not-use-guide',
                                '--use-simulation-mode',f'result/cache/{project}-cache.json','-E','3000','--not-use-epsilon',
                                '--','python3',f'{new_cur_dir}/SimAPR/script/d4j_run_test.py',f'{new_cur_dir}/AlphaRepair/buggy'])
