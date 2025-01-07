@@ -28,6 +28,13 @@ def run(project,mode,seed,trial):
                                '-w',f'{new_cur_dir}/AlphaRepair/d4j/{project}','-t','180000',
                                '--use-simulation-mode',f'result/cache/{project}-cache.json','-E','3000','--not-use-epsilon',
                                '--','python3',f'{new_cur_dir}/SimAPR/script/d4j_run_test.py',f'{new_cur_dir}/AlphaRepair/buggy'])
+    elif mode=='field':
+        print(f"Run {project}-fieldonly-{trial}")
+        result=subprocess.run(['python3',f'{new_cur_dir}/SimAPR/simapr.py','-o',f'result/{project}-fieldonly-{trial}',
+                               '-m','greybox','--seed',f'{seed}','-k','learning','--skip-valid',
+                               '-w',f'{new_cur_dir}/AlphaRepair/d4j/{project}','-t','180000','--not-use-guide',
+                               '--use-simulation-mode',f'result/cache/{project}-cache.json','-E','3000','--not-use-epsilon',
+                               '--','python3',f'{new_cur_dir}/SimAPR/script/d4j_run_test.py',f'{new_cur_dir}/AlphaRepair/buggy'])
     
     print(f'{project} ablation-{trial} finish with return code {result.returncode}')
     exit(result.returncode)
@@ -35,7 +42,7 @@ def run(project,mode,seed,trial):
 if __name__ == '__main__':
     args=sys.argv
     if len(args)!=5:
-        print('Usage: python3 search-alpharepair-ablation.py <project> <vertical|horizontal> <seed> <trial>')
+        print('Usage: python3 search-alpharepair-ablation.py <project> <vertical|horizontal|field> <seed> <trial>')
         sys.exit(1)
     
     run(args[1],args[2],args[3],args[4])

@@ -198,6 +198,9 @@ def epsilon_select(state:GlobalState,source:PatchTreeNode=None):
   total_searched=len(top_all_patches)-len(top_fl_patches)
   epsilon=epsilon_greedy(total_patches,total_searched)
   is_epsilon_greedy=np.random.random()<epsilon and not state.not_use_epsilon_search
+  if state.not_use_epsilon_search and state.use_field:
+    # Always use use_field when epsilon_search is disabled
+    is_epsilon_greedy=True
 
   if is_epsilon_greedy:
     if source is None:
@@ -213,12 +216,18 @@ def epsilon_select(state:GlobalState,source:PatchTreeNode=None):
     # Perform random search in epsilon probability
     else:
       state.logger.debug(f'is critical_branch empty: {_source.critical_branch_up_down_manager.is_empty()}, is critical_field empty: {_source.critical_field_up_down_manager.is_empty()}, is source none: {source is None}')
-    state.logger.debug(f'Use epsilon greedy method, epsilon: {epsilon}')
 
-    # Choose random element in candidates
-    index=np.random.randint(0,len(top_fl_patches))
-    state.select_time+=time.time()-start_time
-    return top_fl_patches[index]
+    if state.not_use_epsilon_search and state.use_field:
+      # Return top scored patch if epsilon search is disabled and use_field is enabled
+      state.logger.debug(f'Epsilon search is disabled, use original order')
+      state.select_time+=time.time()-start_time
+      return top_fl_patches[0]
+    else:
+      # Choose random element in candidates
+      state.logger.debug(f'Use epsilon greedy method, epsilon: {epsilon}')
+      index=np.random.randint(0,len(top_fl_patches))
+      state.select_time+=time.time()-start_time
+      return top_fl_patches[index]
   else:
     # Return top scored layer in original
     state.logger.debug(f'Use original order, epsilon: {epsilon}')

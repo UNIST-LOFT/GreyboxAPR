@@ -130,14 +130,8 @@ def parse_args(argv: list) -> GlobalState:
     elif o in ['--finish-correct-patch']:
       state.finish_at_correct_patch=True
     elif o in ['--not-use-guide']:
-      if state.not_use_epsilon_search:
-        print('Can not use both --not-use-guide and --not-use-epsilon-search!',file=sys.stderr)
-        exit(1)
       state.not_use_guided_search=True
     elif o in ['--not-use-epsilon']:
-      if state.not_use_guided_search:
-        print('Can not use both --not-use-guide and --not-use-epsilon-search!',file=sys.stderr)
-        exit(1)
       state.not_use_epsilon_search=True
     elif o in ['--not-count-compile-fail']:
       state.count_compile_fail = False

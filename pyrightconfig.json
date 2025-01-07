@@ -7,5 +7,6 @@
         "kPar",
         "Recoder",
         "TBar"
-    ]
+    ],
+    "typeCheckingMode": "off"
 }
