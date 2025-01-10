@@ -6,7 +6,7 @@ from typing import Dict, List, Set
 from matplotlib import pyplot as plt
 import d4j
 import random
-from scipy.stats import entropy
+from scipy.stats import entropy,skew
 import numpy as np
 
 MAX_EXP=10
@@ -43,45 +43,63 @@ def parse(mode:str):
         '2nd':[]
     }
 
-    for i in range(MAX_EXP):
-        for result in d4j.D4J_1_2_LIST:
-            if not path.exists(f'{mode}/{res_dir}/{result}-greybox-{MAX_EXP-1}/simapr-finished.txt'):
-                # Skip if experiment not end
-                continue
-            if not WITH_MOCKITO and 'Mockito' in result:
-                continue
-            result_log=open(f'{mode}/{res_dir}/{result}-greybox-{i}/simapr-search.log','r')
+    level_result:Dict[str,Dict[str,List[float]]]={
+        'file':{'1st':[],'2nd':[]},
+        'func':{'1st':[],'2nd':[]},
+        'line':{'1st':[],'2nd':[]},
+        'type':{'1st':[],'2nd':[]}
+    }
 
-            with np.errstate(invalid='raise'):
-                for line in result_log:
-                    if 'Prob of 1st' in line:
-                        _l=line.split(': ')[-1]
-                        mode_list=[]
-                        for m in _l.split(','):
-                            if m!='\n':
-                                if float(m)!=0.:
-                                    mode_list.append(float(m))
-                        if len(mode_list)>0:
-                            greybox_result['1st'].append(entropy(mode_list))
-                    elif 'Prob of 2nd' in line:
-                        _l=line.split(': ')[-1]
-                        mode_list=[]
-                        for m in _l.split(','):
-                            if m!='\n':
-                                if float(m)!=0.:
-                                    mode_list.append(float(m))
-                        if len(mode_list)>0:
-                            greybox_result['2nd'].append(entropy(mode_list))
-
-            result_log.close()
+    with open('temp-entropy.json','r') as f:
+        _temp=json.load(f)
+        greybox_result=_temp['greybox_result']
+        level_result=_temp['level_result']
 
     print(mode)
     print(f'1st: {np.mean(greybox_result["1st"])}, 2nd: {np.mean(greybox_result["2nd"])}')
+    print(f'Median 1st: {np.median(greybox_result["1st"])}, 2nd: {np.median(greybox_result["2nd"])}')
+    print(f'Skew: {skew(greybox_result["1st"])}, {skew(greybox_result["2nd"])}')
 
+    plt.clf()
+    _=plt.figure(figsize=(3,4))
     plt.ylabel('Entropy')
-    plt.boxplot([np.array(greybox_result["1st"]),np.array(greybox_result["2nd"])],
-                labels=['1st vert.','2nd vert.'],showmeans=True)
+    plt.boxplot([np.array(greybox_result["1st"]),np.array(greybox_result["2nd"])],positions=[0.15,0.75],
+                labels=['1st vert.','2nd vert.'],showmeans=True,meanline=True,widths=0.5)
     plt.savefig(f'entropy-{mode}.pdf',bbox_inches='tight')
     plt.savefig(f'entropy-{mode}.jpg',bbox_inches='tight')
+
+    # file
+    plt.clf()
+    _=plt.figure(figsize=(3,4))
+    plt.ylabel('Entropy')
+    plt.boxplot([np.array(level_result['file']["1st"]),np.array(level_result['file']["2nd"])],positions=[0.15,0.75],
+                labels=['1st vert.','2nd vert.'],showmeans=True,meanline=True,widths=0.5)
+    plt.savefig(f'entropy-file-{mode}.pdf',bbox_inches='tight')
+    plt.savefig(f'entropy-file-{mode}.jpg',bbox_inches='tight')
+
+    # func
+    plt.clf()
+    _=plt.figure(figsize=(3,4))
+    plt.ylabel('Entropy')
+    plt.boxplot([np.array(level_result['func']["1st"]),np.array(level_result['func']["2nd"])],positions=[0.15,0.75],
+                labels=['1st vert.','2nd vert.'],showmeans=True,meanline=True,widths=0.5)
+    plt.savefig(f'entropy-func-{mode}.pdf',bbox_inches='tight')
+    plt.savefig(f'entropy-func-{mode}.jpg',bbox_inches='tight')
+    # line
+    plt.clf()
+    _=plt.figure(figsize=(3,4))
+    plt.ylabel('Entropy')
+    plt.boxplot([np.array(level_result['line']["1st"]),np.array(level_result['line']["2nd"])],positions=[0.15,0.75],
+                labels=['1st vert.','2nd vert.'],showmeans=True,meanline=True,widths=0.5)
+    plt.savefig(f'entropy-line-{mode}.pdf',bbox_inches='tight')
+    plt.savefig(f'entropy-line-{mode}.jpg',bbox_inches='tight')
+    # type
+    plt.clf()
+    _=plt.figure(figsize=(3,4))
+    plt.ylabel('Entropy')
+    plt.boxplot([np.array(level_result['type']["1st"]),np.array(level_result['type']["2nd"])],positions=[0.15,0.75],
+                labels=['1st vert.','2nd vert.'],showmeans=True,meanline=True,widths=0.5)
+    plt.savefig(f'entropy-type-{mode}.pdf',bbox_inches='tight')
+    plt.savefig(f'entropy-type-{mode}.jpg',bbox_inches='tight')
 
 parse(argv[1])

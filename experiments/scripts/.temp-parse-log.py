@@ -52,6 +52,8 @@ def parse(mode:str):
         'blackbox':0,
         'greybox':0
     }
+    total_interesting_patch=0
+    total_critical_branch=0
 
     for i in range(MAX_EXP):
         for result in d4j.D4J_1_2_LIST:
@@ -79,6 +81,7 @@ def parse(mode:str):
             valid_patches:Set[str]=set()
             for res in root:
                 if res['result']:
+                    total_interesting_patch+=1
                     intr_patches.add(res['config'][0]['location'])
                     greybox_update_result['blackbox']+=4
 
@@ -110,6 +113,8 @@ def parse(mode:str):
                 elif 'Use original order' in line or 'Use epsilon greedy method' in line:
                     greybox_result['hor']+=1
                     casino_result['hor']+=1
+                elif 'update_result_branch updating successfully' in line:
+                    total_critical_branch+=1
 
             result_log.close()
 
@@ -124,6 +129,8 @@ def parse(mode:str):
                     casino_update_result+=1
 
     print(mode)
+    print(f'Total intr patch: {total_interesting_patch}')
+    print(f'critical branch: {total_critical_branch}')
     print(f'Greybox: {greybox_result}')
     print(f'Casino: {casino_result}')
     print(f'Greybox: {greybox_update_result}')
