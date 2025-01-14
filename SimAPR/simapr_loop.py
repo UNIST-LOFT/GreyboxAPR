@@ -185,7 +185,8 @@ class TBarLoop():
       pass_time=0
       coverages:Dict[str,branch_coverage.BranchCoverage]=dict() # key: test name, value: branch coverage(contains a dict that shows how many times each branch has been taken.)
       changes:Dict[str,field_change.FieldChange]=dict() # key: test name, value: field change(contains a dict that shows the changes of the field value.)
-      self.state.new_critical_list = []
+      self.state.new_critical_branch_list = []
+      self.state.new_critical_field_list = []
       
       for neg in self.state.d4j_negative_test:
         compilable, run_result,fail_time,cur_cov, cur_change = self.run_test(patch, neg)
@@ -263,7 +264,8 @@ class TBarLoop():
       is_compilable = True
       pass_time=0
       key = patch.tbar_case_info.location
-      self.state.new_critical_list = []
+      self.state.new_critical_branch_list = []
+      self.state.new_critical_field_list = []
       # checks if there is a cached data
       if key not in self.state.simulation_data or 'fail_time' not in self.state.simulation_data[key]:
         each_result=dict()
@@ -528,7 +530,8 @@ class RecoderLoop(TBarLoop):
       each_result=dict()
       coverages:Dict[str,branch_coverage.BranchCoverage]=dict()
       changes:Dict[str,field_change.FieldChange]=dict()
-      self.state.new_critical_list = []
+      self.state.new_critical_branch_list = []
+      self.state.new_critical_field_list = []
       
       for neg in self.state.d4j_negative_test:
         compilable, run_result,fail_time,cur_cov,cur_change = self.run_test(patch, neg)
@@ -586,7 +589,8 @@ class RecoderLoop(TBarLoop):
       is_compilable = True
       pass_time=0
       key = patch.recoder_case_info.location
-      self.state.new_critical_list = []
+      self.state.new_critical_branch_list = []
+      self.state.new_critical_field_list = []
       if key not in self.state.simulation_data or 'fail_time' not in self.state.simulation_data[key]:
         if not self.is_initialized:
           self.initialize()

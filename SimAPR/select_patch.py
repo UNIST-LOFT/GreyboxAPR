@@ -51,13 +51,14 @@ def second_vertical_search_recursion(state:GlobalState, source:PatchTreeNode):
     
   is_branch_empty = _source.critical_branch_up_down_manager.is_empty()
   is_field_empty = _source.critical_field_up_down_manager.is_empty()
+  use_branch = state.use_branch
   use_field = state.use_field
 
-  if (use_field and is_branch_empty) or (not use_field and is_branch_empty and is_field_empty):
+  if not check_critical_values_available(use_branch, use_field, is_branch_empty, is_field_empty):
     return epsilon_select(state, source)
 
-  selected_branch = None if is_branch_empty else random.choice(list(_source.critical_branch_up_down_manager.upDownDict.keys()))
-  isBranchUp = None if is_branch_empty else _source.critical_branch_up_down_manager.get_isUp(selected_branch)
+  selected_branch = None if not use_branch or is_branch_empty else random.choice(list(_source.critical_branch_up_down_manager.upDownDict.keys()))
+  isBranchUp = None if not use_branch or is_branch_empty else _source.critical_branch_up_down_manager.get_isUp(selected_branch)
   
   selected_field = None if not use_field or is_field_empty else random.choice(list(_source.critical_field_up_down_manager.upDownDict.keys()))
   isFieldUp = None if not use_field or is_field_empty else _source.critical_field_up_down_manager.get_isUp(selected_field)
@@ -160,6 +161,13 @@ def filter_children_list_by_fl_score(state:GlobalState, source:PatchTreeNode, gi
   state.logger.debug(f"filtered map: {new_map}")
   return new_map
 
+def check_critical_values_available(use_branch: bool, use_field: bool, is_branch_empty: bool, is_field_empty: bool):
+  """
+  Check if the critical branches or fields are available
+  """
+  return use_branch and not is_branch_empty or use_field and not is_field_empty
+  
+
 def epsilon_select(state:GlobalState,source:PatchTreeNode=None):
   """
   Here is the main logic of the horizontal navigation(= epsilon search)
@@ -208,7 +216,7 @@ def epsilon_select(state:GlobalState,source:PatchTreeNode=None):
     else:
       _source=source
 
-    can_use_critical_values = (state.use_field == None and not _source.critical_branch_up_down_manager.is_empty()) or (state.use_field != None and (not _source.critical_branch_up_down_manager.is_empty() or not _source.critical_field_up_down_manager.is_empty()))
+    can_use_critical_values = check_critical_values_available(state.use_branch, state.use_field, _source.critical_branch_up_down_manager.is_empty(), _source.critical_field_up_down_manager.is_empty())
     if state.mode == Mode.greybox and can_use_critical_values and \
             ((source is not None and source.children_basic_patches > 0) or (source is None and state.total_basic_patch > 0)):
       state.logger.debug(f"Use second vertical search, epsilon: {epsilon}")
