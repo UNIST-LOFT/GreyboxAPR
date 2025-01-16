@@ -33,7 +33,7 @@ def run(project,mode,target,seed,trial):
     if mode_args is not None and target_args is not None:
         print(f"Run {project}-w/o-{mode}-{target}-{trial}")
         result=subprocess.run(['python3',f'{new_cur_dir}/SimAPR/simapr.py','-o',f'result/{project}-wo-{mode}-{target}-{trial}',
-                            '-m','greybox','--seed',f'{seed}','-k','template','-w',f'{new_cur_dir}/SelfAPR/d4j/{project}',
+                            '-m','greybox','--seed',f'{seed}','-k','learning','-w',f'{new_cur_dir}/SelfAPR/d4j/{project}',
                             '-t','180000','--use-simulation-mode',f'result/cache/{project}-cache.json','--instr-cp','../../../JPatchInst',
                             '--branch-output',f'result/branch/{project}','--field-output',f'result/field/{project}',
                             '-E','3000','--skip-valid','--optimized-instrumentation',*common_args,
