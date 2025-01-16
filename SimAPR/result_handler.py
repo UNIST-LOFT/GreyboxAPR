@@ -43,7 +43,7 @@ def append_result(state: GlobalState, selected_patch: List[Union[TbarPatchInfo,R
   if result.pass_result:
     state.total_plausible_patch+=1
   state.total_searched_patch+=1
-  obj = result.to_json_object(state.total_searched_patch,state.total_passed_patch,state.total_plausible_patch, new_critical_branch = state.new_critical_list)
+  obj = result.to_json_object(state.total_searched_patch,state.total_passed_patch,state.total_plausible_patch, new_critical_branch = state.new_critical_branch_list, new_critical_field = state.new_critical_field_list)
   state.simapr_result.append(obj)
   state.used_patch.append(result)
 
@@ -343,7 +343,7 @@ def update_result_branch(state:GlobalState,selected_patch:Union[TbarPatchInfo,Re
         if each_result[testName]:
           # update if the patch is interesting
           for branch_tuple in branch_difference_list:
-            print(f'grey-box alpha updated')
+            print(f'grey-box branch alpha updated')
             branch_index:int=branch_tuple[0]
             branch_difference=branch_tuple[1]
             

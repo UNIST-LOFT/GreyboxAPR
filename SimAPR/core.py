@@ -198,7 +198,7 @@ class CriticalBranchesUpDownManager:
     if branch_index not in self.upDownDict:
       self.upDownDict[branch_index]=CriticalBranchUpDown()
       if self.is_this_critical_branches:
-        state.new_critical_list.append(branch_index)
+        state.new_critical_branch_list.append(branch_index)
 
     self.upDownDict[branch_index].update(branch_difference)
   
@@ -315,7 +315,7 @@ class CriticalFieldsUpDownManager:
     if field_name not in self.upDownDict:
       self.upDownDict[field_name]=CriticalFieldUpDown()
       if self.is_this_critical_fields:
-        state.new_critical_list.append(field_name)
+        state.new_critical_field_list.append(field_name)
 
     self.upDownDict[field_name].update(field_difference)
   
@@ -878,7 +878,7 @@ class Result:
     self.compilable = compilable
     self.out_diff = config[0].out_diff
 
-  def to_json_object(self,total_searched_patch:int=0,total_passed_patch:int=0,total_plausible_patch:int=0, new_critical_branch:List[int]=[]) -> dict:
+  def to_json_object(self,total_searched_patch:int=0,total_passed_patch:int=0,total_plausible_patch:int=0, new_critical_branch:List[int]=[], new_critical_field:List[str]=[]) -> dict:
     object = dict()
     object["execution"] = self.execution
     object['iteration']=self.iteration
@@ -896,6 +896,7 @@ class Result:
 
     # for optimized greybox
     object['new_critical_branch']=new_critical_branch
+    object['new_critical_field']=new_critical_field
 
     for patch in self.config:
       conf = patch.to_json_object()
@@ -989,6 +990,7 @@ class GlobalState(metaclass=SingletonMeta):
     # Added in greybox-APR
     self.instrumenter_classpath=''
     self.branch_output=''
+    self.use_branch=False
     self.diff_patch_num=0  # # of patches that has diff coverage with orig
     self.original_branch_cov:Dict[str,branch_coverage.BranchCoverage]=dict()  # [test, coverage]
     self.hq_patch_diff_coverage_set:Set[branch_coverage.BranchCoverage]=set()  # Every (cov_patch - cov_original) coverage of HQ patches
@@ -1007,7 +1009,8 @@ class GlobalState(metaclass=SingletonMeta):
     self.weight_critical_branch = False
     self.critical_branch_up_down_manager:CriticalBranchesUpDownManager = None # It is for the saving the branch count difference regardless of test cases.Initialized right after GlobalState is initialized, because critical_branch_up_down_manager initializes GlobalState in it.
     self.optimized_instrumentation = False
-    self.new_critical_list:List[int]=[] # get empty when each iteration begins
+    self.new_critical_branch_list:List[int]=[] # get empty when each iteration begins
+    self.new_critical_field_list:List[str]=[] # get empty when each iteration begins
     self.no_instrumentation_time_data_output = "" # the directory path where the data is going to be saved.
     # self.no_instrumentation_time_data = {} # the data that will be referenced and modified during the experiment
 

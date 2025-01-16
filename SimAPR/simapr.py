@@ -37,7 +37,7 @@ def parse_args(argv: list) -> GlobalState:
               'finish-correct-patch','not-count-compile-fail','not-use-guide','not-use-epsilon',
               'finish-top-method','instr-cp=','branch-output=', 'use-fl-score-in-greybox',
               'weight-critical-branch', 'optimized-instrumentation', 'only-get-test-time-data-mode',
-              'test-time-data-location=', 'field-output=', 'use-field']
+              'test-time-data-location=', 'field-output=', 'use-field', 'use-branch']
   opts, args = getopt.getopt(argv[1:], "ho:w:t:m:c:T:E:k:", longopts)
   state = GlobalState()
   state.critical_branch_up_down_manager = CriticalBranchesUpDownManager(is_this_critical_branches = True)
@@ -141,6 +141,8 @@ def parse_args(argv: list) -> GlobalState:
       state.instrumenter_classpath=a
     elif o in ['--branch-output']:
       state.branch_output=a
+    elif o in ['--use-branch']:
+      state.use_branch = True
     elif o in ['--use-fl-score-in-greybox']:
       state.use_fl_score_in_greybox=True
     elif o in ['weight-critical-branch']:

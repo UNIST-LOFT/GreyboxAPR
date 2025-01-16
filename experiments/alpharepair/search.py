@@ -25,6 +25,13 @@ def run(project):
          f.write(result.stdout.decode("utf-8"))
       print(f'Finish {project}-greybox-{i} with returncode {result.returncode}')
 
+      print(f'Run {project}-greybox-fieldonly-{i}')
+      result=subprocess.run(['python3','search-alpharepair-greybox-fieldonly.py',project,str(seeds.SEEDS[i]),str(i)],
+                            stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+      with open(f'result/{project}-greybox-fieldonly-{i}.log','w') as f:
+         f.write(result.stdout.decode("utf-8"))
+      print(f'Finish {project}-greybox-fieldonly-{i} with returncode {result.returncode}')
+
       print(f'Run {project}-greyboxfd-{i}')
       result=subprocess.run(['python3','search-alpharepair-greyboxfd.py',project,str(seeds.SEEDS[i]),str(i)],
                             stdout=subprocess.PIPE,stderr=subprocess.STDOUT)

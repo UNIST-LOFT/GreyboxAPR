@@ -3,7 +3,7 @@ import subprocess
 import multiprocessing as mp
 import seeds
 
-TRY_COUNT = 3
+TRY_COUNT = 10
 
 def run(project):
    print(f'Run {project}-orig')
@@ -27,6 +27,14 @@ def run(project):
          f.write(result.stdout.decode("utf-8"))
       print(f'Finish {project}-greybox-{i} with returncode {result.returncode}')
       
+      print(f'Run {project}-greybox-fieldonly-{i}')
+      result=subprocess.run(['python3','search-tbar-greybox-fieldonly.py',project,str(seeds.SEEDS[i]),str(i)],
+                            stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+      with open(f'result/{project}-greybox-fieldonly-{i}.log','w') as f:
+         f.write(result.stdout.decode("utf-8"))
+      print(f'Finish {project}-greybox-fieldonly-{i} with returncode {result.returncode}')
+
+      # use both methods (branch + field)
       print(f'Run {project}-greyboxfd-{i}')
       result=subprocess.run(['python3','search-tbar-greyboxfd.py',project,str(seeds.SEEDS[i]),str(i)],
                             stdout=subprocess.PIPE,stderr=subprocess.STDOUT)

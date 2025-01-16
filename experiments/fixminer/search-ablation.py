@@ -5,12 +5,26 @@ import seeds
 
 def run(project):
    for i in range(10):
-      print(f'Run {project}-fieldonly-{i}')
-      result=subprocess.run(['python3','search-fixminer-ablation.py',project,'field',str(seeds.SEEDS[i]),str(i)],
+      # print(f'Run {project}-w/o-vertical-branch-{i}')
+      # result=subprocess.run(['python3','search-fixminer-ablation-greybox.py',project,'vertical','branch',str(seeds.SEEDS[i]),str(i)],
+      #                       stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+      # with open(f'result/{project}-wo-vertical-branch-{i}.log','w') as f:
+      #    f.write(result.stdout.decode("utf-8"))
+      # print(f'Finish {project}-w/o-vertical-branch-{i} with returncode {result.returncode}')
+      
+      print(f'Run {project}-w/o-vertical-field-{i}')
+      result=subprocess.run(['python3','search-fixminer-ablation-greybox.py',project,'vertical','field',str(seeds.SEEDS[i]),str(i)],
                             stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
-      with open(f'result/{project}-fieldonly-{i}.log','w') as f:
+      with open(f'result/{project}-wo-vertical-field-{i}.log','w') as f:
          f.write(result.stdout.decode("utf-8"))
-      print(f'Finish {project}-fieldonly-{i} with returncode {result.returncode}')
+      print(f'Finish {project}-w/o-vertical-field-{i} with returncode {result.returncode}')
+      
+      print(f'Run {project}-w/o-vertical-both-{i}')
+      result=subprocess.run(['python3','search-fixminer-ablation-greybox.py',project,'vertical','both',str(seeds.SEEDS[i]),str(i)],
+                            stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+      with open(f'result/{project}-wo-vertical-both-{i}.log','w') as f:
+         f.write(result.stdout.decode("utf-8"))
+      print(f'Finish {project}-w/o-vertical-both-{i} with returncode {result.returncode}')
 
 from sys import argv
 
