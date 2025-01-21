@@ -15,111 +15,123 @@ MAX_EXP=10
 WITH_MOCKITO=False
 MAX_ITERATION=3000
 
+deps = ['greybox', 'wo-vertical']
+
+def save_result(mode: str, dirname: str, result_list: List[List[int]]):
+    for i in range(MAX_EXP):
+        for result in d4j.D4J_1_2_LIST:
+            if check_deps(mode, result):
+                # Skip if experiment not end
+                continue
+            if not WITH_MOCKITO and 'Mockito' in result:
+                continue
+
+            try:
+                result_file=open(f'{mode}/result/{result}-{dirname}-{i}/simapr-result.json','r')
+            except:
+                continue
+            root=json.load(result_file)
+            result_file.close()
+
+            prev_time=0.
+            for res in root:
+                is_hq=res['result']
+                is_plausible=res['pass_result']
+                iteration=res['iteration']
+                time=res['time']
+                loc=res['config'][0]['location']
+
+                if is_plausible:
+                    result_list[i].append(iteration)
+
+    print(name)
+    print(np.mean([len(l) for l in result_list]))
+
+class AblationResult:
+    def __init__(self, mode: str, name: str, dirname: str, color: str):
+        self.mode = mode
+        self.name = name
+        self.dirname = dirname
+        self.color = color
+        self.result_list: List[List[int]] = [[] for _ in range(MAX_EXP)]
+        
+    def check_deps(self, result):
+        for dep in deps:
+            if not os.path.exists(f'{self.mode}/result/{result}-{dep}-{MAX_EXP-1}/simapr-finished.txt'):
+                return False
+        return True
+        
+    def save_result(self):
+        for i in range(MAX_EXP):
+            for result in d4j.D4J_1_2_LIST:
+                if self.check_deps(result):
+                    # Skip if experiment not end
+                    continue
+                if not WITH_MOCKITO and 'Mockito' in result:
+                    continue
+
+                try:
+                    result_file=open(f'{self.mode}/result/{self.result}-{self.dirname}-{i}/simapr-result.json','r')
+                except:
+                    continue
+                root=json.load(result_file)
+                result_file.close()
+
+                prev_time=0.
+                for res in root:
+                    is_hq=res['result']
+                    is_plausible=res['pass_result']
+                    iteration=res['iteration']
+                    time=res['time']
+                    loc=res['config'][0]['location']
+
+                    if is_plausible:
+                        self.result_list[i].append(iteration)
+
+        print(self.name)
+        print(np.mean([len(l) for l in self.result_list]))
+    
+    def draw_plot(self):
+        guided_list:List[List[int]]=[]
+        guided_x=[]
+        guided_y=[]
+        for j in range(MAX_EXP):
+            cur_result=sorted(self.result_list[j])
+            guided_list.append([0])
+            for i in range(0,MAX_ITERATION+1):
+                if i in cur_result:
+                    guided_list[-1].append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
+                    guided_x.append(i)
+                    if i==0:
+                        guided_y.append(0)
+                    else:
+                        guided_y.append(guided_y[-1]+cur_result.count(i))
+                else:
+                    guided_list[-1].append(guided_list[-1][-1])
+                    guided_x.append(i)
+                    if i==0:
+                        guided_y.append(0)
+                    else:
+                        guided_y.append(guided_y[-1])
+        guided_df=pd.DataFrame({'Iteration':guided_x,'# of valid patches':guided_y})
+        seaborn.lineplot(data=guided_df,x='Iteration',y='# of valid patches',color=self.color,label=self.name)
+
 def plot_patches_ci_java(mode='tbar'):
     orig_result:List[int]=[]
-    wo_vertical:List[List[int]]=[[] for _ in range(MAX_EXP)]
-    greybox_result:List[List[int]]=[[] for _ in range(MAX_EXP)]
-    casino_result:List[List[int]]=[[] for _ in range(MAX_EXP)]
+    results = [
+        # mode, name, dirname, color
+        AblationResult(mode, 'wo_vertical_field', 'wo-vertical-field', 'r'), # blackbox x / branch x / field o
+        AblationResult(mode, 'wo_vertical_branch', 'wo-vertical-branch', 'g'), # blackbox x / branch o / field x
+        AblationResult(mode, 'wo_vertical_both', 'wo-vertical-both', 'b'), # blackbox x / branch o / field o
+        AblationResult(mode, 'casino', 'casino', 'c'), # blackbox o / branch x / field x
+        AblationResult(mode, 'greybox_field', 'greybox-fieldonly', 'm'), # blackbox o / branch x / field o
+        AblationResult(mode, 'greybox_branch', 'greybox', 'y'), # blackbox o / branch o / field x
+        AblationResult(mode, 'greybox_both', 'greyboxfd', 'k') # blackbox o / branch o / field o
+    ]
 
-    # Casino
-    for i in range(MAX_EXP):
-        for result in d4j.D4J_1_2_LIST:
-            if not os.path.exists(f'{mode}/result/{result}-greybox-{MAX_EXP-1}/simapr-finished.txt') or \
-                        not os.path.exists(f'{mode}/result/{result}-wo-vertical-{MAX_EXP-1}/simapr-finished.txt'):
-                # Skip if experiment not end
-                continue
-            if not WITH_MOCKITO and 'Mockito' in result:
-                continue
-
-            try:
-                result_file=open(f'{mode}/result/{result}-casino-{i}/simapr-result.json','r')
-            except:
-                continue
-            root=json.load(result_file)
-            result_file.close()
-
-            prev_time=0.
-            for res in root:
-                is_hq=res['result']
-                is_plausible=res['pass_result']
-                iteration=res['iteration']
-                time=res['time']
-                loc=res['config'][0]['location']
-
-                if is_plausible:
-                    # casino_result[i].append(round((time)/60))
-                    casino_result[i].append(iteration)
-
-                # if time>3600:
-                #     break
-
-    print(np.mean([len(l) for l in casino_result]))
-
-    # w/o vertical
-    for i in range(MAX_EXP):
-        for result in d4j.D4J_1_2_LIST:
-            if not os.path.exists(f'{mode}/result/{result}-greybox-{MAX_EXP-1}/simapr-finished.txt') or \
-                        not os.path.exists(f'{mode}/result/{result}-wo-vertical-{MAX_EXP-1}/simapr-finished.txt'):
-                # Skip if experiment not end
-                continue
-            if not WITH_MOCKITO and 'Mockito' in result:
-                continue
-            try:
-                result_file=open(f'{mode}/result/{result}-wo-vertical-{i}/simapr-result.json','r')
-            except:
-                continue
-            root=json.load(result_file)
-            result_file.close()
-
-            prev_time=0.
-            for res in root:
-                is_hq=res['result']
-                is_plausible=res['pass_result']
-                iteration=res['iteration']
-                time=res['time']
-                loc=res['config'][0]['location']
-
-                if is_plausible:
-                    # wo_vertical[i].append(round((time)/60))
-                    wo_vertical[i].append(iteration)
-
-                # if time>3600:
-                #     break
-
-    print(np.mean([len(l) for l in wo_vertical]))
-
-    # greybox
-    for i in range(MAX_EXP):
-        for result in d4j.D4J_1_2_LIST:
-            if not os.path.exists(f'{mode}/result/{result}-greybox-{MAX_EXP-1}/simapr-finished.txt') or \
-                        not os.path.exists(f'{mode}/result/{result}-wo-vertical-{MAX_EXP-1}/simapr-finished.txt'):
-                # Skip if experiment not end
-                continue
-            if not WITH_MOCKITO and 'Mockito' in result:
-                continue
-            try:
-                result_file=open(f'{mode}/result/{result}-greybox-{i}/simapr-result.json','r')
-            except:
-                continue
-            root=json.load(result_file)
-            result_file.close()
-
-            prev_time=0.
-            for res in root:
-                is_hq=res['result']
-                is_plausible=res['pass_result']
-                iteration=res['iteration']
-                time=res['time']
-                loc=res['config'][0]['location']
-
-                if is_plausible:
-                    # greybox_result[i].append(round((time)/60))
-                    greybox_result[i].append(iteration)
-
-                # if time>3600:
-                #     break
-    
-    print(np.mean([len(l) for l in greybox_result]))
+    # Save Results
+    for result in results:
+        result.save_result()
 
     # Original
     for result in d4j.D4J_1_2_LIST:
@@ -153,13 +165,12 @@ def plot_patches_ci_java(mode='tbar'):
 
     print(len(orig_result))
 
+    dump_data = { 'orig': orig_result }
+    for result in results:
+        dump_data[result.name] = result.result_list
+    
     with open(f'rq3-{mode}.json','w') as f:
-        json.dump({
-            'orig':orig_result,
-            'wo_vertical':wo_vertical,
-            'greybox':greybox_result,
-            'casino':casino_result
-        },f,indent=4)
+        json.dump(dump_data,f,indent=4)
 
     # Plausible patch plot
     plt.clf()
@@ -175,81 +186,10 @@ def plot_patches_ci_java(mode='tbar'):
             other_list.append(other_list[-1])
     plt.plot(list(range(0,MAX_ITERATION+1)),other_list,'-.b',label='Orig')
 
-    # Casino
-    guided_list:List[List[int]]=[]
-    guided_x=[]
-    guided_y=[]
-    for j in range(MAX_EXP):
-        cur_result=sorted(casino_result[j])
-        guided_list.append([0])
-        for i in range(0,MAX_ITERATION+1):
-            if i in cur_result:
-                guided_list[-1].append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
-                guided_x.append(i)
-                if i==0:
-                    guided_y.append(0)
-                else:
-                    guided_y.append(guided_y[-1]+cur_result.count(i))
-            else:
-                guided_list[-1].append(guided_list[-1][-1])
-                guided_x.append(i)
-                if i==0:
-                    guided_y.append(0)
-                else:
-                    guided_y.append(guided_y[-1])
-    guided_df=pd.DataFrame({'Iteration':guided_x,'# of valid patches':guided_y})
-    seaborn.lineplot(data=guided_df,x='Iteration',y='# of valid patches',color='g',label='Casino')
-
-    # w/o vertical
-    guided_list:List[List[int]]=[]
-    guided_x=[]
-    guided_y=[]
-    for j in range(MAX_EXP):
-        cur_result=sorted(wo_vertical[j])
-        guided_list.append([0])
-        for i in range(0,MAX_ITERATION+1):
-            if i in cur_result:
-                guided_list[-1].append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
-                guided_x.append(i)
-                if i==0:
-                    guided_y.append(0)
-                else:
-                    guided_y.append(guided_y[-1]+cur_result.count(i))
-            else:
-                guided_list[-1].append(guided_list[-1][-1])
-                guided_x.append(i)
-                if i==0:
-                    guided_y.append(0)
-                else:
-                    guided_y.append(guided_y[-1])
-    guided_df=pd.DataFrame({'Iteration':guided_x,'# of valid patches':guided_y})
-    seaborn.lineplot(data=guided_df,x='Iteration',y='# of valid patches',color='y',label='w/o 1st vert.')
-
-    # greybox
-    other_list:List[List[int]]=[]
-    other_x=[]
-    other_y=[]
-    for j in range(MAX_EXP):
-        cur_result=sorted(greybox_result[j])
-        other_list.append([0])
-        for i in range(0,MAX_ITERATION+1):
-            if i in cur_result:
-                other_list[-1].append(other_list[-1][-1]+cur_result.count(i)/MAX_EXP)
-                other_x.append(i)
-                if i==0:
-                    other_y.append(0)
-                else:
-                    other_y.append(other_y[-1]+cur_result.count(i))
-            else:
-                other_list[-1].append(other_list[-1][-1])
-                other_x.append(i)
-                if i==0:
-                    other_y.append(0)
-                else:
-                    other_y.append(other_y[-1])
-    other_df=pd.DataFrame({'Iteration':other_x,'# of valid patches':other_y})
-    seaborn.lineplot(data=other_df,x='Iteration',y='# of valid patches',color='r',label='Gresino',linestyle='dashed')
-
+    # Draw plots
+    for result in results:
+        result.draw_plot()
+    
     plt.legend(fontsize=12)
     plt.xlabel('Iteration',fontsize=15)
     plt.ylabel('# of Valid Patches',fontsize=15)
