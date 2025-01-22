@@ -16,7 +16,7 @@ MAX_ITERATION=3000
 
 def plot_patches_ci_java(mode='tbar'):
     global MAX_EXP,MAX_ITERATION,WITH_MOCKITO
-    AblationResult.setGlobalState(mode, MAX_EXP, MAX_ITERATION, WITH_MOCKITO)
+    AblationResult.setGlobalState(mode, MAX_EXP, WITH_MOCKITO, MAX_ITERATION = MAX_ITERATION)
     
     orig_result:List[int]=[]
     results = [
@@ -32,7 +32,7 @@ def plot_patches_ci_java(mode='tbar'):
 
     # Save Results
     for result in results:
-        result.save_result()
+        result.save_result('iteration')
 
     # Original
     for result in d4j.D4J_1_2_LIST:
@@ -89,7 +89,7 @@ def plot_patches_ci_java(mode='tbar'):
 
     # Draw plots
     for result in results:
-        result.draw_plot()
+        result.draw_plot('iteration')
     
     plt.legend(fontsize=12)
     plt.xlabel('Iteration',fontsize=15)
