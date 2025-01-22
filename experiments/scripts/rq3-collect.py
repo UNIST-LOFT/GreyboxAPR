@@ -15,16 +15,19 @@ WITH_MOCKITO=False
 MAX_ITERATION=3000
 
 def plot_patches_ci_java(mode='tbar'):
+    global MAX_EXP,MAX_ITERATION,WITH_MOCKITO
+    AblationResult.setGlobalState(mode, MAX_EXP, MAX_ITERATION, WITH_MOCKITO)
+    
     orig_result:List[int]=[]
     results = [
-        # mode, name, dirname, color
-        AblationResult(mode, 'wo_vertical_field', 'wo-vertical-field', 'r'), # blackbox x / branch x / field o
-        AblationResult(mode, 'wo_vertical_branch', 'wo-vertical-branch', 'g'), # blackbox x / branch o / field x
-        AblationResult(mode, 'wo_vertical_both', 'wo-vertical-both', 'b'), # blackbox x / branch o / field o
-        AblationResult(mode, 'casino', 'casino', 'c'), # blackbox o / branch x / field x
-        AblationResult(mode, 'greybox_field', 'greybox-fieldonly', 'm'), # blackbox o / branch x / field o
-        AblationResult(mode, 'greybox_branch', 'greybox', 'y'), # blackbox o / branch o / field x
-        AblationResult(mode, 'greybox_both', 'greyboxfd', 'k') # blackbox o / branch o / field o
+        # name, dirname, color, max_exp
+        AblationResult('wo_vertical_field', 'wo-vertical-field', 'r'), # blackbox x / branch x / field o
+        AblationResult('wo_vertical_branch', 'wo-vertical-branch', 'g'), # blackbox x / branch o / field x
+        AblationResult('wo_vertical_both', 'wo-vertical-both', 'b'), # blackbox x / branch o / field o
+        AblationResult('casino', 'casino', 'c'), # blackbox o / branch x / field x
+        AblationResult('greybox_field', 'greybox-fieldonly', 'm'), # blackbox o / branch x / field o
+        AblationResult('greybox_branch', 'greybox', 'y'), # blackbox o / branch o / field x
+        AblationResult('greybox_both', 'greyboxfd', 'k') # blackbox o / branch o / field o
     ]
 
     # Save Results
