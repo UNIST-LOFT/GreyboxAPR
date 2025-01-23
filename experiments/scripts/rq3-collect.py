@@ -8,7 +8,7 @@ from matplotlib import pyplot as plt
 
 import d4j
 
-from ablation import AblationResult
+from ablation import *
 
 MAX_EXP=10
 WITH_MOCKITO=False
@@ -16,29 +16,28 @@ MAX_ITERATION=3000
 
 def plot_patches_ci_java(mode='tbar'):
     global MAX_EXP,MAX_ITERATION,WITH_MOCKITO
-    AblationResult.setGlobalState(mode, MAX_EXP, WITH_MOCKITO, MAX_ITERATION = MAX_ITERATION)
     
     orig_result:List[int]=[]
     ablation_results = [
-        # name, dirname, color, max_exp
-        AblationResult('wo_vertical_field', 'wo-vertical-field', 'r'), # blackbox x / branch x / field o
-        AblationResult('wo_vertical_branch', 'wo-vertical-branch', 'g'), # blackbox x / branch o / field x
-        AblationResult('wo_vertical_both', 'wo-vertical-both', 'b'), # blackbox x / branch o / field o
-        AblationResult('casino', 'casino', 'c'), # blackbox o / branch x / field x
-        AblationResult('greybox_field', 'greybox-fieldonly', 'm'), # blackbox o / branch x / field o
-        AblationResult('greybox_branch', 'greybox', 'y'), # blackbox o / branch o / field x
-        AblationResult('greybox_both', 'greyboxfd', 'k') # blackbox o / branch o / field o
+        # name, dirname, MAX_EXP, color
+        AblationResult('wo_vertical_field', 'wo-vertical-field', MAX_EXP, 'r'), # blackbox x / branch x / field o
+        AblationResult('wo_vertical_branch', 'wo-vertical-branch', MAX_EXP, 'g'), # blackbox x / branch o / field x
+        AblationResult('wo_vertical_both', 'wo-vertical-both', MAX_EXP, 'b'), # blackbox x / branch o / field o
+        AblationResult('casino', 'casino', MAX_EXP, 'c'), # blackbox o / branch x / field x
+        AblationResult('greybox_field', 'greybox-fieldonly', MAX_EXP, 'm'), # blackbox o / branch x / field o
+        AblationResult('greybox_branch', 'greybox', MAX_EXP, 'y'), # blackbox o / branch o / field x
+        AblationResult('greybox_both', 'greyboxfd', MAX_EXP, 'k') # blackbox o / branch o / field o
     ]
 
     print('Saving results as json\n')
     
     # Save Results
     for result in ablation_results:
-        result.save_result('iteration')
+        save_result_iter(result, mode, MAX_ITERATION, WITH_MOCKITO = WITH_MOCKITO)
 
     # Original
     for result in d4j.D4J_1_2_LIST:
-        if not AblationResult.check_deps(result):
+        if not check_deps(result, mode, MAX_EXP):
             # Skip if experiment not end
             continue
         if not WITH_MOCKITO and 'Mockito' in result:
@@ -94,7 +93,7 @@ def plot_patches_ci_java(mode='tbar'):
 
     # Draw plots
     for result in ablation_results:
-        result.draw_plot('iteration')
+        draw_plot(result, MAX_ITERATION, 'Iteration')
     
     plt.legend(fontsize='small', framealpha=0.5)
     plt.xlabel('Iteration',fontsize=15)
