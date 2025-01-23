@@ -8,7 +8,7 @@ import d4j
 import os
 
 
-deps = ['greyboxfd', 'greybox-fieldonly', 'wo-vertical-both']
+deps = ['greyboxfd']
 
 class AblationResult:
     def __init__(self, name: str, dirname: str, color: str):
@@ -24,8 +24,10 @@ class AblationResult:
         AblationResult.MAX_ITERATION = kwargs.get('MAX_ITERATION', 3000)
         AblationResult.MAX_TIME = kwargs.get('MAX_TIME', 300)
         AblationResult.WITH_MOCKITO = WITH_MOCKITO
-        
-    def check_deps(self, result):
+    
+    @staticmethod
+    def check_deps(result):
+        global deps
         for dep in deps:
             if not os.path.exists(f'{AblationResult.mode}/result/{result}-{dep}-{AblationResult.MAX_EXP-1}/simapr-finished.txt'):
                 return False
@@ -34,14 +36,14 @@ class AblationResult:
     def save_result(self, result_type: str):  # iteration / time
         for i in range(AblationResult.MAX_EXP):
             for result in d4j.D4J_1_2_LIST:
-                if not self.check_deps(result):
+                if not AblationResult.check_deps(result):
                     # Skip if experiment not end
                     continue
                 if not AblationResult.WITH_MOCKITO and 'Mockito' in result:
                     continue
 
                 try:
-                    result_file=open(f'{AblationResult.mode}/result/{self.result}-{self.dirname}-{i}/simapr-result.json','r')
+                    result_file=open(f'{AblationResult.mode}/result/{result}-{self.dirname}-{i}/simapr-result.json','r')
                 except:
                     continue
                 root=json.load(result_file)
@@ -61,7 +63,7 @@ class AblationResult:
                 elif result_type == 'time':
                     # Read cache to get baseline time
                     try:
-                        cache_file=open(f'{mode}/result/cache/{result}-cache.json','r')
+                        cache_file=open(f'{AblationResult.mode}/result/cache/{result}-cache.json','r')
                     except:
                         continue
                     cache=json.load(cache_file)
@@ -81,12 +83,11 @@ class AblationResult:
                                 total_time+=(res['time']-total_time)
 
                         if is_plausible:
-                            if MAX_TIME<round((total_time)/60):
-                                MAX_TIME=round((total_time)/60)
-                            casino_result[i].append(round((total_time)/60))
+                            if AblationResult.MAX_TIME<round((total_time)/60):
+                                AblationResult.MAX_TIME=round((total_time)/60)
+                            self.result_list[i].append(round((total_time)/60))
 
-        print(self.name)
-        print(np.mean([len(l) for l in self.result_list]))
+        print(f'{self.name}: {np.mean([len(l) for l in self.result_list])}')
     
     def draw_plot(self, result_type: str):
         count = AblationResult.MAX_ITERATION if result_type == 'iteration' else AblationResult.MAX_TIME
@@ -118,3 +119,4 @@ class AblationResult:
         df_obj[label] = guided_x
         guided_df=pd.DataFrame(df_obj)
         seaborn.lineplot(data=guided_df,x=label,y='# of valid patches',color=self.color,label=self.name)
+        print(f'{self.name} Done')

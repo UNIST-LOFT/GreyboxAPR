@@ -19,7 +19,7 @@ def plot_patches_ci_java(mode='tbar'):
     AblationResult.setGlobalState(mode, MAX_EXP, WITH_MOCKITO, MAX_TIME = MAX_TIME)
     
     orig_result:List[int]=[]
-    results = [
+    ablation_results = [
         # name, dirname, color, max_exp
         AblationResult('wo_vertical_field', 'wo-vertical-field', 'r'), # blackbox x / branch x / field o
         AblationResult('wo_vertical_branch', 'wo-vertical-branch', 'g'), # blackbox x / branch o / field x
@@ -29,14 +29,16 @@ def plot_patches_ci_java(mode='tbar'):
         AblationResult('greybox_branch', 'greybox', 'y'), # blackbox o / branch o / field x
         AblationResult('greybox_both', 'greyboxfd', 'k') # blackbox o / branch o / field o
     ]
-
-    for result in results:
+    
+    print('Saving results as json\n')
+    
+    # Save Results
+    for result in ablation_results:
         result.save_result('time')
 
     # Original
     for result in d4j.D4J_1_2_LIST:
-        if not os.path.exists(f'{mode}/result/{result}-greybox-{MAX_EXP-1}/simapr-finished.txt') or \
-                    not os.path.exists(f'{mode}/result/{result}-wo-vertical-{MAX_EXP-1}/simapr-finished.txt'):
+        if not AblationResult.check_deps(result):
             # Skip if experiment not end
             continue
         if not WITH_MOCKITO and 'Mockito' in result:
@@ -62,13 +64,13 @@ def plot_patches_ci_java(mode='tbar'):
             is_plausible=res['pass_result']
             iteration=res['iteration']
             time=res['time']
+            loc=res['config'][0]['location']
             if loc in cache:
                 total_time+=cache[loc]['fail_time']+cache[loc]['pass_time']
             else:
                 if res['time']-total_time>0:
                     total_time+=(res['time']-total_time)
 
-            loc=res['config'][0]['location']
 
             if is_plausible:
                 if MAX_TIME<round((total_time)/60):
@@ -79,14 +81,16 @@ def plot_patches_ci_java(mode='tbar'):
             # if time>3600:
             #     break
 
-    print(len(orig_result))
+    print(f'original: {len(orig_result)}')
     
     dump_data = { 'orig': orig_result }
-    for result in results:
+    for result in ablation_results:
         dump_data[result.name] = result.result_list
     
     with open(f'rq3-{mode}-time.json','w') as f:
         json.dump(dump_data,f,indent=4)
+
+    print('\nDrawing plots\n')
 
     # Plausible patch plot
     plt.clf()
@@ -102,11 +106,13 @@ def plot_patches_ci_java(mode='tbar'):
             other_list.append(other_list[-1])
     plt.plot(list(range(0,MAX_TIME+2)),other_list,'-.b',label='Orig')
 
+    print('original Done')
+
     # Draw plots
-    for result in results:
+    for result in ablation_results:
         result.draw_plot('time')
 
-    plt.legend(fontsize=12)
+    plt.legend(fontsize='small', framealpha=0.5)
     plt.xlabel('Time (min)',fontsize=15)
     plt.ylabel('# of Valid Patches',fontsize=15)
     plt.xticks(fontsize=15)
