@@ -18,16 +18,7 @@ def plot_patches_ci_java(mode='tbar'):
     global MAX_EXP,MAX_ITERATION,WITH_MOCKITO
     
     orig_result:List[int]=[]
-    ablation_results = [
-        # name, dirname, MAX_EXP, color
-        AblationResult('wo_vertical_field', 'wo-vertical-field', MAX_EXP, 'r'), # blackbox x / branch x / field o
-        AblationResult('wo_vertical_branch', 'wo-vertical-branch', MAX_EXP, 'g'), # blackbox x / branch o / field x
-        AblationResult('wo_vertical_both', 'wo-vertical-both', MAX_EXP, 'b'), # blackbox x / branch o / field o
-        AblationResult('casino', 'casino', MAX_EXP, 'c'), # blackbox o / branch x / field x
-        AblationResult('greybox_field', 'greybox-fieldonly', MAX_EXP, 'm'), # blackbox o / branch x / field o
-        AblationResult('greybox_branch', 'greybox', MAX_EXP, 'y'), # blackbox o / branch o / field x
-        AblationResult('greybox_both', 'greyboxfd', MAX_EXP, 'k') # blackbox o / branch o / field o
-    ]
+    ablation_results = get_ablation_result_variables(MAX_EXP)
 
     print('Saving results as json\n')
     

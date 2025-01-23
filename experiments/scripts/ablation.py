@@ -11,6 +11,18 @@ import os
 # e.g. check if tbar-greyboxfd-9 is done
 deps = ['greyboxfd']
 
+def get_ablation_result_variables(MAX_EXP: int):
+    return [
+        # name, dirname, MAX_EXP, color
+        AblationResult('wo_vertical_field', 'wo-vertical-field', MAX_EXP, 'r'), # blackbox x / branch x / field o
+        AblationResult('wo_vertical_branch', 'wo-vertical-branch', MAX_EXP, 'g'), # blackbox x / branch o / field x
+        AblationResult('wo_vertical_both', 'wo-vertical-both', MAX_EXP, 'b'), # blackbox x / branch o / field o
+        AblationResult('casino', 'casino', MAX_EXP, 'c'), # blackbox o / branch x / field x
+        AblationResult('greybox_field', 'greybox-fieldonly', MAX_EXP, 'm'), # blackbox o / branch x / field o
+        AblationResult('greybox_branch', 'greybox', MAX_EXP, 'y'), # blackbox o / branch o / field x
+        AblationResult('greybox_both', 'greyboxfd', MAX_EXP, 'k') # blackbox o / branch o / field o
+    ]
+
 class AblationResult:
     def __init__(self, name: str, dirname: str, MAX_EXP: int, color: str):
         self.name = name
