@@ -61,7 +61,8 @@ def plot_patches_ci_java(mode='tbar'):
     for result in ablation_results:
         dump_data[result.name] = result.result_list
     
-    with open(f'rq3-{mode}.json','w') as f:
+    os.makedirs('scripts/ablation-data', exist_ok=True)
+    with open(f'scripts/ablation-data/rq3-{mode}.json','w') as f:
         json.dump(dump_data,f,indent=4)
 
     print('\nDrawing plots\n')
