@@ -25,18 +25,18 @@ for opt,arg in o:
         WITH_MOCKITO=True
 
 def get_tool_data(tool:str):
-    global ablation_results
+    global MAX_EXP,ablation_results
     with open(f'scripts/ablation-data/rq3-{tool}.json','r') as f:
         root=json.load(f)
     
-        orig_result+=root['orig']
-        for i in range(MAX_EXP):
-            for k, v in root.items():
-                try:
-                    result = next(filter(lambda x: x.name == k))
-                    result.result_list[i] += v[i]
-                except:
-                    pass
+    orig_result+=root['orig']
+    for i in range(MAX_EXP):
+        for k, v in root.items():
+            try:
+                result = next(filter(lambda x: x.name == k))
+                result.result_list[i] += v[i]
+            except:
+                pass
 
 get_tool_data('tbar')
 get_tool_data('alpharepair')
