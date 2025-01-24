@@ -82,6 +82,9 @@ def parse(mode:str):
         'greybox_branch':0,
         'greybox_field':0
     }
+    total_interesting_patch=0
+    total_critical_branch=0
+    total_critical_field=0
 
     for i in range(MAX_EXP):
         for result in d4j.D4J_1_2_LIST:
@@ -114,8 +117,12 @@ def parse(mode:str):
 
             intr_patches:Set[str]=set()
             valid_patches:Set[str]=set()
+            critical_branches:Set[int]=set()
+            critical_fields:Set[str]=set()
+            
             for res in root:
                 if res['result']:
+                    total_interesting_patch+=1
                     intr_patches.add(res['config'][0]['location'])
                     greybox_update_result['blackbox']+=4
 
@@ -126,6 +133,8 @@ def parse(mode:str):
                             patch_coverage=parse_branch(f'{mode}/result/branch/{result}/{file}')
                             diff=branch_diff(orig_coverage_branch[test],patch_coverage)
                             greybox_update_result['greybox_branch']+=len(diff)*4
+                            for branch in diff:
+                                critical_branches.add(branch)
                             continue
                     
                     for file in listdir(f'{mode}/result/field/{result}'):
@@ -135,10 +144,15 @@ def parse(mode:str):
                             patch_coverage=parse_field(f'{mode}/result/field/{result}/{file}')
                             diff=field_diff(orig_coverage_field[test],patch_coverage)
                             greybox_update_result['greybox_field']+=len(diff)*4
+                            for field in diff:
+                                critical_fields.add(field)
                             continue
 
                 if res['pass_result']:
                     valid_patches.add(res['config'][0]['location'])
+                    
+            total_critical_branch += len(critical_branches)
+            total_critical_field += len(critical_fields)
 
             if len(valid_patches)==0:
                 continue
@@ -176,6 +190,9 @@ def parse(mode:str):
                     casino_update_result+=1
 
     print(mode)
+    print(f'Total intr patch: {total_interesting_patch}')
+    print(f'Total critical branch: {total_critical_branch}')
+    print(f'Total critical field: {total_critical_field}')
     print(f'Greybox: {greybox_result}')
     print(f'Casino: {casino_result}')
     print(f'Greybox: {greybox_update_result}')

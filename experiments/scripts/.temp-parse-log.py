@@ -79,6 +79,7 @@ def parse(mode:str):
 
             intr_patches:Set[str]=set()
             valid_patches:Set[str]=set()
+            critical_branches:Set[int]=set()
             for res in root:
                 if res['result']:
                     total_interesting_patch+=1
@@ -92,10 +93,14 @@ def parse(mode:str):
                             patch_coverage=parse_branch(f'{mode}/result/branch/{result}/{file}')
                             diff=branch_diff(orig_coverage[test],patch_coverage)
                             greybox_update_result['greybox']+=len(diff)*4
+                            for branch in diff:
+                                critical_branches.add(branch)
                             continue
 
                 if res['pass_result']:
                     valid_patches.add(res['config'][0]['location'])
+
+            total_critical_branch += len(critical_branches)
 
             if len(valid_patches)==0:
                 continue
@@ -113,8 +118,6 @@ def parse(mode:str):
                 elif 'Use original order' in line or 'Use epsilon greedy method' in line:
                     greybox_result['hor']+=1
                     casino_result['hor']+=1
-                elif 'update_result_branch updating successfully' in line:
-                    total_critical_branch+=1
 
             result_log.close()
 
@@ -130,7 +133,7 @@ def parse(mode:str):
 
     print(mode)
     print(f'Total intr patch: {total_interesting_patch}')
-    print(f'critical branch: {total_critical_branch}')
+    print(f'Total critical branch: {total_critical_branch}')
     print(f'Greybox: {greybox_result}')
     print(f'Casino: {casino_result}')
     print(f'Greybox: {greybox_update_result}')
