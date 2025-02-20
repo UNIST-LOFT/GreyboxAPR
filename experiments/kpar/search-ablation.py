@@ -2,6 +2,7 @@ import d4j_kpar
 import subprocess
 import multiprocessing as mp
 import seeds
+import os
 
 def run(project):
    for i in range(10):
