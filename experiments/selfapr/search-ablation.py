@@ -12,19 +12,35 @@ def run(project):
       #    f.write(result.stdout.decode("utf-8"))
       # print(f'Finish {project}-w/o-vertical-branch-{i} with returncode {result.returncode}')
       
-      print(f'Run {project}-w/o-vertical-field-{i}')
-      result=subprocess.run(['python3','search-selfapr-ablation-greybox.py',project,'vertical','field',str(seeds.SEEDS[i]),str(i)],
-                            stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
-      with open(f'result/{project}-wo-vertical-field-{i}.log','w') as f:
-         f.write(result.stdout.decode("utf-8"))
-      print(f'Finish {project}-w/o-vertical-field-{i} with returncode {result.returncode}')
+      if os.path.exists(f'result/{project}-greybox-fieldonly-{i}.log'):
+         print(f'Skip {project}-greybox-fieldonly-{i}')
+      else:
+         print(f'Run {project}-greybox-fieldonly-{i}')
+         result=subprocess.run(['python3','search-selfapr-greybox-fieldonly.py',project,str(seeds.SEEDS[i]),str(i)],
+                              stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+         with open(f'result/{project}-greybox-fieldonly-{i}.log','w') as f:
+            f.write(result.stdout.decode("utf-8"))
+         print(f'Finish {project}-greybox-fieldonly-{i} with returncode {result.returncode}')
       
-      print(f'Run {project}-w/o-vertical-both-{i}')
-      result=subprocess.run(['python3','search-selfapr-ablation-greybox.py',project,'vertical','both',str(seeds.SEEDS[i]),str(i)],
-                            stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
-      with open(f'result/{project}-wo-vertical-both-{i}.log','w') as f:
-         f.write(result.stdout.decode("utf-8"))
-      print(f'Finish {project}-w/o-vertical-both-{i} with returncode {result.returncode}')
+      if os.path.exists(f'result/{project}-wo-vertical-field-{i}.log'):
+         print(f'Skip {project}-wo-vertical-field-{i}')
+      else:
+         print(f'Run {project}-w/o-vertical-field-{i}')
+         result=subprocess.run(['python3','search-selfapr-ablation-greybox.py',project,'vertical','field',str(seeds.SEEDS[i]),str(i)],
+                              stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+         with open(f'result/{project}-wo-vertical-field-{i}.log','w') as f:
+            f.write(result.stdout.decode("utf-8"))
+         print(f'Finish {project}-w/o-vertical-field-{i} with returncode {result.returncode}')
+      
+      if os.path.exists(f'result/{project}-wo-vertical-both-{i}.log'):
+         print(f'Skip {project}-wo-vertical-both-{i}')
+      else:
+         print(f'Run {project}-w/o-vertical-both-{i}')
+         result=subprocess.run(['python3','search-selfapr-ablation-greybox.py',project,'vertical','both',str(seeds.SEEDS[i]),str(i)],
+                              stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+         with open(f'result/{project}-wo-vertical-both-{i}.log','w') as f:
+            f.write(result.stdout.decode("utf-8"))
+         print(f'Finish {project}-w/o-vertical-both-{i} with returncode {result.returncode}')
 
 from sys import argv
 

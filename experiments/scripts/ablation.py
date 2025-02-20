@@ -9,7 +9,7 @@ import os
 
 # Skip if {project}-{item}-{MAX_EXP} not done where item is an item in deps array.
 # e.g. check if tbar-greyboxfd-9 is done
-deps = ['greyboxfd']
+deps = ['greybox-fieldonly']
 
 def get_ablation_result_variables(MAX_EXP: int):
     return [
