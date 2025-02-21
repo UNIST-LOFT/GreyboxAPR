@@ -17,7 +17,7 @@ def run(project):
          print(f'Skip {project}-greybox-fieldonly-{i}')
       else:
          print(f'Run {project}-greybox-fieldonly-{i}')
-         result=subprocess.run(['python3','search-tbar-greybox-fieldonly.py',project,str(seeds.SEEDS[i]),str(i)],
+         result=subprocess.run(['python3','search-kpar-greybox-fieldonly.py',project,str(seeds.SEEDS[i]),str(i)],
                               stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
          with open(f'result/{project}-greybox-fieldonly-{i}.log','w') as f:
             f.write(result.stdout.decode("utf-8"))
@@ -27,7 +27,7 @@ def run(project):
          print(f'Skip {project}-wo-vertical-field-{i}')
       else:
          print(f'Run {project}-w/o-vertical-field-{i}')
-         result=subprocess.run(['python3','search-tbar-ablation-greybox.py',project,'vertical','field',str(seeds.SEEDS[i]),str(i)],
+         result=subprocess.run(['python3','search-kpar-ablation-greybox.py',project,'vertical','field',str(seeds.SEEDS[i]),str(i)],
                               stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
          with open(f'result/{project}-wo-vertical-field-{i}.log','w') as f:
             f.write(result.stdout.decode("utf-8"))
@@ -37,7 +37,7 @@ def run(project):
          print(f'Skip {project}-wo-vertical-both-{i}')
       else:
          print(f'Run {project}-w/o-vertical-both-{i}')
-         result=subprocess.run(['python3','search-tbar-ablation-greybox.py',project,'vertical','both',str(seeds.SEEDS[i]),str(i)],
+         result=subprocess.run(['python3','search-kpar-ablation-greybox.py',project,'vertical','both',str(seeds.SEEDS[i]),str(i)],
                               stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
          with open(f'result/{project}-wo-vertical-both-{i}.log','w') as f:
             f.write(result.stdout.decode("utf-8"))
