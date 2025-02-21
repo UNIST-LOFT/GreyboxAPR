@@ -6,12 +6,12 @@ import os
 
 def run(project):
    for i in range(10):
-      # print(f'Run {project}-w/o-vertical-branch-{i}')
-      # result=subprocess.run(['python3','search-tbar-ablation-greybox.py',project,'vertical','branch',str(seeds.SEEDS[i]),str(i)],
-      #                       stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
-      # with open(f'result/{project}-wo-vertical-branch-{i}.log','w') as f:
-      #    f.write(result.stdout.decode("utf-8"))
-      # print(f'Finish {project}-w/o-vertical-branch-{i} with returncode {result.returncode}')
+      print(f'Run {project}-w/o-vertical-branch-{i}')
+      result=subprocess.run(['python3','search-tbar-ablation-greybox.py',project,'vertical','branch',str(seeds.SEEDS[i]),str(i)],
+                            stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+      with open(f'result/{project}-wo-vertical-branch-{i}.log','w') as f:
+         f.write(result.stdout.decode("utf-8"))
+      print(f'Finish {project}-w/o-vertical-branch-{i} with returncode {result.returncode}')
       
       if os.path.exists(f'result/{project}-greybox-fieldonly-{i}.log'):
          print(f'Skip {project}-greybox-fieldonly-{i}')
