@@ -345,9 +345,9 @@ def plot_patches_ci_java(mode='tbar'):
                 else:
                     other_y.append(other_y[-1])
     other_df=pd.DataFrame({'Time':other_x,'Number of valid patches':other_y})
-    seaborn.lineplot(data=other_df,x='Time',y='Number of valid patches',color='y',label='Gresino + field',linestyle='dotted')
+    seaborn.lineplot(data=other_df,x='Time',y='Number of valid patches',color='y',label='Gresino+',linestyle='dotted')
 
-    plt.legend(fontsize=12)
+    plt.legend(fontsize=11)
     plt.xlabel('Time (min)',fontsize=15)
     plt.ylabel('# of Valid Patches',fontsize=15)
     plt.xticks(fontsize=15)
