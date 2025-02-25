@@ -103,7 +103,7 @@ def plot_patches_ci_java(mode='tbar'):
     for result in ablation_results:
         draw_plot(result, MAX_TIME, 'Time (min)')
 
-    plt.legend(fontsize=12)
+    plt.legend(fontsize=11)
     plt.xlabel('Time (min)',fontsize=15)
     plt.ylabel('# of Valid Patches',fontsize=15)
     plt.xticks(fontsize=15)
