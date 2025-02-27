@@ -2,11 +2,24 @@
     "exclude": [
         "AlphaRepair",
         "Avatar",
-        "experiments",
         "Fixminer",
         "kPar",
         "Recoder",
-        "TBar"
+        "TBar",
+        "SelfAPR",
+        "SRepair",
+
+        "experiments/alpharepair",
+        "experiments/recoder",
+        "experiments/selfapr",
+        "experiments/srepair",
+        "experiments/tbar",
+        "experiments/avatar",
+        "experiments/kpar",
+        "experiments/fixminer",
+
+        "ODS",
+        "DiffTGen"
     ],
     "typeCheckingMode": "off"
 }
