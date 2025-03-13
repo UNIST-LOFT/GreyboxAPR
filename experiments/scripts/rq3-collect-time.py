@@ -249,7 +249,7 @@ def plot_patches_ci_java(mode='tbar'):
             if not WITH_MOCKITO and 'Mockito' in result:
                 continue
             try:
-                result_file=open(f'{mode}/result/{result}-greyboxfd-{i}/simapr-result.json','r')
+                result_file=open(f'{mode}/result/{result}-greybox-fieldonly-{i}/simapr-result.json','r')
             except:
                 continue
             root=json.load(result_file)
