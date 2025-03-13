@@ -125,7 +125,7 @@ def plot_patches_ci_java(mode='tbar'):
                 if iteration>MAX_ITERATION:
                     break
 
-    print(np.mean([len(l) for l in greyboxfd_result]))
+    print(np.mean([len(l) for l in greybox_field_only_result]))
     
     # Greybox with critical field
     for i in range(MAX_EXP):
