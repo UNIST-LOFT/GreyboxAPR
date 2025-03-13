@@ -12,7 +12,7 @@ from getopt import getopt
 
 import d4j
 
-MAX_EXP=3
+MAX_EXP=10
 WITH_MOCKITO=False
 MAX_TIME=300
 
