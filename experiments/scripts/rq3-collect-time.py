@@ -31,7 +31,7 @@ def plot_patches_ci_java(mode='tbar'):
     for i in range(MAX_EXP):
         casino_result.append([])
         for result in d4j.D4J_1_2_LIST:
-            if not path.exists(f'{mode}/result/{result}-greyboxfd-{MAX_EXP-1}/simapr-finished.txt'):
+            if not path.exists(f'{mode}/result/{result}-greybox-fieldonly-{MAX_EXP-1}/simapr-finished.txt'):
                 # Skip if experiment not end
                 continue
             if not WITH_MOCKITO and 'Mockito' in result:
@@ -77,7 +77,7 @@ def plot_patches_ci_java(mode='tbar'):
 
     # Original
     for result in d4j.D4J_1_2_LIST:
-        if not path.exists(f'{mode}/result/{result}-greyboxfd-{MAX_EXP-1}/simapr-finished.txt'):
+        if not path.exists(f'{mode}/result/{result}-greybox-fieldonly-{MAX_EXP-1}/simapr-finished.txt'):
             # Skip if experiment not end
             continue
         if not WITH_MOCKITO and 'Mockito' in result:
@@ -125,7 +125,7 @@ def plot_patches_ci_java(mode='tbar'):
     for i in range(MAX_EXP):
         greybox_result.append([])
         for result in d4j.D4J_1_2_LIST:
-            if not path.exists(f'{mode}/result/{result}-greyboxfd-{MAX_EXP-1}/simapr-finished.txt'):
+            if not path.exists(f'{mode}/result/{result}-greybox-fieldonly-{MAX_EXP-1}/simapr-finished.txt'):
                 # Skip if experiment not end
                 continue
             if not WITH_MOCKITO and 'Mockito' in result:
@@ -184,7 +184,7 @@ def plot_patches_ci_java(mode='tbar'):
     for i in range(MAX_EXP):
         greyboxfd_result.append([])
         for result in d4j.D4J_1_2_LIST:
-            if not path.exists(f'{mode}/result/{result}-greyboxfd-{MAX_EXP-1}/simapr-finished.txt'):
+            if not path.exists(f'{mode}/result/{result}-greybox-fieldonly-{MAX_EXP-1}/simapr-finished.txt'):
                 # Skip if experiment not end
                 continue
             if not WITH_MOCKITO and 'Mockito' in result:
@@ -243,7 +243,7 @@ def plot_patches_ci_java(mode='tbar'):
     for i in range(MAX_EXP):
         greybox_field_only_result.append([])
         for result in d4j.D4J_1_2_LIST:
-            if not path.exists(f'{mode}/result/{result}-greyboxfd-{MAX_EXP-1}/simapr-finished.txt'):
+            if not path.exists(f'{mode}/result/{result}-greybox-fieldonly-{MAX_EXP-1}/simapr-finished.txt'):
                 # Skip if experiment not end
                 continue
             if not WITH_MOCKITO and 'Mockito' in result:
