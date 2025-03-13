@@ -10,14 +10,15 @@ import seaborn
 
 import d4j
 
-from ablation import *
-
 MAX_EXP=10
 WITH_MOCKITO=False
 MAX_TIME=300
 
 orig_result:List[int]=[]
-ablation_results = get_ablation_result_variables(MAX_EXP)
+casino_result:List[List[int]]=[]
+greybox_result:List[List[int]]=[]
+greybox_field_only_result:List[List[int]]=[]
+greyboxfd_result:List[List[int]]=[]
 
 o,a=getopt(argv[1:],'',['with-mockito'])
 for opt,arg in o:
@@ -25,25 +26,16 @@ for opt,arg in o:
         WITH_MOCKITO=True
 
 def get_tool_data(tool:str):
-    global MAX_TIME,MAX_EXP,ablation_results
-    with open(f'scripts/ablation-data/rq3-{tool}.json','r') as f:
+    global MAX_EXP
+    with open(f'scripts/rq3-time/{tool}.json','r') as f:
         root=json.load(f)
     
     orig_result+=root['orig']
-    for l in orig_result:
-        if l>MAX_TIME:
-            MAX_TIME=l
-            
     for i in range(MAX_EXP):
-        for k, v in root.items():
-            try:
-                result = next(filter(lambda x: x.name == k))
-                result.result_list[i] += v[i]
-                for l in v[i]:
-                    if l>MAX_TIME:
-                        MAX_TIME=l
-            except:
-                pass
+        casino_result[i]+=root['casino'][i]
+        greybox_result[i]+=root['greybox'][i]
+        greybox_field_only_result[i]+=root['greybox_field_only'][i]
+        greyboxfd_result[i]+=root['greyboxfd'][i]
 
 get_tool_data('tbar')
 get_tool_data('alpharepair')
@@ -68,11 +60,108 @@ for i in range(0,MAX_TIME+1):
         other_list.append(other_list[-1])
 plt.plot(list(range(0,MAX_TIME+2)),other_list,'-.b',label='Orig')
 
-# Draw plots
-for result in ablation_results:
-    draw_plot(result, MAX_TIME, 'Time (min)')
+# Casino
+guided_list:List[List[int]]=[]
+guided_x=[]
+guided_y=[]
+temp_=[[],[],[],[],[]]
+for j in range(MAX_EXP):
+    cur_result=sorted(casino_result[j])
+    guided_list.append([0])
+    for i in range(0,MAX_TIME+1):
+        if i in cur_result:
+            guided_list[-1].append(guided_list[-1][-1]+cur_result.count(i)/MAX_EXP)
+            guided_x.append(i)
+            if i==0:
+                guided_y.append(0)
+            else:
+                guided_y.append(guided_y[-1]+cur_result.count(i))
+        else:
+            guided_list[-1].append(guided_list[-1][-1])
+            guided_x.append(i)
+            if i==0:
+                guided_y.append(0)
+            else:
+                guided_y.append(guided_y[-1])
+guided_df=pd.DataFrame({'Time':guided_x,'Number of valid patches':guided_y})
+seaborn.lineplot(data=guided_df,x='Time',y='Number of valid patches',color='g',label='Casino')
 
-plt.legend(fontsize='small', framealpha=0.5)
+# Greybox
+other_list:List[List[int]]=[]
+other_x=[]
+other_y=[]
+for j in range(MAX_EXP):
+    cur_result=sorted(greybox_result[j])
+    other_list.append([0])
+    for i in range(0,MAX_TIME+1):
+        if i in cur_result:
+            other_list[-1].append(other_list[-1][-1]+cur_result.count(i)/MAX_EXP)
+            other_x.append(i)
+            if i==0:
+                other_y.append(0)
+            else:
+                other_y.append(other_y[-1]+cur_result.count(i))
+        else:
+            other_list[-1].append(other_list[-1][-1])
+            other_x.append(i)
+            if i==0:
+                other_y.append(0)
+            else:
+                other_y.append(other_y[-1])
+other_df=pd.DataFrame({'Time':other_x,'Number of valid patches':other_y})
+seaborn.lineplot(data=other_df,x='Time',y='Number of valid patches',color='r',label='Gresino_B',linestyle=':')
+
+# Greybox with only critical field
+other_list:List[List[int]]=[]
+other_x=[]
+other_y=[]
+for j in range(MAX_EXP):
+    cur_result=sorted(greybox_field_only_result[j])
+    other_list.append([0])
+    for i in range(0,MAX_TIME+1):
+        if i in cur_result:
+            other_list[-1].append(other_list[-1][-1]+cur_result.count(i)/MAX_EXP)
+            other_x.append(i)
+            if i==0:
+                other_y.append(0)
+            else:
+                other_y.append(other_y[-1]+cur_result.count(i))
+        else:
+            other_list[-1].append(other_list[-1][-1])
+            other_x.append(i)
+            if i==0:
+                other_y.append(0)
+            else:
+                other_y.append(other_y[-1])
+other_df=pd.DataFrame({'Time':other_x,'Number of valid patches':other_y})
+seaborn.lineplot(data=other_df,x='Time',y='Number of valid patches',color='y',label='Gresino_F',linestyle='-.')
+
+# Greybox with critical field
+other_list:List[List[int]]=[]
+other_x=[]
+other_y=[]
+for j in range(MAX_EXP):
+    cur_result=sorted(greyboxfd_result[j])
+    other_list.append([0])
+    for i in range(0,MAX_TIME+1):
+        if i in cur_result:
+            other_list[-1].append(other_list[-1][-1]+cur_result.count(i)/MAX_EXP)
+            other_x.append(i)
+            if i==0:
+                other_y.append(0)
+            else:
+                other_y.append(other_y[-1]+cur_result.count(i))
+        else:
+            other_list[-1].append(other_list[-1][-1])
+            other_x.append(i)
+            if i==0:
+                other_y.append(0)
+            else:
+                other_y.append(other_y[-1])
+other_df=pd.DataFrame({'Time':other_x,'Number of valid patches':other_y})
+seaborn.lineplot(data=other_df,x='Time',y='Number of valid patches',color='k',label='Gresino_BF',linestyle='--')
+
+plt.legend(fontsize=11)
 plt.xlabel('Time (min)',fontsize=15)
 plt.ylabel('# of Valid Patches',fontsize=15)
 plt.xticks(fontsize=15)
