@@ -9,7 +9,7 @@ import subprocess
 
 def draw_plot(result:str, mode:str):
     print(f'Drawing {result}')
-    res=subprocess.run(['python3','experiments/scripts/rq1-single.py',mode,result],stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+    res=subprocess.run(['python3','scripts/rq1-single.py',mode,result],stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
     if res.returncode!=0:
         print(f'Error: {result}')
 
