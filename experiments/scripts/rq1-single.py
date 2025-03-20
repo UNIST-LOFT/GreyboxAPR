@@ -249,7 +249,7 @@ def plot_patches_ci_java(result:str, mode='tbar'):
         plt.savefig(f'scripts/rq1-single/{mode}-{result}.jpg',bbox_inches='tight')
 
 if __name__=='__main__':
-    o,a=getopt(argv[1:],'j',['with-mockito'])
+    o,a=getopt(argv[1:],'j:',['with-mockito'])
     for opt,arg in o:
         if o=='--with-mockito':
             WITH_MOCKITO=True
