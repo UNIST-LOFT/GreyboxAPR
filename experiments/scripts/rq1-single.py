@@ -241,10 +241,6 @@ def plot_patches_ci_java(mode='tbar'):
         # plt.locator_params(axis='x',nbins=6)
         plt.yticks(fontsize=15)
 
-        if os.path.exists('scripts/rq1-single'):
-            shutil.rmtree('scripts/rq1-single')
-        os.mkdir('scripts/rq1-single')
-
         if WITH_MOCKITO:
             plt.savefig(f'scripts/rq1-single/{mode}-{result}-w-mockito.pdf',bbox_inches='tight')
             plt.savefig(f'scripts/rq1-single/{mode}-{result}-w-mockito.jpg',bbox_inches='tight')
@@ -258,4 +254,7 @@ if __name__=='__main__':
         if o=='--with-mockito':
             WITH_MOCKITO=True
     
+    if os.path.exists('scripts/rq1-single'):
+        shutil.rmtree('scripts/rq1-single')
+    os.mkdir('scripts/rq1-single')
     plot_patches_ci_java(a[0])
