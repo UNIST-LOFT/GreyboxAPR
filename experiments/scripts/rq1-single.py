@@ -251,9 +251,9 @@ def plot_patches_ci_java(result:str, mode='tbar'):
 if __name__=='__main__':
     o,a=getopt(argv[1:],'j:',['with-mockito'])
     for opt,arg in o:
-        if o=='--with-mockito':
+        if opt=='--with-mockito':
             WITH_MOCKITO=True
-        elif o=='-j':
+        elif opt=='-j':
             processes=int(arg)
     
     if os.path.exists('scripts/rq1-single'):
