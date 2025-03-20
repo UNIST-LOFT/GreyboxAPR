@@ -249,20 +249,6 @@ def plot_patches_ci_java(result:str, mode='tbar'):
         plt.savefig(f'scripts/rq1-single/{mode}-{result}.jpg',bbox_inches='tight')
 
 if __name__=='__main__':
-    o,a=getopt(argv[1:],'j:',['with-mockito'])
-    for opt,arg in o:
-        if opt=='--with-mockito':
-            WITH_MOCKITO=True
-        elif opt=='-j':
-            processes=int(arg)
-    
-    if os.path.exists('scripts/rq1-single'):
-        shutil.rmtree('scripts/rq1-single')
-    os.mkdir('scripts/rq1-single')
-
-    pool=mp.Pool(processes)
-    for result in d4j.D4J_1_2_LIST:
-        pool.apply_async(plot_patches_ci_java,(result,a[0]))
-    
-    pool.close()
-    pool.join()
+    tool=argv[1]
+    result=argv[2]
+    plot_patches_ci_java(result, tool)
