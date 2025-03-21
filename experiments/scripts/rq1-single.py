@@ -56,7 +56,7 @@ def plot_patches_ci_java(result:str, mode='tbar'):
             if iteration>MAX_ITERATION:
                 break
 
-    print(np.mean([len(l) for l in casino_result]))
+    casino_mean=np.mean([len(l) for l in casino_result])
                     
     # Greybox
     for i in range(MAX_EXP):
@@ -81,7 +81,7 @@ def plot_patches_ci_java(result:str, mode='tbar'):
             if iteration>MAX_ITERATION:
                 break
 
-    print(np.mean([len(l) for l in greybox_result]))
+    greybox_mean=np.mean([len(l) for l in greybox_result])
     
     # Greybox with critical field only
     for i in range(MAX_EXP):
@@ -106,7 +106,7 @@ def plot_patches_ci_java(result:str, mode='tbar'):
             if iteration>MAX_ITERATION:
                 break
 
-    print(np.mean([len(l) for l in greyboxfd_result]))
+    greyboxfd_mean=np.mean([len(l) for l in greyboxfd_result])
 
     # Original
     try:
@@ -129,7 +129,10 @@ def plot_patches_ci_java(result:str, mode='tbar'):
         if iteration>MAX_ITERATION:
             break
 
-    print(len(orig_result))
+    orig_mean=len(orig_result)
+
+    if casino_mean==0. and greybox_mean==0. and greyboxfd_mean==0. and orig_mean==0:
+        return
 
     # Plausible patch plot
     plt.clf()
