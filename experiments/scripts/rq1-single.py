@@ -83,11 +83,11 @@ def plot_patches_ci_java(result:str, mode='tbar'):
 
     print(np.mean([len(l) for l in greybox_result]))
     
-    # Greybox with critical field
+    # Greybox with critical field only
     for i in range(MAX_EXP):
         greyboxfd_result.append([])
         try:
-            result_file=open(f'{mode}/result/{result}-greyboxfd-{i}/simapr-result.json','r')
+            result_file=open(f'{mode}/result/{result}-greybox-fieldonly-{i}/simapr-result.json','r')
         except:
             continue
         root=json.load(result_file)
@@ -208,7 +208,7 @@ def plot_patches_ci_java(result:str, mode='tbar'):
     guided_df=pd.DataFrame({'Time':guided_x,'Number of valid patches':guided_y})
     seaborn.lineplot(data=guided_df,x='Time',y='Number of valid patches',color='r',label='Gresino',linestyle='dashed')
     
-    # Greybox with critical field
+    # Greybox with critical field only
     guided_list:List[List[int]]=[]
     guided_x=[]
     guided_y=[]
