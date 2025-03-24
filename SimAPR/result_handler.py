@@ -72,15 +72,10 @@ def update_result_tbar(state: GlobalState, selected_patch: TbarPatchInfo, result
   selected_patch.update_result(result, PT.ALPHA_INCREASE, PT.BETA_INCREASE, state.use_exp_alpha)
   if result:
     state.total_basic_patch += 1
-    print(f'black-box alpha updated')
     selected_patch.tbar_type_info.children_basic_patches+=1
-    print(f'black-box alpha updated')
     selected_patch.line_info.children_basic_patches+=1
-    print(f'black-box alpha updated')
     selected_patch.func_info.children_basic_patches+=1
-    print(f'black-box alpha updated')
     selected_patch.file_info.children_basic_patches+=1
-    print(f'black-box alpha updated')
     selected_patch.tbar_type_info.consecutive_fail_count=0
     selected_patch.line_info.consecutive_fail_count=0
     selected_patch.func_info.consecutive_fail_count=0
@@ -182,13 +177,9 @@ def update_result_recoder(state: GlobalState, selected_patch: RecoderPatchInfo, 
   selected_patch.update_result(result, PT.ALPHA_INCREASE, PT.BETA_INCREASE,state.use_exp_alpha)
   if result:
     state.total_basic_patch += 1
-    print(f'black-box alpha updated')
     selected_patch.line_info.children_basic_patches += 1
-    print(f'black-box alpha updated')
     selected_patch.func_info.children_basic_patches += 1
-    print(f'black-box alpha updated')
     selected_patch.file_info.children_basic_patches += 1
-    print(f'black-box alpha updated')
     selected_patch.line_info.consecutive_fail_count = 0
     selected_patch.func_info.consecutive_fail_count = 0
     selected_patch.file_info.consecutive_fail_count = 0
@@ -343,7 +334,6 @@ def update_result_branch(state:GlobalState,selected_patch:Union[TbarPatchInfo,Re
         if each_result[testName]:
           # update if the patch is interesting
           for branch_tuple in branch_difference_list:
-            print(f'grey-box branch alpha updated')
             branch_index:int=branch_tuple[0]
             branch_difference=branch_tuple[1]
             
@@ -424,7 +414,6 @@ def update_result_field(state:GlobalState,selected_patch:Union[TbarPatchInfo,Rec
         if each_result[testName]:
           # update if the patch is interesting
           for field_tuple in field_difference_list:
-            print(f'grey-box field alpha updated')
             field_name:str=field_tuple[0]
             field_difference=field_tuple[1]
             

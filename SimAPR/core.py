@@ -143,7 +143,6 @@ class CriticalBranchUpDown:
         original_branch_count (int): _description_
         patched_branch_count (int): _description_
     """
-    print('grey-box alpha updated')
     if branch_difference<0:
       self.branchDownScore+=1 # increase the score with some value.
     elif branch_difference>0:
@@ -260,7 +259,6 @@ class CriticalFieldUpDown:
         original_field_last_value (str): _description_
         patched_field_last_value (str): _description_
     """
-    print('grey-box field alpha updated')
     if field_difference<0:
       self.fieldDownScore+=1 # increase the score with some value.
     elif field_difference>0:
