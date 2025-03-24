@@ -214,14 +214,15 @@ def set_logger(state: GlobalState) -> logging.Logger:
   """
   logger = logging.getLogger('simapr')
   fh = logging.FileHandler(os.path.join(state.out_dir, 'simapr-search.log'))
+  ch = logging.StreamHandler()
   if state.debug_mode:
     logger.setLevel(logging.DEBUG)
     fh.setLevel(logging.DEBUG)
+    ch.setLevel(logging.INFO)
   else:
     logger.setLevel(logging.INFO)
     fh.setLevel(logging.INFO)
-  ch = logging.StreamHandler()
-  ch.setLevel(logging.INFO)
+    ch.setLevel(logging.INFO)
   formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
   fh.setFormatter(formatter)
   ch.setFormatter(formatter)
