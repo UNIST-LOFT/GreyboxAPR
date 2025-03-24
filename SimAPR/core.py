@@ -561,7 +561,7 @@ class EnvGenerator:
     if state.mode==Mode.greybox and (instrument or state.only_get_test_time_data_mode):
       new_env['GREYBOX_BRANCH']='1'
       new_env['GREYBOX_RESULT']=f'/tmp/{state.d4j_buggy_project}-{test.replace("::","#")}.txt'
-      new_env['GREYBOX_FIELD_RESULT']=f'/tmp/field/{state.d4j_buggy_project}-{test.replace("::","#")}.txt'
+      new_env['GREYBOX_FIELD_RESULT']=f'/tmp/field-{state.d4j_buggy_project}-{test.replace("::","#")}.txt'
       new_env['GREYBOX_INSTR_ROOT']=state.instrumenter_classpath
       new_env['CLASSPATH']=state.instrumenter_classpath
     else:
@@ -584,7 +584,7 @@ class EnvGenerator:
     if state.mode==Mode.greybox and (instrument or state.only_get_test_time_data_mode):
       new_env['GREYBOX_BRANCH']='1'
       new_env['GREYBOX_RESULT']=f'/tmp/{state.d4j_buggy_project}-{test.replace("::","#")}.txt'
-      new_env['GREYBOX_FIELD_RESULT']=f'/tmp/field/{state.d4j_buggy_project}-{test.replace("::","#")}.txt'
+      new_env['GREYBOX_FIELD_RESULT']=f'/tmp/field-{state.d4j_buggy_project}-{test.replace("::","#")}.txt'
       new_env['GREYBOX_INSTR_ROOT']=state.instrumenter_classpath
       new_env['CLASSPATH']=state.instrumenter_classpath
     else:
