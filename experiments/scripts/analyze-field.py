@@ -66,6 +66,8 @@ for result in d4j.D4J_1_2_LIST:
                     unplau_freq_list[f'{test}#{field}']=0
                 unplau_freq_list[f'{test}#{field}']+=unplau_freq[test][field]
 
+    if len(plau_diffs)==0:
+        continue
     plau_diff_list=[]
     unplau_diff_list=[]
     for key in plau_diffs:
