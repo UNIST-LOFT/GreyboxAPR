@@ -20,7 +20,9 @@ if __name__=='__main__':
     test_list:List[str]=list()
     for file in os.listdir(args.field_path):
         data=field_change.parse_change(logging.getLogger(),f'{args.field_path}/{file}')
-        patch,test=file.removesuffix('.txt').split('_')
+        _text=file.removesuffix('.txt').split('_')
+        patch=_text[0]
+        test='_'.join(_text[1:])
         patch=patch.replace('#','/')
         if patch=='original':
             orig_field_data[test]=data
@@ -56,7 +58,7 @@ if __name__=='__main__':
         if is_interesting:
             for test in test_list:
                 # Diff value between original and current, and update critical field
-                if cur_patch not in field_data:
+                if cur_patch not in field_data or test not in field_data[cur_patch]:
                     continue
                 field_difference_list: List[Tuple[str,float]] = field_data[cur_patch][test].diff(orig_field_data[test])
 
@@ -80,7 +82,7 @@ if __name__=='__main__':
         if is_plausible:
             for test in test_list:
                 print(f'Plausible {test} in {cur_patch}')
-                if cur_patch not in field_data:
+                if cur_patch not in field_data or test not in field_data[cur_patch]:
                     print(f'No field data for {cur_patch}')
                     continue
                 field_difference_list: List[Tuple[str,float]] = field_data[cur_patch][test].diff(orig_field_data[test])
@@ -105,14 +107,14 @@ if __name__=='__main__':
         elif is_interesting:
             print(f'Unplausible {test} in {cur_patch}')
             for test in test_list:
-                if cur_patch not in field_data:
+                if cur_patch not in field_data or test not in field_data[cur_patch]:
                     print(f'No field data for {cur_patch}')
                     continue
                 field_difference_list: List[Tuple[str,float]] = field_data[cur_patch][test].diff(orig_field_data[test])
 
                 # Update critical field frequency when plausible
                 if test not in unplausible_critical_field_freq:
-                    unplausible_critical_field_freq[test]=set()
+                    unplausible_critical_field_freq[test]=dict()
                 for field,diff in field_difference_list:
                     if field not in unplausible_critical_field_freq[test]:
                         unplausible_critical_field_freq[test][field]=0

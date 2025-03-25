@@ -10,11 +10,15 @@ import d4j
 
 tool=sys.argv[1]
 
+if os.path.exists('scripts/critical-field'):
+    shutil.rmtree('scripts/critical-field')
+os.mkdir('scripts/critical-field')
+
 for result in d4j.D4J_1_2_LIST:
     plau_freq_list:Dict[str,int]=dict()
     unplau_freq_list:Dict[str,int]=dict()
-    plau_diffs:Dict[str,List[float]]=[]
-    unplau_diffs:Dict[str,List[float]]=[]
+    plau_diffs:Dict[str,List[float]]=dict()
+    unplau_diffs:Dict[str,List[float]]=dict()
     print(result)
     for i in range(10):
         field_path=f'{tool}/result/field/{result}'
@@ -22,7 +26,7 @@ for result in d4j.D4J_1_2_LIST:
         if not os.path.exists(f'{result_path}/simapr-finished.txt'):
             continue
         res=subprocess.run(['python3','/root/project/GreyboxAPR/SimAPR/simulate-greybox.py',result_path,field_path],stdout=subprocess.PIPE,
-                        stderr=subprocess.STDOUT)
+                        stderr=subprocess.STDOUT,text=True)
         
         if res.returncode!=0:
             print(f"Error in {result}-{i}")
@@ -46,7 +50,7 @@ for result in d4j.D4J_1_2_LIST:
                 if f'{test}#{field}' not in plau_diffs:
                     plau_diffs[f'{test}#{field}']=[]
                 plau_diffs[f'{test}#{field}']+=plau_diff[test][field]
-        for tets in unplau_diff:
+        for test in unplau_diff:
             for field in unplau_diff[test]:
                 if f'{test}#{field}' not in unplau_diffs:
                     unplau_diffs[f'{test}#{field}']=[]
@@ -68,21 +72,28 @@ for result in d4j.D4J_1_2_LIST:
 
     if len(plau_diffs)==0:
         continue
-    plau_diff_list=[]
-    unplau_diff_list=[]
+    _plau_diff_list=[]
+    _unplau_diff_list=[]
     for key in plau_diffs:
-        plau_diff_list.append(np.mean(plau_diffs[key]))
-        if key not in unplau_diffs:
-            unplau_diff_list.append([])
-        else:
-            unplau_diff_list.append(unplau_diffs[key])
+        _plau_diff_list+=plau_diffs[key]
+        if key in unplau_diffs:
+            _unplau_diff_list+=unplau_diffs[key]
     for key in unplau_diffs:
         if key not in plau_diffs:
-            plau_diff_list.append([])
-            unplau_diff_list.append(unplau_diffs[key])
+            _unplau_diff_list+=unplau_diffs[key]
 
-    print(f'Plausible patch: mean: {np.mean(plau_diff_list)}, median: {np.median(plau_diff_list)}, std: {np.std(plau_diff_list)}')
-    print(f'Unplausible patch: mean: {np.mean(unplau_diff_list)}, median: {np.median(unplau_diff_list)}, std: {np.std(unplau_diff_list)}')
+    plau_diff_list=[]
+    unplau_diff_list=[]
+    for v in _plau_diff_list:
+        if str(v)!='nan':
+            plau_diff_list.append(v)
+    for v in _unplau_diff_list:
+        if str(v)!='nan':
+            unplau_diff_list.append(v)
+    if len(plau_diff_list)>0:
+        print(f'Plausible patch: len: {len(plau_diff_list)} mean: {np.mean(plau_diff_list)}, median: {np.median(plau_diff_list)}, std: {np.std(plau_diff_list)}')
+    if len(unplau_diff_list)>0:
+        print(f'Unplausible patch: len: {len(unplau_diff_list)} mean: {np.mean(unplau_diff_list)}, median: {np.median(unplau_diff_list)}, std: {np.std(unplau_diff_list)}')
 
     plau_list=[]
     unplau_list=[]
@@ -104,8 +115,6 @@ for result in d4j.D4J_1_2_LIST:
     plt.legend()
     plt.xlabel('Critical field')
     plt.ylabel('Frequency')
-    if os.path.exists('scripts/critical-field'):
-        shutil.rmtree('scripts/critical-field')
-    os.mkdir('scripts/critical-field')
+    plt.grid()
     plt.savefig(f'scripts/critical-field/{result}.pdf',bbox_inches='tight')
     plt.savefig(f'scripts/critical-field/{result}.jpg',bbox_inches='tight')
