@@ -15,6 +15,7 @@ for result in d4j.D4J_1_2_LIST:
     unplau_freq_list:Dict[str,int]=dict()
     plau_diffs:Dict[str,List[float]]=[]
     unplau_diffs:Dict[str,List[float]]=[]
+    print(result)
     for i in range(10):
         field_path=f'{tool}/result/field/{result}'
         result_path=f'{tool}/result/{result}-greybox-fieldonly-{i}'
@@ -28,6 +29,8 @@ for result in d4j.D4J_1_2_LIST:
             print(res.stdout)
             continue
         
+        if not os.path.exists(f'{result_path}/critical-field.json'):
+            continue
         with open(f'{result_path}/critical-field.json','r') as f:
             fields=json.load(f)
 
