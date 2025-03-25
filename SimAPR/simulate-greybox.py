@@ -74,7 +74,7 @@ if __name__=='__main__':
                 for field,diff in field_difference_list:
                     if field not in intersting_critical_field_diff[test]:
                         intersting_critical_field_diff[test][field]=[]
-                    intersting_critical_field_diff[test][field].append(diff)
+                    intersting_critical_field_diff[test][field].append(abs(diff))
         
         # Update critical field frequency when plausible
         if is_plausible:
@@ -99,7 +99,7 @@ if __name__=='__main__':
                 for field,diff in field_difference_list:
                     if field not in plausible_critical_field_diff[test]:
                         plausible_critical_field_diff[test][field]=[]
-                    plausible_critical_field_diff[test][field].append(diff)
+                    plausible_critical_field_diff[test][field].append(abs(diff))
 
         # Update critical field frequency when unplausible
         elif is_interesting:
@@ -124,7 +124,7 @@ if __name__=='__main__':
                 for field,diff in field_difference_list:
                     if field not in unplausible_critical_field_diff[test]:
                         unplausible_critical_field_diff[test][field]=[]
-                    unplausible_critical_field_diff[test][field].append(diff)
+                    unplausible_critical_field_diff[test][field].append(abs(diff))
     
     with open(f'{args.result_path}/critical-field.json','w') as f:
         json.dump({
