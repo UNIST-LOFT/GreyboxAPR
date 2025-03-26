@@ -14,6 +14,8 @@ if os.path.exists('scripts/critical-field'):
     shutil.rmtree('scripts/critical-field')
 os.mkdir('scripts/critical-field')
 
+freq_data:Dict[str,Dict[str,Dict[str,float]]]=dict()
+
 for result in d4j.D4J_1_2_LIST:
     plau_freq_list:Dict[str,int]=dict()
     unplau_freq_list:Dict[str,int]=dict()
@@ -92,8 +94,20 @@ for result in d4j.D4J_1_2_LIST:
             unplau_diff_list.append(v)
     if len(plau_diff_list)>0:
         print(f'Plausible patch: len: {len(plau_diff_list)} mean: {np.mean(plau_diff_list)}, median: {np.median(plau_diff_list)}, std: {np.std(plau_diff_list)}')
+        freq_data[result]={'plausible':{
+            'length':len(plau_diff_list),
+            'mean': np.mean(plau_diff_list),
+            'median': np.median(plau_diff_list),
+            'std': np.std(plau_diff_list)
+        }}
     if len(unplau_diff_list)>0:
         print(f'Unplausible patch: len: {len(unplau_diff_list)} mean: {np.mean(unplau_diff_list)}, median: {np.median(unplau_diff_list)}, std: {np.std(unplau_diff_list)}')
+        freq_data[result]={'unplausible':{
+            'length':len(unplau_diff_list),
+            'mean': np.mean(unplau_diff_list),
+            'median': np.median(unplau_diff_list),
+            'std': np.std(unplau_diff_list)
+        }}
 
     plau_list=[]
     unplau_list=[]
@@ -118,3 +132,6 @@ for result in d4j.D4J_1_2_LIST:
     plt.grid()
     plt.savefig(f'scripts/critical-field/{result}.pdf',bbox_inches='tight')
     plt.savefig(f'scripts/critical-field/{result}.jpg',bbox_inches='tight')
+
+with open('experiments/scripts/critical-field/freq.json','w') as f:
+    json.dump(freq_data,f)
