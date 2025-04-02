@@ -1043,7 +1043,7 @@ def remove_file_or_pass(file:str):
     pass
 
 def append_java_cache_result(state:GlobalState,case:Union[TbarCaseInfo,RecoderCaseInfo],fail_result:Dict[str,bool],pass_result:bool,compilable:bool,
-      fail_time:float, pass_time:float,is_greybox=False):
+      fail_time:float, pass_time:float,is_greybox=False,is_field=False):
   """
     Append result to cache file, if not exist. Otherwise, do nothing.
     
@@ -1064,7 +1064,11 @@ def append_java_cache_result(state:GlobalState,case:Union[TbarCaseInfo,RecoderCa
     current['fail_time']=fail_time
     current['pass_time']=pass_time
     current['done_greybox']=is_greybox
+    current['done_field']=is_field
     
     state.simulation_data[id]=current
-  elif 'done_greybox' not in state.simulation_data[id] or not state.simulation_data[id]['done_greybox']:
-    state.simulation_data[id]['done_greybox']=is_greybox
+  else:
+    if 'done_greybox' not in state.simulation_data[id] or not state.simulation_data[id]['done_greybox']:
+      state.simulation_data[id]['done_greybox']=is_greybox
+    if 'done_field' not in state.simulation_data[id] or not state.simulation_data[id]['done_field']:
+      state.simulation_data[id]['done_field']=is_field

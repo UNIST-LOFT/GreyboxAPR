@@ -320,6 +320,7 @@ class TBarLoop():
         pass_time=simapr_result['pass_time']
         is_compilable=simapr_result['compilable']
         greybox_done=simapr_result['done_greybox'] if 'done_greybox' in simapr_result else False
+        field_done=simapr_result['done_field'] if 'done_field' in simapr_result else False
         
         #add an entry that maps this patch to its branchess
         if is_compilable:
@@ -336,7 +337,7 @@ class TBarLoop():
                                     f'{patch.tbar_case_info.location.replace("/","#")}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt')
               change_file=os.path.join(self.state.field_output,
                                     f'{patch.tbar_case_info.location.replace("/","#")}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt')
-              if not os.path.exists(cov_file) and not greybox_done or not os.path.exists(change_file):
+              if (not greybox_done and not os.path.exists(cov_file)) or (not field_done and not os.path.exists(change_file)):
                 # Retry if greybox not done yet
                 compilable, run_result,fail_time,cur_cov, cur_change = self.run_test(patch, test,get_greybox_info=True)
               if os.path.exists(cov_file):
@@ -646,6 +647,7 @@ class RecoderLoop(TBarLoop):
         self.state.test_time+=pass_time
         is_compilable=simapr_result['compilable']
         greybox_done=simapr_result['done_greybox'] if 'done_greybox' in simapr_result else False
+        field_done=simapr_result['done_field'] if 'done_field' in simapr_result else False
 
         #add an entry that maps this patch to its branches and fields
         if is_compilable:
@@ -663,7 +665,7 @@ class RecoderLoop(TBarLoop):
                                       f'{patch.recoder_case_info.location.replace("/","#")}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt')
                 change_file=os.path.join(self.state.field_output,
                                     f'{patch.recoder_case_info.location.replace("/","#")}_{test.split(".")[-2]}.{test.split(".")[-1]}.txt')
-                if not greybox_done and not (os.path.exists(cov_file) and os.path.exists(change_file)):
+                if (not greybox_done and not os.path.exists(cov_file)) or (not field_done and not os.path.exists(change_file)):
                   # Retry if greybox not done yet
                   compilable, run_result,fail_time,cur_cov,cur_change = self.run_test(patch, test,get_greybox_info=True)
                 if os.path.exists(cov_file):
