@@ -48,6 +48,10 @@ if __name__=='__main__':
     intersting_critical_field_diff:Dict[str,Dict[str,List[float]]]=dict()
     plausible_critical_field_diff:Dict[str,Dict[str,List[float]]]=dict()
     unplausible_critical_field_diff:Dict[str,Dict[str,List[float]]]=dict()
+    
+    total_int_patch=0
+    total_plau_patch=0
+    total_unplau_patch=0
     # Log the critical field info
     for result in results:
         is_plausible=result['pass_result']
@@ -60,6 +64,7 @@ if __name__=='__main__':
                 # Diff value between original and current, and update critical field
                 if cur_patch not in field_data or test not in field_data[cur_patch]:
                     continue
+                total_int_patch+=1
                 field_difference_list: List[Tuple[str,float]] = field_data[cur_patch][test].diff(orig_field_data[test])
 
                 # Update critical field frequency when interesting
@@ -85,6 +90,7 @@ if __name__=='__main__':
                 if cur_patch not in field_data or test not in field_data[cur_patch]:
                     print(f'No field data for {cur_patch}')
                     continue
+                total_plau_patch+=1
                 field_difference_list: List[Tuple[str,float]] = field_data[cur_patch][test].diff(orig_field_data[test])
 
                 # Update critical field frequency when plausible
@@ -110,6 +116,7 @@ if __name__=='__main__':
                 if cur_patch not in field_data or test not in field_data[cur_patch]:
                     print(f'No field data for {cur_patch}')
                     continue
+                total_unplau_patch+=1
                 field_difference_list: List[Tuple[str,float]] = field_data[cur_patch][test].diff(orig_field_data[test])
 
                 # Update critical field frequency when plausible
@@ -128,6 +135,16 @@ if __name__=='__main__':
                         unplausible_critical_field_diff[test][field]=[]
                     unplausible_critical_field_diff[test][field].append(abs(diff))
     
+    for test in interesting_critical_field_freq:
+        for field in interesting_critical_field_freq[test]:
+            interesting_critical_field_freq[test][field]/=total_int_patch
+    for test in plausible_critical_field_freq:
+        for field in plausible_critical_field_freq[test]:
+            plausible_critical_field_freq[test][field]/=total_plau_patch
+    for test in unplausible_critical_field_freq:
+        for field in unplausible_critical_field_freq[test]:
+            unplausible_critical_field_freq[test][field]/=total_unplau_patch
+            
     with open(f'{args.result_path}/critical-field.json','w') as f:
         json.dump({
             'interesting_freq':interesting_critical_field_freq,

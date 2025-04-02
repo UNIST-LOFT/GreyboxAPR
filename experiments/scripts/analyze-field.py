@@ -134,4 +134,4 @@ for result in d4j.D4J_1_2_LIST:
     plt.savefig(f'scripts/critical-field/{result}.jpg',bbox_inches='tight')
 
 with open('scripts/critical-field/freq.json','w') as f:
-    json.dump(freq_data,f)
+    json.dump(freq_data,f,indent=4)
