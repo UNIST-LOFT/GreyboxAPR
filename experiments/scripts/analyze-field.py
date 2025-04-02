@@ -130,6 +130,7 @@ for result in d4j.D4J_1_2_LIST:
     plt.xlabel('Critical field')
     plt.ylabel('Frequency')
     plt.grid()
+    plt.title(result)
     plt.savefig(f'scripts/critical-field/{result}.pdf',bbox_inches='tight')
     plt.savefig(f'scripts/critical-field/{result}.jpg',bbox_inches='tight')
 
